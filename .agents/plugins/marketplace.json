@@ -1,0 +1,20 @@
+{
+  "name": "text-to-ansys-local",
+  "interface": {
+    "displayName": "text-to-ansys local development"
+  },
+  "plugins": [
+    {
+      "name": "text-to-ansys",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}

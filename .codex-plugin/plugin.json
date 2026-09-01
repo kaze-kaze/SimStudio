@@ -1,0 +1,35 @@
+{
+  "name": "text-to-ansys",
+  "version": "0.1.0",
+  "description": "Reviewable ANSYS Mechanical linear-static simulation specifications, deterministic compilation, execution, DPF inspection, and reporting.",
+  "author": {
+    "name": "text-to-ansys contributors"
+  },
+  "license": "MIT",
+  "keywords": [
+    "ansys",
+    "mechanical",
+    "pymechanical",
+    "dpf",
+    "fea",
+    "simulation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "text-to-ansys",
+    "shortDescription": "Auditable ANSYS Mechanical static-analysis workflows.",
+    "longDescription": "Turns ANSYS Mechanical linear-static requirements into a strict simulation specification, deterministic saved scripts, environment diagnostics, optional PyMechanical execution, PyDPF inspection, engineering checks, and reviewable reports.",
+    "developerName": "text-to-ansys contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Write",
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Create a reviewable ANSYS Mechanical static-analysis specification.",
+      "Modify an exact-name Mechanical template and prepare a dry-run.",
+      "Inspect an ANSYS RST result with DPF and generate a report."
+    ],
+    "brandColor": "#2F5D7E"
+  }
+}

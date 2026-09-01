@@ -1,0 +1,6 @@
+interface:
+  display_name: "ANSYS Mechanical Static"
+  short_description: "Compile and review linear-static Mechanical simulations."
+  default_prompt: "Use $ansys-mechanical-static to create a reviewable dry-run for this ANSYS Mechanical static-analysis request."
+policy:
+  allow_implicit_invocation: true
