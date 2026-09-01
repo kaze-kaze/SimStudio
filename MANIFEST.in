@@ -1,0 +1,18 @@
+include AGENTS.md
+include CONTRIBUTING.md
+include LICENSE
+include NOTICE
+include README.md
+include ROADMAP.md
+include SECURITY.md
+include pyproject.toml
+recursive-include .codex-plugin *.json
+recursive-include .agents *.json
+recursive-include .github *.yml
+recursive-include examples *.md *.py *.json *.yaml *.step
+recursive-include schemas *.json
+recursive-include skills *.md *.py *.yaml
+recursive-include skills LICENSE
+recursive-include tests *.py
+global-exclude __pycache__ *.py[cod]
+prune build

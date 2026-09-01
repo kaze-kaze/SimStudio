@@ -1,0 +1,23 @@
+# Notices
+
+`text-to-ansys` is independent open-source software. It is not an ANSYS product and is not
+affiliated with, endorsed by, or sponsored by ANSYS, Inc. or its affiliates. ANSYS, Mechanical,
+Workbench, and related names are trademarks of their respective owners.
+
+No ANSYS executable, license file, commercial material library, project file, result file, image,
+or proprietary documentation is distributed in this repository. Users must supply a separately
+licensed compatible ANSYS installation when they choose real execution.
+
+Runtime dependencies:
+
+- Pydantic — MIT license
+- Pint — BSD-3-Clause license
+- PyYAML — MIT license
+
+Optional integrations:
+
+- PyMechanical (`ansys-mechanical-core`) — MIT license
+- PyDPF-Core (`ansys-dpf-core`) — MIT license
+- build123d, used only to regenerate the neutral cantilever CAD fixture — Apache-2.0 license
+
+Dependency licenses and notices remain the responsibility of their respective copyright holders.

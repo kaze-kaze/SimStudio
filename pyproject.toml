@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text-to-ansys"
+version = "0.1.0"
+description = "Deterministic compiler and Codex skill for reviewable ANSYS Mechanical linear static simulations."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "text-to-ansys contributors" }]
+keywords = ["ansys", "mechanical", "pymechanical", "dpf", "simulation", "codex-skill"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = [
+  "pydantic>=2.12,<3",
+  "pint>=0.25,<1",
+  "PyYAML>=6.0.2,<7",
+]
+
+[project.optional-dependencies]
+ansys = [
+  "ansys-mechanical-core>=0.13.2,<0.14",
+  "ansys-dpf-core>=0.16.1,<0.17",
+]
+dev = [
+  "build>=1.3,<2",
+  "pytest>=8.4,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.12,<1",
+]
+cad-fixture = [
+  "build123d>=0.9,<1",
+]
+
+[project.scripts]
+ansys-sim = "ansys_skill.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "skills/ansys-mechanical-static/scripts" }
+
+[tool.setuptools.packages.find]
+where = ["skills/ansys-mechanical-static/scripts"]
+include = ["ansys_skill*"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers"
+testpaths = ["tests"]
+markers = [
+  "ansys_integration: requires an explicitly enabled compatible ANSYS Mechanical installation and license",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["build"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]

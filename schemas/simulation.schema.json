@@ -1,0 +1,979 @@
+{
+  "$defs": {
+    "AnalysisSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "deformation": {
+          "const": "small",
+          "default": "small",
+          "title": "Deformation",
+          "type": "string"
+        },
+        "object_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Name"
+        },
+        "type": {
+          "const": "linear_static_structural",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "AnalysisSpec",
+      "type": "object"
+    },
+    "AssumptionSource": {
+      "enum": [
+        "user",
+        "template",
+        "program",
+        "engineering_default"
+      ],
+      "title": "AssumptionSource",
+      "type": "string"
+    },
+    "AssumptionSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/AssumptionSource"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "source"
+      ],
+      "title": "AssumptionSpec",
+      "type": "object"
+    },
+    "BodySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "material": {
+          "minLength": 1,
+          "title": "Material",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "material"
+      ],
+      "title": "BodySpec",
+      "type": "object"
+    },
+    "CantileverValidationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "load_magnitude": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Load Magnitude"
+        },
+        "relative_tolerance": {
+          "default": 0.15,
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Relative Tolerance",
+          "type": "number"
+        },
+        "result_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Result Id"
+        },
+        "second_moment_of_area": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Second Moment Of Area"
+        },
+        "span": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span"
+        },
+        "youngs_modulus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Youngs Modulus"
+        }
+      },
+      "title": "CantileverValidationSpec",
+      "type": "object"
+    },
+    "CoordinateSystemSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "global",
+          "default": "global",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "default": "Global Coordinate System",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "title": "CoordinateSystemSpec",
+      "type": "object"
+    },
+    "ExecutionSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_remote": {
+          "default": false,
+          "title": "Allow Remote",
+          "type": "boolean"
+        },
+        "backend": {
+          "default": "pymechanical_remote",
+          "enum": [
+            "pymechanical_remote",
+            "fake"
+          ],
+          "title": "Backend",
+          "type": "string"
+        },
+        "certs_dir": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Certs Dir"
+        },
+        "cleanup_owned_instance": {
+          "default": true,
+          "title": "Cleanup Owned Instance",
+          "type": "boolean"
+        },
+        "host": {
+          "default": "127.0.0.1",
+          "title": "Host",
+          "type": "string"
+        },
+        "port": {
+          "anyOf": [
+            {
+              "maximum": 65535,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Port"
+        },
+        "start_instance": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "yes",
+            "no"
+          ],
+          "title": "Start Instance",
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "default": 1800,
+          "maximum": 86400,
+          "minimum": 30,
+          "title": "Timeout Seconds",
+          "type": "integer"
+        },
+        "transport_mode": {
+          "default": "insecure",
+          "enum": [
+            "insecure",
+            "wnua",
+            "mtls"
+          ],
+          "title": "Transport Mode",
+          "type": "string"
+        }
+      },
+      "title": "ExecutionSpec",
+      "type": "object"
+    },
+    "InputSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "geometry_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geometry File"
+        },
+        "project_file": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Project File"
+        }
+      },
+      "title": "InputSpec",
+      "type": "object"
+    },
+    "LoadSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "components": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VectorComponents"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Direction"
+        },
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "magnitude": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Magnitude"
+        },
+        "object_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Name"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "type": {
+          "enum": [
+            "force",
+            "pressure",
+            "gravity"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "LoadSpec",
+      "type": "object"
+    },
+    "MaterialSource": {
+      "enum": [
+        "engineering_data",
+        "isotropic"
+      ],
+      "title": "MaterialSource",
+      "type": "string"
+    },
+    "MaterialSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "density": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Density"
+        },
+        "engineering_data_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Engineering Data Name"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "poissons_ratio": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 0.5,
+              "exclusiveMinimum": -1.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Poissons Ratio"
+        },
+        "source": {
+          "$ref": "#/$defs/MaterialSource"
+        },
+        "youngs_modulus": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Youngs Modulus"
+        }
+      },
+      "required": [
+        "name",
+        "source"
+      ],
+      "title": "MaterialSpec",
+      "type": "object"
+    },
+    "MeshSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "element_order": {
+          "default": "program_controlled",
+          "enum": [
+            "program_controlled",
+            "linear",
+            "quadratic"
+          ],
+          "title": "Element Order",
+          "type": "string"
+        },
+        "global_element_size": {
+          "title": "Global Element Size",
+          "type": "string"
+        }
+      },
+      "required": [
+        "global_element_size"
+      ],
+      "title": "MeshSpec",
+      "type": "object"
+    },
+    "Mode": {
+      "enum": [
+        "template",
+        "from_geometry"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "OutputSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "export_images": {
+          "default": true,
+          "title": "Export Images",
+          "type": "boolean"
+        },
+        "save_project": {
+          "default": true,
+          "title": "Save Project",
+          "type": "boolean"
+        }
+      },
+      "title": "OutputSpec",
+      "type": "object"
+    },
+    "ProjectSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ProjectSpec",
+      "type": "object"
+    },
+    "RequestedResultSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "anyOf": [
+            {
+              "enum": [
+                "x",
+                "y",
+                "z"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Direction"
+        },
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "object_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Name"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "support": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Support"
+        },
+        "type": {
+          "$ref": "#/$defs/ResultType"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "title": "RequestedResultSpec",
+      "type": "object"
+    },
+    "ResultType": {
+      "enum": [
+        "total_deformation",
+        "directional_deformation",
+        "equivalent_von_mises_stress",
+        "reaction_force",
+        "solver_messages",
+        "node_count",
+        "element_count"
+      ],
+      "title": "ResultType",
+      "type": "string"
+    },
+    "ScopeKind": {
+      "enum": [
+        "named_selection",
+        "object_name",
+        "axis_extreme_face"
+      ],
+      "title": "ScopeKind",
+      "type": "string"
+    },
+    "ScopeSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "axis": {
+          "anyOf": [
+            {
+              "enum": [
+                "x",
+                "y",
+                "z"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Axis"
+        },
+        "body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Body"
+        },
+        "extreme": {
+          "anyOf": [
+            {
+              "enum": [
+                "min",
+                "max"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Extreme"
+        },
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ScopeKind"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "tolerance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tolerance"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "ScopeSpec",
+      "type": "object"
+    },
+    "SupportSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "object_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Object Name"
+        },
+        "scope": {
+          "title": "Scope",
+          "type": "string"
+        },
+        "type": {
+          "const": "fixed_support",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "scope"
+      ],
+      "title": "SupportSpec",
+      "type": "object"
+    },
+    "UnitSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "force": {
+          "default": "N",
+          "title": "Force",
+          "type": "string"
+        },
+        "length": {
+          "default": "m",
+          "title": "Length",
+          "type": "string"
+        },
+        "mass": {
+          "default": "kg",
+          "title": "Mass",
+          "type": "string"
+        },
+        "stress": {
+          "default": "Pa",
+          "title": "Stress",
+          "type": "string"
+        },
+        "time": {
+          "default": "s",
+          "title": "Time",
+          "type": "string"
+        }
+      },
+      "title": "UnitSpec",
+      "type": "object"
+    },
+    "ValidationPolicySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "cantilever": {
+          "$ref": "#/$defs/CantileverValidationSpec"
+        },
+        "characteristic_length": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Characteristic Length"
+        },
+        "reaction_balance_relative_tolerance": {
+          "default": 0.05,
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Reaction Balance Relative Tolerance",
+          "type": "number"
+        },
+        "small_deformation_fail_ratio": {
+          "default": 0.1,
+          "exclusiveMinimum": 0,
+          "title": "Small Deformation Fail Ratio",
+          "type": "number"
+        },
+        "small_deformation_warn_ratio": {
+          "default": 0.02,
+          "exclusiveMinimum": 0,
+          "title": "Small Deformation Warn Ratio",
+          "type": "number"
+        }
+      },
+      "title": "ValidationPolicySpec",
+      "type": "object"
+    },
+    "VectorComponents": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "string"
+        },
+        "y": {
+          "title": "Y",
+          "type": "string"
+        },
+        "z": {
+          "title": "Z",
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "VectorComponents",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "analysis": {
+      "$ref": "#/$defs/AnalysisSpec"
+    },
+    "assumptions": {
+      "items": {
+        "$ref": "#/$defs/AssumptionSpec"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "bodies": {
+      "items": {
+        "$ref": "#/$defs/BodySpec"
+      },
+      "minItems": 1,
+      "title": "Bodies",
+      "type": "array"
+    },
+    "coordinate_systems": {
+      "items": {
+        "$ref": "#/$defs/CoordinateSystemSpec"
+      },
+      "title": "Coordinate Systems",
+      "type": "array"
+    },
+    "execution": {
+      "$ref": "#/$defs/ExecutionSpec"
+    },
+    "inputs": {
+      "$ref": "#/$defs/InputSpec"
+    },
+    "loads": {
+      "items": {
+        "$ref": "#/$defs/LoadSpec"
+      },
+      "minItems": 1,
+      "title": "Loads",
+      "type": "array"
+    },
+    "materials": {
+      "items": {
+        "$ref": "#/$defs/MaterialSpec"
+      },
+      "minItems": 1,
+      "title": "Materials",
+      "type": "array"
+    },
+    "mesh": {
+      "$ref": "#/$defs/MeshSpec"
+    },
+    "mode": {
+      "$ref": "#/$defs/Mode"
+    },
+    "open_questions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Open Questions",
+      "type": "array"
+    },
+    "output": {
+      "$ref": "#/$defs/OutputSpec"
+    },
+    "project": {
+      "$ref": "#/$defs/ProjectSpec"
+    },
+    "requested_results": {
+      "items": {
+        "$ref": "#/$defs/RequestedResultSpec"
+      },
+      "minItems": 1,
+      "title": "Requested Results",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scopes": {
+      "items": {
+        "$ref": "#/$defs/ScopeSpec"
+      },
+      "minItems": 1,
+      "title": "Scopes",
+      "type": "array"
+    },
+    "supports": {
+      "items": {
+        "$ref": "#/$defs/SupportSpec"
+      },
+      "minItems": 1,
+      "title": "Supports",
+      "type": "array"
+    },
+    "units": {
+      "$ref": "#/$defs/UnitSpec"
+    },
+    "validation": {
+      "$ref": "#/$defs/ValidationPolicySpec"
+    }
+  },
+  "required": [
+    "schema_version",
+    "project",
+    "mode",
+    "inputs",
+    "bodies",
+    "materials",
+    "scopes",
+    "analysis",
+    "mesh",
+    "supports",
+    "loads",
+    "requested_results"
+  ],
+  "title": "SimulationSpec",
+  "type": "object"
+}
