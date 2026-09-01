@@ -1,0 +1,7 @@
+{
+  "beam_theory": "Euler-Bernoulli",
+  "expected_tip_displacement_m": 0.000125,
+  "expected_tip_displacement_mm": 0.125,
+  "relative_tolerance": 0.15,
+  "second_moment_of_area_m4": 1.066666666667e-7
+}

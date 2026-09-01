@@ -1,0 +1,89 @@
+schema_version: "1.0"
+project:
+  name: template-static-example
+  description: Exact-name modification of an existing Mechanical template.
+mode: template
+inputs:
+  project_file: ./REPLACE-WITH-YOUR-TEMPLATE.mechdat
+units:
+  length: mm
+  force: N
+  stress: MPa
+  mass: kg
+  time: s
+coordinate_systems:
+  - name: Global Coordinate System
+    kind: global
+bodies:
+  - name: BeamBody
+    material: structural_steel
+materials:
+  - name: structural_steel
+    source: engineering_data
+    engineering_data_name: Structural Steel
+scopes:
+  - id: fixed_end
+    kind: named_selection
+    name: FixedEnd
+  - id: load_end
+    kind: named_selection
+    name: LoadEnd
+analysis:
+  type: linear_static_structural
+  deformation: small
+  object_name: Static Structural
+mesh:
+  global_element_size: 10 mm
+  element_order: program_controlled
+supports:
+  - id: fixed_support
+    type: fixed_support
+    scope: fixed_end
+    object_name: Fixed Support
+loads:
+  - id: applied_force
+    type: force
+    scope: load_end
+    object_name: Applied Force
+    components:
+      x: 0 N
+      y: -1000 N
+      z: 0 N
+requested_results:
+  - id: total_deformation
+    type: total_deformation
+    object_name: Total Deformation
+  - id: equivalent_stress
+    type: equivalent_von_mises_stress
+    object_name: Equivalent Stress
+  - id: fixed_reaction
+    type: reaction_force
+    support: fixed_support
+    object_name: Fixed Reaction
+  - id: solver_messages
+    type: solver_messages
+  - id: node_count
+    type: node_count
+  - id: element_count
+    type: element_count
+validation:
+  reaction_balance_relative_tolerance: 0.05
+  small_deformation_warn_ratio: 0.02
+  small_deformation_fail_ratio: 0.1
+  characteristic_length: 200 mm
+assumptions:
+  - text: The template already contains one exact linear-static analysis and the listed objects.
+    source: template
+open_questions:
+  - Replace the template path and verify every exact object, body, material, and named selection name.
+output:
+  export_images: true
+  save_project: true
+execution:
+  backend: pymechanical_remote
+  host: 127.0.0.1
+  allow_remote: false
+  transport_mode: insecure
+  start_instance: auto
+  timeout_seconds: 1800
+  cleanup_owned_instance: true
