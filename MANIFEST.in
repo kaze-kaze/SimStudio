@@ -10,6 +10,7 @@ recursive-include .codex-plugin *.json
 recursive-include .agents *.json
 recursive-include .github *.yml
 recursive-include examples *.md *.py *.json *.yaml *.step
+recursive-include docs *.md
 recursive-include schemas *.json
 recursive-include skills *.md *.py *.yaml
 recursive-include skills LICENSE

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,7 @@ EXAMPLE = ROOT / "examples" / "cantilever" / "simulation.yaml"
 )
 def test_real_cantilever(tmp_path: Path) -> None:
     doctor = subprocess.run(
-        ["ansys-sim", "doctor", "--strict", "--json"],
+        [sys.executable, "-m", "ansys_skill.cli", "doctor", "--strict", "--json"],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -28,7 +29,7 @@ def test_real_cantilever(tmp_path: Path) -> None:
     run_dir = tmp_path / "cantilever-real"
     result = subprocess.run(
         [
-            "ansys-sim",
+            sys.executable, "-m", "ansys_skill.cli",
             "run",
             str(EXAMPLE),
             "--out",
@@ -47,3 +48,10 @@ def test_real_cantilever(tmp_path: Path) -> None:
     assert (run_dir / "results-summary.json").is_file()
     assert (run_dir / "verification.json").is_file()
     assert (run_dir / "report.md").is_file()
+    verification = json.loads((run_dir / "verification.json").read_text(encoding="utf-8"))
+    checks = {item["name"]: item["status"] for item in verification["checks"]}
+    for name in ("requested_results", "reaction_balance", "small_deformation", "cantilever_analytical"):
+        assert checks[name] == "PASS", verification
+    summary = json.loads((run_dir / "results-summary.json").read_text(encoding="utf-8"))
+    assert summary["synthetic"] is False
+    assert summary["results"]["tip_z"]["canonical_maximum"] == pytest.approx(-0.000125, rel=0.15)

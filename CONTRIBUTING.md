@@ -2,6 +2,7 @@
 
 Use Python 3.11–3.13. This shared range covers both the base package and the optional PyDPF workflow;
 record any compatibility change in the official API map.
+For a licensed Windows acceptance run, see [Windows testing](docs/windows-testing.md).
 
 ```bash
 python -m venv .venv
