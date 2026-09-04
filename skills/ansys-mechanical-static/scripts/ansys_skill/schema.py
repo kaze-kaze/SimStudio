@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 from enum import StrEnum
 from pathlib import Path
@@ -155,9 +156,10 @@ class MaterialSpec(StrictModel):
         else:
             if not self.youngs_modulus or self.poissons_ratio is None:
                 raise ValueError("isotropic material requires youngs_modulus and poissons_ratio")
-            normalize_quantity(self.youngs_modulus, "pressure")
-            if self.density is not None:
-                normalize_quantity(self.density, "density")
+            if normalize_quantity(self.youngs_modulus, "pressure").magnitude <= 0:
+                raise ValueError("youngs_modulus must be positive")
+            if self.density is not None and normalize_quantity(self.density, "density").magnitude <= 0:
+                raise ValueError("density must be positive")
         return self
 
 
@@ -222,7 +224,8 @@ class LoadSpec(StrictModel):
                 if vector_magnitude(self.components.values(), "force") == 0:
                     raise ValueError("force components must be non-zero")
             else:
-                assert self.magnitude is not None and self.direction is not None
+                if self.magnitude is None or self.direction is None:
+                    raise ValueError("force requires both magnitude and direction")
                 if normalize_quantity(self.magnitude, "force").magnitude <= 0:
                     raise ValueError("force magnitude must be positive")
                 normalize_direction(self.direction)
@@ -305,17 +308,21 @@ class CantileverValidationSpec(StrictModel):
             missing = [name for name, value in required.items() if value is None]
             if missing:
                 raise ValueError(f"cantilever validation missing: {', '.join(missing)}")
-            normalize_quantity(self.span, "length")
-            normalize_quantity(self.second_moment_of_area, "second_moment")
-            normalize_quantity(self.load_magnitude, "force")
-            normalize_quantity(self.youngs_modulus, "pressure")
+            for name, dimension in {
+                "span": "length",
+                "second_moment_of_area": "second_moment",
+                "load_magnitude": "force",
+                "youngs_modulus": "pressure",
+            }.items():
+                if normalize_quantity(getattr(self, name), dimension).magnitude <= 0:
+                    raise ValueError(f"cantilever {name} must be positive")
         return self
 
 
 class ValidationPolicySpec(StrictModel):
     reaction_balance_relative_tolerance: float = Field(default=0.05, gt=0, lt=1)
-    small_deformation_warn_ratio: float = Field(default=0.02, gt=0)
-    small_deformation_fail_ratio: float = Field(default=0.1, gt=0)
+    small_deformation_warn_ratio: float = Field(default=0.02, gt=0, allow_inf_nan=False)
+    small_deformation_fail_ratio: float = Field(default=0.1, gt=0, allow_inf_nan=False)
     characteristic_length: str | None = None
     cantilever: CantileverValidationSpec = Field(default_factory=CantileverValidationSpec)
 
@@ -323,8 +330,8 @@ class ValidationPolicySpec(StrictModel):
     def validate_policy(self) -> ValidationPolicySpec:
         if self.small_deformation_fail_ratio <= self.small_deformation_warn_ratio:
             raise ValueError("small deformation fail ratio must exceed warn ratio")
-        if self.characteristic_length is not None:
-            normalize_quantity(self.characteristic_length, "length")
+        if self.characteristic_length is not None and normalize_quantity(self.characteristic_length, "length").magnitude <= 0:
+            raise ValueError("characteristic_length must be positive")
         return self
 
 
@@ -471,6 +478,13 @@ class SimulationSpec(StrictModel):
                         f"reaction result {result.id!r} requires its support to use a "
                         "named_selection or axis_extreme_face scope"
                     )
+        if self.validation.cantilever.enabled:
+            displacement_ids = {
+                result.id for result in self.requested_results
+                if result.type in {ResultType.TOTAL_DEFORMATION, ResultType.DIRECTIONAL_DEFORMATION}
+            }
+            if self.validation.cantilever.result_id not in displacement_ids:
+                raise ValueError("cantilever result_id must reference a requested displacement result")
         return self
 
     @staticmethod
@@ -525,7 +539,7 @@ def load_spec(path: str | Path) -> tuple[SimulationSpec, dict[str, Any]]:
     except ValidationError as exc:
         raise SpecValidationError(
             "Simulation specification validation failed",
-            details={"errors": exc.errors(include_url=False)},
+            details={"errors": json.loads(exc.json(include_url=False))},
         ) from exc
     return spec, migrated
 
@@ -544,8 +558,6 @@ def dump_normalized_yaml(spec: SimulationSpec) -> str:
 
 
 def write_json_schema(path: str | Path) -> None:
-    import json
-
     schema = SimulationSpec.model_json_schema()
     Path(path).write_text(json.dumps(schema, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 

@@ -441,7 +441,7 @@ def _real_postprocess(
     rst_path = _find_result_file(run_dir)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    messages = mechanical.get("solver_messages", [])
+    messages = mechanical.get("solver_messages")
     summary["solver_messages"] = messages
     summary["visual_review"] = mechanical.get("visual_review", [])
     messages_path = run_dir / "solver-messages.json"
@@ -659,10 +659,10 @@ def command_inspect(args: argparse.Namespace) -> int:
         )
 
     spec = _load_run_spec(run_dir)
-    checks = preflight_checks(spec, normalized_path)
+    checks = preflight_checks(spec, normalized_path, inspect_only=True)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    summary["solver_messages"] = mechanical.get("solver_messages", [])
+    summary["solver_messages"] = mechanical.get("solver_messages")
     verification = checks_payload(checks + post_solve_checks(spec, summary))
     paths = generate_reports(run_dir, spec, summary, verification)
     _record_manifest_activity(

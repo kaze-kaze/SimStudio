@@ -13,6 +13,8 @@ mix of executed/not-run checks remain.
 - each body has a declared material
 - at least one support and one non-zero load
 - positive mesh size
+- positive characteristic length and analytical force/span/modulus/second moment
+- analytical result references must identify a requested displacement quantity
 - cross-reference uniqueness
 - no unresolved `open_questions` for `--execute`
 - exact template objects and runtime scopes resolve once inside Mechanical
@@ -25,10 +27,14 @@ mix of executed/not-run checks remain.
 - every requested result is present, finite, non-empty, and unit-qualified
 - reaction vector balances explicit applied force within configured relative tolerance; checks with
   pressure or gravity remain `NOT_RUN` until their solver-derived resultants are implemented
-- maximum deformation/characteristic length stays below configured small-deformation warning/failure
+- maximum whole-model deformation/characteristic length stays below configured small-deformation warning/failure
   ratios
 - configured cantilever benchmark compares `F L^3 / (3 E I)` with the requested FEA tip displacement
 - visual exports are attempted and separately reported
+
+Missing numerical values, messages, or global deformation evidence must not be replaced by zero or
+an empty-success assumption. Re-inspecting an existing RST does not require the original CAD file;
+that input-file check is explicitly `NOT_RUN` for historical inspection.
 
 ## Interpretation limits
 

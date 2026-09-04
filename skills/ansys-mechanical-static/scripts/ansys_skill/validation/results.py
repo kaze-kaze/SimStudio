@@ -7,6 +7,7 @@ import math
 from ansys_skill.schema import ResultType, SimulationSpec
 from ansys_skill.units import normalize_direction, normalize_quantity
 from ansys_skill.validation.cantilever import validate_cantilever
+from ansys_skill.validation.evidence import message_check, result_evidence
 from ansys_skill.validation.statuses import Check, CheckStatus
 
 
@@ -30,41 +31,7 @@ def _load_vector(spec: SimulationSpec) -> tuple[float, float, float]:
 
 
 def post_solve_checks(spec: SimulationSpec, summary: dict[str, object]) -> list[Check]:
-    checks: list[Check] = []
-    messages = summary.get("solver_messages", [])
-    errors = [
-        item
-        for item in messages
-        if isinstance(item, dict) and "ERROR" in str(item.get("severity", "")).upper()
-    ]
-    unknown = [
-        item
-        for item in messages
-        if isinstance(item, dict)
-        and (
-            str(item.get("severity", "")).upper() in {"", "UNKNOWN"}
-            or "message api unavailable" in str(item.get("text", "")).lower()
-        )
-    ]
-    message_status = (
-        CheckStatus.FAIL
-        if errors
-        else CheckStatus.WARN
-        if unknown
-        else CheckStatus.PASS
-    )
-    checks.append(
-        Check(
-            "mechanical_messages",
-            message_status,
-            "Mechanical reported error-level messages"
-            if errors
-            else "Mechanical message severity could not be fully verified"
-            if unknown
-            else "No error-level message was reported",
-            {"error_count": len(errors), "unknown_count": len(unknown)},
-        )
-    )
+    checks: list[Check] = [message_check(summary)]
 
     result_file = summary.get("result_file")
     checks.append(
@@ -86,37 +53,8 @@ def post_solve_checks(spec: SimulationSpec, summary: dict[str, object]) -> list[
 
     results = summary.get("results", {})
     results_dict = results if isinstance(results, dict) else {}
-    numeric_values: dict[str, float] = {}
-    missing: list[str] = []
-    for request in spec.requested_results:
-        if request.type in {
-            ResultType.SOLVER_MESSAGES,
-            ResultType.NODE_COUNT,
-            ResultType.ELEMENT_COUNT,
-        }:
-            continue
-        item = results_dict.get(request.id)
-        if not isinstance(item, dict):
-            missing.append(request.id)
-            continue
-        value = item.get("canonical_maximum", item.get("maximum"))
-        if value is not None:
-            numeric = float(value)
-            if math.isfinite(numeric):
-                numeric_values[request.id] = numeric
-            else:
-                missing.append(request.id)
-        if not item.get("unit"):
-            missing.append(f"{request.id}:unit")
-    checks.append(
-        Check(
-            "requested_results",
-            CheckStatus.FAIL if missing else CheckStatus.PASS,
-            f"Missing or invalid requested results: {', '.join(missing)}"
-            if missing
-            else "All requested numerical results are present, finite, and unit-qualified",
-        )
-    )
+    numeric_values, completeness = result_evidence(spec, results_dict)
+    checks.append(completeness)
 
     reaction_items = [
         results_dict.get(request.id)
@@ -190,11 +128,12 @@ def post_solve_checks(spec: SimulationSpec, summary: dict[str, object]) -> list[
     deformation_requests = [
         request.id
         for request in spec.requested_results
-        if request.type is ResultType.TOTAL_DEFORMATION
+        if request.type is ResultType.TOTAL_DEFORMATION and request.scope is None
+        and request.id in numeric_values
     ]
     characteristic = spec.validation.characteristic_length
     if deformation_requests and characteristic:
-        maximum = max((numeric_values.get(item, 0.0) for item in deformation_requests), default=0.0)
+        maximum = max(abs(numeric_values[item]) for item in deformation_requests)
         length = normalize_quantity(characteristic, "length").magnitude
         ratio = maximum / length
         status = CheckStatus.PASS
@@ -215,7 +154,7 @@ def post_solve_checks(spec: SimulationSpec, summary: dict[str, object]) -> list[
             Check(
                 "small_deformation",
                 CheckStatus.NOT_RUN,
-                "A total-deformation result and characteristic_length are required",
+                "A valid whole-model total-deformation result and characteristic_length are required",
             )
         )
 

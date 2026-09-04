@@ -15,7 +15,9 @@ SUPPORTED_GEOMETRY_SUFFIXES = {
 SUPPORTED_TEMPLATE_SUFFIXES = {".mechdat", ".mechdb"}
 
 
-def preflight_checks(spec: SimulationSpec, spec_path: Path) -> list[Check]:
+def preflight_checks(
+    spec: SimulationSpec, spec_path: Path, *, inspect_only: bool = False
+) -> list[Check]:
     checks: list[Check] = [
         Check("schema_complete", CheckStatus.PASS, "Schema and cross-references are valid"),
         Check(
@@ -37,7 +39,10 @@ def preflight_checks(spec: SimulationSpec, spec_path: Path) -> list[Check]:
     allowed = (
         SUPPORTED_TEMPLATE_SUFFIXES if spec.mode is Mode.TEMPLATE else SUPPORTED_GEOMETRY_SUFFIXES
     )
-    if not input_path.is_file():
+    if inspect_only:
+        checks.append(Check("input_file", CheckStatus.NOT_RUN,
+                            "Existing RST inspection does not require the original CAD or template"))
+    elif not input_path.is_file():
         checks.append(
             Check(
                 "input_file",
