@@ -8,9 +8,13 @@ Current mappings:
 
 - total deformation: vector norm of `model.results.displacement`
 - directional deformation: selected X/Y/Z component of displacement
-- equivalent von Mises stress: `model.results.stress_eqv_von_mises`
-- reaction force: `model.results.reaction_force`, with `nodal_force` as the documented compatibility
-  fallback to verify against a live Mechanical-generated RST
+- equivalent von Mises stress: `model.results.stress_eqv_von_mises.on_location("Nodal")`
+- reaction force: `model.results.reaction_force`; fail explicitly if unavailable rather than
+  substituting the different `nodal_force` provider
+
+Resolve each named selection uniquely against the actual names in the RST. Generated selections are
+sent to the solver explicitly. Do not guess a scope from topology order or silently choose one of
+multiple case-insensitive matches.
 
 Evaluate the last time/frequency set. Record the original maximum and field unit, canonical SI value
 and unit, the specification-selected reporting value/unit, native location, scoping ID, value count,

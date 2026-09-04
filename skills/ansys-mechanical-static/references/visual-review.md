@@ -22,3 +22,6 @@ Review:
 
 Images complement numerical verification. They neither replace DPF checks nor prove result validity. If
 no image can be exported, preserve the numerical evidence and report visual review as `NOT_RUN`.
+
+The CLI records image production as `image_export`. `visual_review` remains `NOT_RUN` until an
+explicit review outside the numerical CLI has actually occurred; exporting a PNG is not a review.

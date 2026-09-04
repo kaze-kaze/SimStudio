@@ -2,118 +2,19 @@
 
 from __future__ import annotations
 
-import math
-from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-from ansys_skill.errors import PostprocessingError, SpecValidationError
+from ansys_skill.errors import PostprocessingError
+from ansys_skill.postprocessing.fields import field_summary as _field_summary
 from ansys_skill.schema import ResultType, ScopeKind, SimulationSpec
-from ansys_skill.units import convert_canonical_value, normalize_quantity
 
 
-def _flat_rows(data: Any) -> list[list[float]]:
-    raw = data.tolist() if hasattr(data, "tolist") else list(data)
-    if not raw:
-        return []
-    if isinstance(raw[0], (list, tuple)):
-        return [[float(value) for value in row] for row in raw]
-    return [[float(value)] for value in raw]
-
-
-def _field_summary(
-    fields: Iterable[Any],
-    *,
-    dimension: str,
-    component: int | None = None,
-    report_unit: str | None = None,
-) -> dict[str, object]:
-    maximum: float | None = None
-    canonical_maximum: float | None = None
-    max_id: int | None = None
-    maximum_unit: str | None = None
-    canonical_unit: str | None = None
-    location: str | None = None
-    raw_sum_vectors: dict[str, list[float]] = {}
-    canonical_sum_vector: list[float] | None = None
-    unit_scales: dict[str, float] = {}
-    count = 0
-    for field in fields:
-        unit = str(getattr(field, "unit", "")).strip()
-        if not unit:
-            raise PostprocessingError("DPF result field has no unit")
-        if unit not in unit_scales:
-            try:
-                normalized_unit = normalize_quantity(f"1 {unit}", dimension)
-            except SpecValidationError as exc:
-                raise PostprocessingError(
-                    f"DPF unit {unit!r} is incompatible with {dimension}"
-                ) from exc
-            unit_scales[unit] = normalized_unit.magnitude
-            canonical_unit = normalized_unit.unit
-        scale = unit_scales[unit]
-        location = str(getattr(field, "location", location or "")) or location
-        rows = _flat_rows(field.data)
-        ids = list(getattr(getattr(field, "scoping", None), "ids", []))
-        if rows and len(rows[0]) == 3:
-            raw_sum = raw_sum_vectors.setdefault(unit, [0.0, 0.0, 0.0])
-            if canonical_sum_vector is None:
-                canonical_sum_vector = [0.0, 0.0, 0.0]
-            for row in rows:
-                for index, value in enumerate(row):
-                    raw_sum[index] += value
-                    canonical_sum_vector[index] += value * scale
-        for index, row in enumerate(rows):
-            raw_value = (
-                row[component]
-                if component is not None
-                else math.sqrt(sum(item * item for item in row))
-            )
-            if len(row) == 1:
-                raw_value = row[0]
-            if not math.isfinite(raw_value):
-                raise PostprocessingError("DPF returned a non-finite result value")
-            canonical_value = raw_value * scale
-            count += 1
-            if canonical_maximum is None or abs(canonical_value) > abs(canonical_maximum):
-                maximum = raw_value
-                maximum_unit = unit
-                canonical_maximum = canonical_value
-                max_id = int(ids[index]) if index < len(ids) else None
-    if count == 0 or maximum is None or canonical_maximum is None:
-        raise PostprocessingError("DPF result data is empty")
-    result: dict[str, object] = {
-        "maximum": maximum,
-        "unit": maximum_unit,
-        "canonical_maximum": canonical_maximum,
-        "canonical_unit": canonical_unit,
-        "location": location,
-        "scoping_id": max_id,
-        "value_count": count,
-    }
-    if canonical_sum_vector is not None:
-        result["canonical_sum_vector"] = canonical_sum_vector
-        result["canonical_sum_vector_unit"] = canonical_unit
-        if len(raw_sum_vectors) == 1:
-            raw_unit, raw_vector = next(iter(raw_sum_vectors.items()))
-            result["sum_vector"] = raw_vector
-            result["sum_vector_unit"] = raw_unit
-    if report_unit is not None:
-        result["reported_maximum"] = convert_canonical_value(
-            canonical_maximum, dimension, report_unit
-        )
-        result["reported_unit"] = report_unit
-        if canonical_sum_vector is not None:
-            result["reported_sum_vector"] = [
-                convert_canonical_value(value, dimension, report_unit)
-                for value in canonical_sum_vector
-            ]
-    return result
-
-
-def _evaluate(result: Any, scope_name: str | None = None) -> list[Any]:
+def _evaluate(result: Any, scope_name: str | None = None, *, nodal: bool = False) -> list[Any]:
     if scope_name:
         result = result.on_named_selection(scope_name)
+    if nodal:
+        result = result.on_location("Nodal")
     container = result.on_last_time_freq.eval()
     return list(container)
 
@@ -125,10 +26,22 @@ def _scope_name(spec: SimulationSpec, scope_id: str | None) -> str | None:
     if scope.kind is ScopeKind.NAMED_SELECTION:
         return scope.name
     if scope.kind is ScopeKind.AXIS_EXTREME_FACE:
-        return f"TTA_SCOPE_{scope.id}"
+        return f"TTA_SCOPE_{scope.id}".upper()
     raise PostprocessingError(
         f"DPF cannot deterministically scope object_name reference {scope.id!r}"
     )
+
+
+def _resolve_scope(model: Any, name: str | None) -> str | None:
+    if name is None:
+        return None
+    available = list(model.metadata.available_named_selections)
+    matches = [str(item) for item in available if str(item).casefold() == name.casefold()]
+    if len(matches) != 1:
+        raise PostprocessingError(
+            f"Expected one RST named selection matching {name!r}; found {matches}"
+        )
+    return matches[0]
 
 
 def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> dict[str, object]:
@@ -156,8 +69,6 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
             for result_id, provider_name in raw_requests:
                 try:
                     result = getattr(model.results, provider_name, None)
-                    if result is None and provider_name == "reaction_force":
-                        result = getattr(model.results, "nodal_force", None)
                     if result is None:
                         raise PostprocessingError(
                             f"Result provider {provider_name!r} is unavailable"
@@ -168,7 +79,7 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
                         "reaction_force": "force",
                     }[result_id]
                     results[result_id] = _field_summary(
-                        _evaluate(result), dimension=dimension
+                        _evaluate(result, nodal=provider_name == "stress_eqv_von_mises"), dimension=dimension
                     )
                 except Exception as exc:
                     unavailable_results[result_id] = str(exc)
@@ -194,7 +105,7 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
             if request.type is ResultType.REACTION_FORCE:
                 support = next(item for item in spec.supports if item.id == request.support)
                 result_scope = support.scope
-            scope_name = _scope_name(spec, result_scope)
+            scope_name = _resolve_scope(model, _scope_name(spec, result_scope))
             if request.type is ResultType.TOTAL_DEFORMATION:
                 result = model.results.displacement
                 results[request.id] = _field_summary(
@@ -218,17 +129,15 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
                         "The result file does not expose stress_eqv_von_mises"
                     )
                 results[request.id] = _field_summary(
-                    _evaluate(result, scope_name),
+                    _evaluate(result, scope_name, nodal=True),
                     dimension="pressure",
                     report_unit=spec.units.stress,
                 )
             elif request.type is ResultType.REACTION_FORCE:
                 result = getattr(model.results, "reaction_force", None)
                 if result is None:
-                    result = getattr(model.results, "nodal_force", None)
-                if result is None:
                     raise PostprocessingError(
-                        "The result file exposes neither reaction_force nor nodal_force"
+                        "The result file does not expose reaction_force; nodal_force is not an equivalent substitute"
                     )
                 results[request.id] = _field_summary(
                     _evaluate(result, scope_name),

@@ -477,7 +477,7 @@ def _real_postprocess(
     )
     post_checks.append(
         Check(
-            "visual_review",
+            "image_export",
             CheckStatus.PASS if visual_pass else CheckStatus.NOT_RUN,
             "Mechanical exported at least one result image"
             if visual_pass
@@ -485,6 +485,8 @@ def _real_postprocess(
             {"items": visual_states} if isinstance(visual_states, list) else None,
         )
     )
+    post_checks.append(Check("visual_review", CheckStatus.NOT_RUN,
+                             "Exported images still require explicit human or agent review"))
     verification = checks_payload([*resolved_checks, *post_checks])
     return summary, verification
 

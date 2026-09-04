@@ -182,9 +182,12 @@ Sources:
 
 Current environment: client import/signature inspection succeeded in a temporary environment. No DPF
 server or redistributable Mechanical RST was available, so displacement/stress/reaction extraction,
-field locations, units, reaction-force naming, and image export are **not integration-tested**. The
-`reaction_force` to `nodal_force` fallback is isolated and must be confirmed against real v251/v252/v261
-result files before claiming broad compatibility.
+field locations, units, reaction-force naming, and image export are **not integration-tested**.
+Reaction extraction now requires `reaction_force`; `nodal_force` is not silently substituted.
+Named selections are matched uniquely against `model.metadata.available_named_selections`, preserving
+the actual RST spelling. Equivalent stress explicitly requests `Result.on_location("Nodal")` so
+field rows and reported node IDs have a one-to-one mapping. These changes have offline contract tests;
+real Mechanical-generated RST acceptance remains required.
 
 PyDPF Core 0.15.0 and later use mTLS by default for local DPF server communication. v0.1 relies on the
 official client-managed local server created by `dpf.Model`; it does not expose a separate remote DPF
