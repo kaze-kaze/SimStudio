@@ -1,6 +1,6 @@
 # Official API map
 
-Research date: **2026-09-01**. Sources are official OpenAI, PyAnsys, ANSYS Developer/Help, and package
+Research date: **2026-09-04**. Sources are official OpenAI, PyAnsys, ANSYS Developer/Help, and package
 distribution metadata. "Package-verified" means the Python package imported and its signature was
 inspected locally. "Integration-tested" requires a real compatible Mechanical/DPF server and license.
 
@@ -55,9 +55,22 @@ Official class/source pages:
 - https://mechanical.docs.pyansys.com/version/stable/user_guide/remote_session/overview.html
 - https://mechanical.docs.pyansys.com/version/stable/api/ansys/mechanical/core/index.html
 
-The backend uses remote-session gRPC only. Embedded mode is not a real-execution backend in v0.1, but
-the saved script runs inside Mechanical and therefore uses the embedded `App`, `Model`, `DataModel`,
-`ExtAPI`, and `Quantity` globals.
+The backend uses remote-session gRPC only. The saved script uses Mechanical's `Model`, `DataModel`,
+`ExtAPI`, and `Quantity` globals; it does not use the Python embedding `App` class. Project operations
+refresh `Model` and `DataModel` after opening or creating the project.
+
+The 2026-09-04 review re-inspected PyMechanical 0.13.2 and PyDPF 0.16.1 on Python 3.13.
+`run_python_script_from_file` returns the last statement's value, not stdout. Work-directory and
+result protocols therefore end in a string expression. Generated sources remain IronPython-compatible,
+use Unicode path literals, and do not rely on Python 3's recursive `glob`.
+
+`find_mechanical()` discovers the product in its standard installation directory without launching it.
+The resulting executable is also supplied to `launch_mechanical(exec_file=...)`. The client CLI
+executable `ansys-mechanical` is not evidence that the commercial product is installed.
+
+Remote downloads use explicit lists of full server paths and the returned local filenames, including
+Windows-to-POSIX filename normalization. Required download failures preserve their diagnostics and the
+server workspace. These contracts have offline regression tests, not live server verification.
 
 ## Transport and security
 
@@ -82,8 +95,8 @@ The compiler/runtime uses these documented entry points:
 
 | Purpose | Entry point | Evidence | Current verification |
 |---|---|---|---|
-| open template | `App.open(path)` | PyMechanical static-structural example opens `.mechdat` | documented/example; not live tested |
-| new project | `App.new()` | official remote examples | documented/example; not live tested |
+| open template | `ExtAPI.DataModel.Project.Open(path)` | v261 Project documentation and stubs | documented/package-inspected; not live tested |
+| new project | `ExtAPI.DataModel.Project.New()` | v261 Project documentation and stubs | documented/package-inspected; not live tested |
 | import geometry | `Model.AddGeometryImportGroup().AddGeometryImport()` and `GeometryImport.Import(path, Format.Automatic, GeometryImportPreferences())` | official example/stubs | package stubs inspected; not live tested |
 | add analysis | `Model.AddStaticStructuralAnalysis()` | official example/stubs | package stubs inspected; not live tested |
 | verify analysis | `Analysis.AnalysisType`, `Analysis.PhysicsType`, `Analysis.AnalysisSettings.LargeDeflection = False` | v261 scripting stubs | package stubs inspected; not live tested |
@@ -98,12 +111,19 @@ The compiler/runtime uses these documented entry points:
 | mesh | `Model.Mesh.ElementSize`, `Model.Mesh.ElementOrder`, `Model.Mesh.GenerateMesh()` | official 2026 R1 end-to-end example/stubs | documented/example; not live tested |
 | results | `Solution.AddTotalDeformation()`, `AddDirectionalDeformation()`, `AddEquivalentStress()`, `AddForceReaction()` | scripting stubs | package stubs inspected; not live tested |
 | solve | `analysis.Solve(True)` | official example/stubs | documented/example; not live tested |
-| save | `ExtAPI.DataModel.Project.SaveAs(path)` | official example | documented/example; not live tested |
+| save | `ExtAPI.DataModel.Project.SaveAs(path, True)` | v261 Project signature | documented/package-inspected; not live tested |
+| solver files | `Analysis.ResultFileName`, `SolverFilesDirectory`, `WorkingDir` | v261 Analysis stubs | package-inspected; not live tested |
+| global coordinates | `CoordinateSystem.CoordinateSystemID == 0`, `Force.CoordinateSystem`, result `CoordinateSystem` / reaction `Orientation` | v261 stubs | package-inspected; not live tested |
+| template ownership | object `Parent`, `ObjectId`, `Children`, `Suppressed` | v261 stubs | package-inspected; not live tested |
+| result scope | `ScopingMethod`, `Location`, `NormalOrientation`, `LocationMethod`, `BoundaryConditionSelection` | v261 stubs | package-inspected; not live tested |
+| material inventory | `Body.GetEngineeringDataMaterial()`, `materials.GetListMaterialProperties(...)` | Ansys employee example and v261 body stubs | documented/package-inspected; not live tested |
 | image export | `GraphicsImageExportSettings()` and `ExtAPI.Graphics.ExportImage(path, PNG, settings)` | PyMechanical embedding helper/v261 stubs | package source and stubs inspected; not live tested; failure becomes `NOT_RUN` |
 
 Sources:
 
-- https://examples.mechanical.docs.pyansys.com/examples/01_tips_n_tricks/example_01_simple_structural_remote.html
+- https://developer.synopsys.com/blog/pymechanical-cheat-sheet
+- https://scripting.mechanical.docs.pyansys.com/version/stable/api/ansys/mechanical/stubs/v261/Ansys/ACT/Automation/Mechanical/Project.html
+- https://discuss.ansys.com/discussion/35/can-you-provide-an-example-of-using-the-materials-module-in-mechanical
 - https://scripting.mechanical.docs.pyansys.com/version/stable/api/ansys/mechanical/stubs/v261/index.html
 - https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/act_script/act_script_examples_create_mat_assign.html
 - https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/act_script/act_script_demo_coupled_field_001.html

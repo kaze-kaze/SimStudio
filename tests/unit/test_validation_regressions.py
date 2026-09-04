@@ -3,12 +3,15 @@ from __future__ import annotations
 import copy
 import json
 from argparse import Namespace
+from pathlib import Path
 
 import pytest
 import yaml
 from ansys_skill import cli
+from ansys_skill.backends import environment
 from ansys_skill.compiler.mechanical import compile_simulation
 from ansys_skill.schema import SimulationSpec, load_spec
+from ansys_skill.validation.preflight import preflight_checks
 from ansys_skill.validation.results import post_solve_checks
 from ansys_skill.validation.statuses import CheckStatus
 
@@ -78,6 +81,22 @@ def test_scoped_displacement_cannot_certify_global_small_deformation(valid_docum
     assert check.status is CheckStatus.NOT_RUN
 
 
+def test_compiled_spec_keeps_a_portable_input_snapshot(valid_spec_path, tmp_path):
+    spec, _ = load_spec(valid_spec_path)
+    run_dir = tmp_path / "different output"
+    artifacts = compile_simulation(spec, valid_spec_path, run_dir)
+    normalized = Path(artifacts["normalized_spec"])
+    saved, _ = load_spec(normalized)
+    input_check = next(
+        item for item in preflight_checks(saved, normalized) if item.name == "input_file"
+    )
+    assert input_check.status is CheckStatus.PASS
+    assert not Path(saved.inputs.geometry_file).is_absolute()
+    assert (run_dir / saved.inputs.geometry_file).read_bytes() == (
+        valid_spec_path.parent / "cantilever.step"
+    ).read_bytes()
+
+
 def test_inspection_does_not_require_the_source_cad(valid_spec_path, tmp_path, monkeypatch, capsys):
     spec, _ = load_spec(valid_spec_path)
     run_dir = tmp_path / "history"
@@ -98,3 +117,13 @@ def test_inspection_does_not_require_the_source_cad(valid_spec_path, tmp_path, m
     checks = {item["name"]: item["status"] for item in verification["checks"]}
     assert checks["input_file"] == "NOT_RUN"
     assert checks["mechanical_messages"] == "NOT_RUN"
+
+
+def test_dry_run_environment_never_probes_a_network_port(valid_spec_path, monkeypatch):
+    spec, _ = load_spec(valid_spec_path)
+    spec.execution.port = 10000
+    monkeypatch.setattr(
+        environment, "_port_state", lambda *_: pytest.fail("Network access in dry-run")
+    )
+    report = environment.doctor_report(spec, probe_port=False)
+    assert report["checks"]["port"]["status"] == "NOT_RUN"

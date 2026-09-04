@@ -2,32 +2,26 @@
 
 from __future__ import annotations
 
-import importlib.util
 import inspect
 import json
 import ntpath
-import os
-import platform
 import posixpath
 import shutil
-import socket
 import threading
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
 from ansys_skill.backends.base import BackendOutcome, MechanicalBackend
+from ansys_skill.backends.environment import LOCAL_HOSTS, _find_mechanical_executable, doctor_report
+from ansys_skill.backends.timing import call_with_timeout
 from ansys_skill.errors import EnvironmentUnavailableError, MechanicalExecutionError
-from ansys_skill.manifest import package_version
-from ansys_skill.paths import resolve_input_path
-from ansys_skill.schema import Mode, SimulationSpec
-from ansys_skill.validation.statuses import CheckStatus
+from ansys_skill.paths import safe_join
+from ansys_skill.schema import SimulationSpec
 
 _MECHANICAL_LOCK = threading.Lock()
-LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 REMOTE_WORKDIR_SENTINEL = "TEXT_TO_ANSYS_WORKDIR:"
 
 
@@ -37,157 +31,6 @@ def _remote_basename(path: str) -> str:
     return posixpath.basename(path)
 
 
-def _find_module(name: str) -> bool:
-    try:
-        return importlib.util.find_spec(name) is not None
-    except ModuleNotFoundError:
-        return False
-
-
-def _find_mechanical_executable() -> str | None:
-    commands = ["AnsysWBU.exe", "runwb2", "ansys-mechanical", "mechanical"]
-    for command in commands:
-        path = shutil.which(command)
-        if path:
-            return path
-    for key, root in sorted(os.environ.items(), reverse=True):
-        if not key.startswith("AWP_ROOT"):
-            continue
-        base = Path(root)
-        candidates = [
-            base / "aisol" / "bin" / "winx64" / "AnsysWBU.exe",
-            base / "aisol" / "bin" / "linx64" / "AnsysWBU",
-        ]
-        for candidate in candidates:
-            if candidate.is_file():
-                return str(candidate)
-    return None
-
-
-def _port_state(host: str, port: int | None) -> dict[str, object]:
-    if port is None:
-        return {"status": CheckStatus.NOT_RUN.value, "message": "No port configured"}
-    try:
-        with socket.create_connection((host, port), timeout=1.0):
-            return {"status": CheckStatus.PASS.value, "message": "TCP port is reachable"}
-    except OSError as exc:
-        return {
-            "status": CheckStatus.FAIL.value,
-            "message": f"TCP port is unreachable: {exc}",
-        }
-
-
-def doctor_report(spec: SimulationSpec | None = None) -> dict[str, object]:
-    execution = spec.execution if spec else None
-    host = execution.host if execution else "127.0.0.1"
-    port = execution.port if execution else None
-    system = platform.system()
-    mechanical_path = _find_mechanical_executable()
-    pymechanical = _find_module("ansys.mechanical.core")
-    dpf = _find_module("ansys.dpf.core")
-    supported_os = system in {"Windows", "Linux"}
-    local = host in LOCAL_HOSTS
-    remote_allowed = bool(execution and execution.allow_remote)
-    transport = execution.transport_mode if execution else "insecure"
-    certs_path = (
-        Path(execution.certs_dir).expanduser()
-        if execution and execution.certs_dir
-        else None
-    )
-    certs_ok = transport != "mtls" or bool(certs_path and certs_path.is_dir())
-    transport_os_ok = transport != "wnua" or system == "Windows"
-    remote_transport_ok = local or transport in {"wnua", "mtls"}
-    port_check = _port_state(host, port)
-    start_mode = execution.start_instance if execution else "auto"
-    should_launch = start_mode == "yes" or (start_mode == "auto" and local and port is None)
-    can_connect = (
-        pymechanical
-        and (local or remote_allowed)
-        and certs_ok
-        and transport_os_ok
-        and remote_transport_ok
-    )
-    can_start = (
-        can_connect
-        and should_launch
-        and local
-        and supported_os
-        and mechanical_path is not None
-    )
-    can_use_existing = (
-        can_connect
-        and not should_launch
-        and port is not None
-        and port_check["status"] == CheckStatus.PASS.value
-    )
-    can_execute = can_connect and (can_start or can_use_existing) and dpf
-    checks = {
-        "operating_system": {
-            "status": CheckStatus.PASS.value if supported_os else CheckStatus.WARN.value,
-            "value": system,
-            "message": "Mechanical product execution is supported on Windows/Linux"
-            if supported_os
-            else "PyMechanical client can install here, but Mechanical product execution is not supported on macOS",
-        },
-        "python": {
-            "status": CheckStatus.PASS.value,
-            "value": platform.python_version(),
-        },
-        "pymechanical": {
-            "status": CheckStatus.PASS.value if pymechanical else CheckStatus.FAIL.value,
-            "version": package_version("ansys-mechanical-core"),
-        },
-        "pydpf": {
-            "status": CheckStatus.PASS.value if dpf else CheckStatus.FAIL.value,
-            "version": package_version("ansys-dpf-core"),
-        },
-        "mechanical_executable": {
-            "status": (
-                CheckStatus.PASS.value
-                if mechanical_path
-                else CheckStatus.FAIL.value
-                if should_launch
-                else CheckStatus.NOT_RUN.value
-            ),
-            "path": mechanical_path,
-            "message": (
-                "A local executable is required for the selected start mode"
-                if should_launch
-                else "Connecting to an existing service does not require a local executable"
-            ),
-        },
-        "connection_policy": {
-            "status": CheckStatus.PASS.value if local or remote_allowed else CheckStatus.FAIL.value,
-            "host": host,
-            "allow_remote": remote_allowed,
-        },
-        "transport": {
-            "status": (
-                CheckStatus.PASS.value
-                if certs_ok and transport_os_ok and remote_transport_ok
-                else CheckStatus.FAIL.value
-            ),
-            "mode": transport,
-            "certs_dir": execution.certs_dir if execution else None,
-            "message": (
-                "Transport configuration is compatible with the host and client OS"
-                if certs_ok and transport_os_ok and remote_transport_ok
-                else "Transport requires a valid mTLS certificate directory, Windows for WNUA, "
-                "and authenticated transport for non-local hosts"
-            ),
-        },
-        "port": port_check,
-        "license": {
-            "status": CheckStatus.NOT_RUN.value,
-            "message": "A license is consumed and verified only during an explicitly requested real execution",
-        },
-    }
-    return {
-        "status": CheckStatus.PASS.value if can_execute else CheckStatus.NOT_RUN.value,
-        "can_start_local": can_start,
-        "can_execute": can_execute,
-        "checks": checks,
-    }
 
 
 class PyMechanicalCompat:
@@ -206,6 +49,11 @@ class PyMechanicalCompat:
     @staticmethod
     def _supported_call(function: Callable[..., Any], kwargs: dict[str, object]) -> Any:
         parameters = inspect.signature(function).parameters
+        missing = [key for key, value in kwargs.items() if value is not None and key not in parameters]
+        if missing:
+            raise EnvironmentUnavailableError(
+                f"Installed PyMechanical does not support required arguments: {', '.join(missing)}"
+            )
         filtered = {
             key: value for key, value in kwargs.items() if key in parameters and value is not None
         }
@@ -216,6 +64,7 @@ class PyMechanicalCompat:
             self.launch_mechanical,
             {
                 "batch": True,
+                "exec_file": _find_mechanical_executable(),
                 "start_instance": True,
                 "port": spec.execution.port,
                 "host": spec.execution.host,
@@ -283,13 +132,10 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
                             f"Connected Mechanical version could not be determined: {exc}"
                         ) from exc
 
-                    input_value = (
-                        spec.inputs.project_file
-                        if spec.mode is Mode.TEMPLATE
-                        else spec.inputs.geometry_file
-                    )
-                    input_path = resolve_input_path(spec_path, input_value)
-                    assert input_path is not None
+                    plan = json.loads((run_dir / "mechanical-plan.json").read_text(encoding="utf-8"))
+                    input_path = safe_join(run_dir, Path("inputs") / plan["input"]["basename"])
+                    if not input_path.is_file():
+                        raise MechanicalExecutionError("The compiled input snapshot is missing")
                     remote = spec.execution.host not in LOCAL_HOSTS
                     workdir = str(run_dir)
                     if remote:
@@ -300,7 +146,7 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
                         try:
                             mechanical.upload(
                                 str(input_path),
-                                file_location_destination=remote_workdir,
+                                file_location_destination=remote_workdir, progress_bar=False,
                             )
                         except Exception as exc:
                             raise MechanicalExecutionError(f"Input upload failed: {exc}") from exc
@@ -308,25 +154,22 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
 
                     bootstrap_path = run_dir / "mechanical-bootstrap.py"
                     bootstrap_path.write_text(
-                        f"import os\nos.chdir({json.dumps(workdir)})\n",
+                        f"import os\nos.chdir(u{json.dumps(workdir)})\n",
                         encoding="utf-8",
                     )
                     mechanical.run_python_script_from_file(str(bootstrap_path))
 
-                    executor = ThreadPoolExecutor(max_workers=1)
-                    future = executor.submit(
-                        mechanical.run_python_script_from_file,
-                        str(script_path),
-                        True,
-                    )
                     remote_job_active = remote
                     try:
-                        response = future.result(timeout=spec.execution.timeout_seconds)
+                        response = call_with_timeout(
+                            lambda: mechanical.run_python_script_from_file(str(script_path), True),
+                            spec.execution.timeout_seconds,
+                        )
                         remote_job_active = False
                     except FutureTimeoutError as exc:
-                        future.cancel()
                         if owned:
-                            mechanical.exit(force=True)
+                            with suppress(Exception):
+                                call_with_timeout(lambda: mechanical.exit(force=True), 5)
                         raise MechanicalExecutionError(
                             f"Mechanical execution exceeded {spec.execution.timeout_seconds} seconds",
                             details={
@@ -338,27 +181,20 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
                         ) from exc
                     except Exception as exc:
                         remote_job_active = False
-                        self._download_known_artifacts(mechanical, run_dir, remote, downloaded)
                         raise MechanicalExecutionError(
                             f"Mechanical script or solve failed: {exc}"
                         ) from exc
-                    finally:
-                        executor.shutdown(wait=False, cancel_futures=True)
 
-                    self._download_known_artifacts(mechanical, run_dir, remote, downloaded)
+                    marker = "TEXT_TO_ANSYS_RESULT:"
+                    if not str(response).startswith(marker):
+                        raise MechanicalExecutionError("Mechanical did not return the structured result protocol")
+                    payload = json.loads(str(response)[len(marker):])
                     artifact_path = run_dir / "mechanical-artifacts.json"
-                    if not artifact_path.is_file():
-                        raise MechanicalExecutionError(
-                            "Mechanical did not produce mechanical-artifacts.json"
-                        )
-                    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+                    artifact_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+                    self._download_known_artifacts(mechanical, run_dir, remote, downloaded)
                     if payload.get("status") != "SOLVED":
                         raise MechanicalExecutionError(
                             "Mechanical reported a failed solve", details={"mechanical": payload}
-                        )
-                    if "TEXT_TO_ANSYS_RESULT:" not in str(response):
-                        payload["sentinel_warning"] = (
-                            "Result sentinel was not present in the API response"
                         )
                     outcome = BackendOutcome(
                         status="SOLVED",
@@ -372,7 +208,7 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
                         },
                     )
                 finally:
-                    if mechanical is not None and remote_workdir and not remote_job_active:
+                    if mechanical is not None and remote_workdir and not remote_job_active and outcome is not None:
                         try:
                             cleanup_path = self._cleanup_remote_workdir(
                                 mechanical, run_dir, remote_workdir
@@ -383,7 +219,7 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
         finally:
             if mechanical is not None and owned and spec.execution.cleanup_owned_instance:
                 with suppress(Exception):
-                    mechanical.exit()
+                    call_with_timeout(lambda: mechanical.exit(), 5)
         if outcome is None:
             raise MechanicalExecutionError("Mechanical execution ended without an outcome")
         outcome.artifacts = sorted(set([*outcome.artifacts, *downloaded]))
@@ -397,7 +233,7 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
         prepare_path.write_text(
             "import tempfile\n"
             f"path = tempfile.mkdtemp(prefix={json.dumps('text-to-ansys-')})\n"
-            f"print({json.dumps(REMOTE_WORKDIR_SENTINEL)} + path)\n",
+            f"{json.dumps(REMOTE_WORKDIR_SENTINEL)} + path\n",
             encoding="utf-8",
         )
         response = str(mechanical.run_python_script_from_file(str(prepare_path)))
@@ -406,8 +242,9 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
                 "Mechanical did not return the isolated remote work directory sentinel"
             )
         remote_workdir = response.split(REMOTE_WORKDIR_SENTINEL, 1)[1].splitlines()[0].strip()
-        if not remote_workdir:
-            raise MechanicalExecutionError("Mechanical returned an empty remote work directory")
+        parser = ntpath if ntpath.splitdrive(remote_workdir)[0] or "\\" in remote_workdir else posixpath
+        if not parser.isabs(remote_workdir) or not parser.basename(remote_workdir).startswith("text-to-ansys-"):
+            raise MechanicalExecutionError("Mechanical returned an unsafe remote work directory")
         return remote_workdir, prepare_path
 
     @staticmethod
@@ -415,7 +252,10 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
         cleanup_path = run_dir / "mechanical-cleanup-workdir.py"
         cleanup_path.write_text(
             "import os\nimport shutil\nimport tempfile\n"
-            f"target = {json.dumps(remote_workdir)}\n"
+            f"target = u{json.dumps(remote_workdir)}\n"
+            "target = os.path.realpath(target)\n"
+            "if os.path.dirname(target) != os.path.realpath(tempfile.gettempdir()) or not os.path.basename(target).startswith('text-to-ansys-'):\n"
+            "    raise RuntimeError('Refusing unsafe remote cleanup target')\n"
             "os.chdir(tempfile.gettempdir())\n"
             "if os.path.isdir(target):\n"
             "    shutil.rmtree(target)\n",
@@ -428,31 +268,52 @@ class PyMechanicalRemoteBackend(MechanicalBackend):
     def _download_known_artifacts(
         mechanical: Any, run_dir: Path, remote: bool, downloaded: list[Path]
     ) -> None:
-        if not remote:
-            downloaded.extend(path for path in run_dir.iterdir() if path.is_file())
-            return
-        try:
-            mechanical.download("mechanical-artifacts.json", target_dir=str(run_dir))
-        except Exception:
-            return
         manifest = run_dir / "mechanical-artifacts.json"
         if not manifest.is_file():
-            return
+            raise MechanicalExecutionError("Structured Mechanical artifacts are missing")
         downloaded.append(manifest)
         payload = json.loads(manifest.read_text(encoding="utf-8"))
-        remote_files = list(payload.get("result_files", [])) + list(payload.get("solve_logs", []))
-        remote_files.extend(
-            [
-                "face-selection-report.json",
-                "text-to-ansys.mechdb",
-                "mesh.png",
-                "total-deformation.png",
-                "equivalent-stress.png",
-            ]
-        )
-        for remote_path in remote_files:
-            try:
-                mechanical.download(remote_path, target_dir=str(run_dir))
-                downloaded.append(run_dir / _remote_basename(str(remote_path)))
-            except Exception:
-                continue
+        if not remote:
+            for key in ("result_files", "solve_logs"):
+                payload[key] = [Path(path).resolve().relative_to(run_dir.resolve()).as_posix()
+                                for path in payload.get(key, [])]
+            downloaded.extend(path for path in run_dir.rglob("*") if path.is_file())
+        else:
+            root = payload["run_directory"]
+            join = ntpath.join if "\\" in root or ntpath.splitdrive(root)[0] else posixpath.join
+
+            def download(source: str, relative: str) -> str:
+                target = safe_join(run_dir, relative)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                try:
+                    paths = mechanical.download([source], target_dir=str(target.parent), progress_bar=False)
+                    if len(paths) != 1 or not Path(paths[0]).is_file():
+                        raise OSError("The server returned no complete file")
+                    received = Path(paths[0]).resolve()
+                    received.relative_to(run_dir.resolve())
+                    if received != target:
+                        shutil.move(str(received), str(target))
+                except Exception as exc:
+                    raise MechanicalExecutionError(
+                        f"Required Mechanical artifact download failed: {source}: {exc}",
+                        details={"remote_workdir": root, "remote_path": source,
+                                 "remote_cleanup": "preserved for recovery"},
+                    ) from exc
+                downloaded.append(target)
+                return target.relative_to(run_dir).as_posix()
+
+            for key in ("result_files", "solve_logs"):
+                payload[key] = [download(path, "solver/" + _remote_basename(path))
+                                for path in payload.get(key, [])]
+            face_path = run_dir / "face-selection-report.json"
+            face_path.write_text(json.dumps(payload.get("face_selections", []), indent=2) + "\n", encoding="utf-8")
+            downloaded.append(face_path)
+            if payload.get("project_file"):
+                payload["project_file"] = download(payload["project_file"], "text-to-ansys.mechdb")
+            for item in payload.get("visual_review", []):
+                if item.get("status") == "PASS":
+                    try:
+                        download(join(root, item["name"]), item["name"])
+                    except MechanicalExecutionError as exc:
+                        item.update(status="NOT_RUN", reason=str(exc))
+        manifest.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")

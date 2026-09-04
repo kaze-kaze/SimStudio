@@ -333,10 +333,10 @@ def _mark_failure(run_dir: Path, status: str, stage: str, error: Exception) -> N
     write_manifest(manifest_path, manifest)
 
 
-def _write_doctor_environment(run_dir: Path, spec: SimulationSpec) -> dict[str, object]:
+def _write_doctor_environment(run_dir: Path, spec: SimulationSpec, *, probe_port: bool) -> dict[str, object]:
     path = run_dir / "environment.json"
     current = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
-    report = doctor_report(spec)
+    report = doctor_report(spec, probe_port=probe_port)
     path.write_text(
         json.dumps({"runtime": current, "doctor": report}, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -417,6 +417,17 @@ def _dry_run(spec: SimulationSpec, run_dir: Path, checks: list[Check], json_mode
 
 
 def _find_result_file(run_dir: Path) -> Path:
+    metadata = _read_mechanical_metadata(run_dir)
+    if metadata.get("result_files"):
+        recorded = [Path(path) for path in metadata["result_files"]]
+        candidates = [path if path.is_absolute() else run_dir / path for path in recorded]
+        if len(candidates) != 1 or not candidates[0].is_file():
+            raise PostprocessingError("The recorded Mechanical result file is missing or ambiguous")
+        try:
+            candidates[0].resolve().relative_to(run_dir.resolve())
+        except ValueError as exc:
+            raise PostprocessingError("Recorded result file is outside the run directory") from exc
+        return candidates[0]
     results = sorted(run_dir.rglob("*.rst"))
     if not results:
         raise PostprocessingError(f"No .rst result file exists under {run_dir}")
@@ -488,7 +499,7 @@ def command_run(args: argparse.Namespace) -> int:
     require_fresh_run_dir(out)
     artifacts = compile_simulation(spec, spec_path, out)
     run_dir = Path(artifacts["run_directory"])
-    environment = _write_doctor_environment(run_dir, spec)
+    environment = _write_doctor_environment(run_dir, spec, probe_port=args.execute)
     if not args.execute:
         return _dry_run(spec, run_dir, checks, args.json)
 

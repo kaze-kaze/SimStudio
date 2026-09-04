@@ -33,6 +33,19 @@ face must match. Zero or multiple matches fail before meshing. The run writes
 If the installed Mechanical version does not expose the documented geometry-entity interfaces, fail
 with `UnsupportedMechanicalApi`; do not fall back to an unreviewed ID, topology order, or nearest face.
 
+## Runtime template checks
+
+The runtime verifies the actual active body inventory, one analysis in the model, and ownership of
+every referenced load, support, and result. Undeclared active analysis objects, contacts, joints,
+springs, and command/Python objects are rejected rather than deleted or ignored. Template force and
+result coordinate systems are reset to global, and result direction, scope, and reaction support are
+synchronized with the specification.
+
+Engineering Data properties are checked against the explicit linear-static allowlist in
+`MechanicalCompat.assert_linear_material`. Unknown or nonlinear property sets fail with the actual
+property inventory for review. A material name alone is not proof of linear behavior. The first
+licensed acceptance target is Mechanical 2026 R1; these guards still require live product testing.
+
 ## Unsupported
 
 - Fluent, CFX, explicit dynamics, or LS-DYNA

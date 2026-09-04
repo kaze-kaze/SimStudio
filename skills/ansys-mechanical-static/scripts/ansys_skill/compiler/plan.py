@@ -39,7 +39,7 @@ def _dpf_scope_name(scope: ScopeSpec) -> str | None:
     if scope.kind is ScopeKind.NAMED_SELECTION:
         return scope.name
     if scope.kind is ScopeKind.AXIS_EXTREME_FACE:
-        return f"TTA_SCOPE_{scope.id}"
+        return f"TTA_SCOPE_{scope.id}".upper()
     return None
 
 

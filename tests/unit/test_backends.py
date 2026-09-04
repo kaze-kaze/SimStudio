@@ -6,6 +6,7 @@ import ansys_skill.backends.pymechanical as pymechanical_module
 import pytest
 from ansys_skill.backends.fake import FakeMechanicalBackend
 from ansys_skill.backends.pymechanical import PyMechanicalRemoteBackend
+from ansys_skill.compiler.mechanical import compile_simulation
 from ansys_skill.errors import MechanicalExecutionError
 from ansys_skill.schema import load_spec
 
@@ -78,7 +79,7 @@ def test_pymechanical_timeout_force_closes_owned_instance(
 ) -> None:
     spec, _ = load_spec(valid_spec_path)
     exit_calls: list[bool] = []
-    shutdown_calls: list[tuple[bool, bool]] = []
+    artifacts = compile_simulation(spec, valid_spec_path, tmp_path / "run")
 
     class Mechanical:
         version = "261"
@@ -98,32 +99,18 @@ def test_pymechanical_timeout_force_closes_owned_instance(
         def connect(self, _spec: object) -> Mechanical:
             return mechanical
 
-    class Future:
-        def result(self, timeout: int) -> None:
-            del timeout
-            raise pymechanical_module.FutureTimeoutError
-
-        def cancel(self) -> bool:
-            return True
-
-    class Executor:
-        def __init__(self, max_workers: int) -> None:
-            assert max_workers == 1
-
-        def submit(self, *_args: object) -> Future:
-            return Future()
-
-        def shutdown(self, *, wait: bool, cancel_futures: bool) -> None:
-            shutdown_calls.append((wait, cancel_futures))
+    def timed_call(operation, seconds):
+        if seconds == spec.execution.timeout_seconds:
+            raise TimeoutError
+        return operation()
 
     monkeypatch.setattr(pymechanical_module, "doctor_report", lambda _spec: {"can_execute": True})
     monkeypatch.setattr(pymechanical_module, "PyMechanicalCompat", Compat)
-    monkeypatch.setattr(pymechanical_module, "ThreadPoolExecutor", Executor)
+    monkeypatch.setattr(pymechanical_module, "call_with_timeout", timed_call)
 
     with pytest.raises(MechanicalExecutionError, match="exceeded"):
         PyMechanicalRemoteBackend().execute(
-            spec, valid_spec_path, tmp_path, tmp_path / "generated.py"
+            spec, valid_spec_path, Path(artifacts["run_directory"]), Path(artifacts["generated_script"])
         )
 
     assert exit_calls[0] is True
-    assert shutdown_calls == [(False, True)]

@@ -70,3 +70,5 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]
+# These fixed sources run in Mechanical's IronPython engine with injected globals.
+"skills/**/compiler/mechanical_runtime/*.py" = ["F821", "UP", "B904"]

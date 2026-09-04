@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import copy
 import shutil
+import sys
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 import yaml
+from ansys_skill.compiler.mechanical import render_script
 
 ROOT = Path(__file__).resolve().parents[1]
 CANTILEVER = ROOT / "examples" / "cantilever"
@@ -24,3 +27,17 @@ def valid_spec_path(tmp_path: Path, valid_document: dict[str, object]) -> Path:
         yaml.safe_dump(copy.deepcopy(valid_document), sort_keys=False), encoding="utf-8"
     )
     return path
+
+
+@pytest.fixture
+def mechanical_runtime(monkeypatch):
+    """Load only the fixed generated definitions, never the solver entry point."""
+    monkeypatch.setitem(sys.modules, "units", ModuleType("units"))
+
+    def load(plan):
+        namespace = {}
+        definitions = render_script(plan).split("outcome = None", 1)[0]
+        exec(compile(definitions, "generated-definitions.py", "exec"), namespace)
+        return namespace
+
+    return load
