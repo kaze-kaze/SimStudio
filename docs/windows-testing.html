@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Windows acceptance testing — SimStudio public documentation.">
+  <title>Windows acceptance testing · SimStudio</title>
+  <link rel="icon" href="../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/docs/windows-testing.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#windows-acceptance-testing">Windows acceptance testing</a><ul>
+<li><a href="#python-and-offline-checks">Python and offline checks</a></li>
+<li><a href="#prepare-an-explicit-batch-specification">Prepare an explicit batch specification</a></li>
+<li><a href="#explicitly-run-the-installed-solver">Explicitly run the installed solver</a></li>
+<li><a href="#automated-real-acceptance">Automated real acceptance</a></li>
+<li><a href="#template-and-failure-evidence">Template and failure evidence</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="windows-acceptance-testing">Windows acceptance testing</h1>
+<p>Local batch execution was tested on ANSYS Student Mechanical 2026 R1 on 2026-09-06. This
+installation's gRPC connection failed during handshake. Use the explicit batch workflow below for
+the recorded execution path, and read the <a href="windows-acceptance-2026-09-06.html">acceptance record</a>.
+Other installations, service packs, CAD importers, and licenses require their own acceptance.</p>
+<h2 id="python-and-offline-checks">Python and offline checks</h2>
+<p>The base offline CLI supports Python 3.11–3.13. The optional <code>ansys</code> extra supports
+Python 3.12–3.13; Python 3.13 is recommended. PyMechanical 0.13.2 declares
+<code>Requires-Python: &gt;=3.12,&lt;4.0</code>, so installing that extra on Python 3.11 fails.</p>
+<p>Create a Windows environment rather than copying another machine's environment:</p>
+<pre><code class="language-powershell">git clone https://github.com/kaze-kaze/SimStudio.git
+cd SimStudio
+py -3.13 -m venv .venv
+./.venv/Scripts/python.exe -m pip install -e &quot;.[dev,ansys]&quot;
+./.venv/Scripts/python.exe -m pip check
+./.venv/Scripts/ruff.exe check .
+./.venv/Scripts/python.exe -m pytest -q -m &quot;not ansys_integration&quot;
+</code></pre>
+<p>Calling the environment executables directly avoids changing the PowerShell activation policy.
+Offline-only users can choose Python 3.11/3.12 and install <code>.[dev]</code> without the optional clients.
+Installing clients does not install Mechanical or provide a license.</p>
+<p>The two real symbolic-link checks report <code>NOT_RUN</code> when Windows denies link creation with
+<code>WinError 1314</code>. Their original rejection assertions still run on a host with that privilege.
+Other symbolic-link errors are not hidden.</p>
+<h2 id="prepare-an-explicit-batch-specification">Prepare an explicit batch specification</h2>
+<p>Create a run-specific copy of the benchmark with <code>execution.backend: mechanical_batch</code>.
+Absolute geometry paths keep the copy independent of its new directory; existing copies are not overwritten.</p>
+<pre><code class="language-powershell">@'
+from pathlib import Path
+import yaml
+source = Path(&quot;examples/cantilever/simulation.yaml&quot;).resolve()
+document = yaml.safe_load(source.read_text(encoding=&quot;utf-8&quot;))
+document[&quot;inputs&quot;][&quot;geometry_file&quot;] = str((source.parent / document[&quot;inputs&quot;][&quot;geometry_file&quot;]).resolve())
+document[&quot;execution&quot;][&quot;backend&quot;] = &quot;mechanical_batch&quot;
+target = Path(&quot;build/windows-inputs/simulation.yaml&quot;)
+target.parent.mkdir(parents=True, exist_ok=True)
+with target.open(&quot;x&quot;, encoding=&quot;utf-8&quot;) as stream:
+    yaml.safe_dump(document, stream, sort_keys=False)
+'@ | ./.venv/Scripts/python.exe -
+./.venv/Scripts/python.exe -m ansys_skill.cli doctor --json
+./.venv/Scripts/python.exe -m ansys_skill.cli validate build/windows-inputs/simulation.yaml --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-dry-01 --json
+</code></pre>
+<p>The last command must return <code>DRY_RUN</code> and start no Mechanical process. Review the normalized
+specification, plan, saved script, and input snapshot. Use a new or empty output directory for every run.
+Standalone <code>doctor</code> describes the default gRPC setup; <code>run</code> additionally records a doctor report
+for the selected backend. Neither environment discovery nor an open TCP port proves a successful solve.</p>
+<h2 id="explicitly-run-the-installed-solver">Explicitly run the installed solver</h2>
+<p>This command starts Mechanical and can consume its installed license. Use it only for an explicitly
+requested real solve after reviewing the specification:</p>
+<pre><code class="language-powershell">./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-real-01 --execute --json
+./.venv/Scripts/python.exe -m ansys_skill.cli inspect build/windows-real-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli report build/windows-real-01 --json
+</code></pre>
+<p>Batch starts and exits a task-owned local Windows process, captures stdout/stderr, and uses no gRPC
+connection. It rejects a remote host, a configured port, <code>start_instance: no</code>, certificates, or
+settings that request keeping the instance alive. Batch is never an automatic fallback from gRPC.</p>
+<p>Require <code>synthetic: false</code> and inspect <code>verification.json</code>, not just the executable exit code or
+<code>SOLVED</code> label. The cantilever requires <code>PASS</code> for requested results, reaction balance,
+small deformation, and the analytical comparison. Its benchmark is:</p>
+<ul>
+<li>tip Z displacement about <code>-0.125 mm</code>, with 15% relative analytical tolerance;</li>
+<li>applied force <code>-1000 N</code> along Z;</li>
+<li>support reaction about <code>+1000 N</code> along Z, within 5% relative force-balance tolerance.</li>
+</ul>
+<p>Stress-singularity review remains <code>WARN</code>. Safety factor and automatic visual review remain
+<code>NOT_RUN</code>. Image export is reported separately; opening an RST or exporting an image is not design approval.</p>
+<h2 id="automated-real-acceptance">Automated real acceptance</h2>
+<p>The suite performs five serial solves: the cantilever, pressure, gravity, and two template formats.
+It also checks all three PNGs, raw-RST inspection, report regeneration, input hashes, and saved
+Mechanical object settings. Enable real tests explicitly and restore both environment variables:</p>
+<pre><code class="language-powershell">$previousAnsysAvailable = $env:ANSYS_AVAILABLE
+$previousTestBackend = $env:ANSYS_TEST_BACKEND
+try {
+    $env:ANSYS_AVAILABLE = &quot;1&quot;
+    $env:ANSYS_TEST_BACKEND = &quot;mechanical_batch&quot;
+    ./.venv/Scripts/python.exe -m pytest -q -m ansys_integration --basetemp build/windows-integration-01 --junitxml=build/windows-integration-01.xml
+}
+finally {
+    $env:ANSYS_AVAILABLE = $previousAnsysAvailable
+    $env:ANSYS_TEST_BACKEND = $previousTestBackend
+}
+</code></pre>
+<p>Choose a fresh <code>--basetemp</code> directory: pytest owns and may clear it. Never use existing results
+or user files as the base directory. Keep these tests serial; parallel pytest workers are rejected
+before starting Mechanical. With no explicit <code>ANSYS_TEST_BACKEND</code>, the test backend remains
+<code>pymechanical_remote</code>; <code>fake</code> is rejected. Use gRPC only on an independently verified host.</p>
+<h2 id="template-and-failure-evidence">Template and failure evidence</h2>
+<p>The automated template cases create isolated <code>.mechdat</code> and <code>.mechdb</code> fixtures from the solved
+benchmark. A fully defined rotated coordinate system, wrong load components, wrong result axis/scope,
+and an alternate reaction support are deliberately configured. After compilation and solving, a fresh
+Mechanical process reads the saved output and verifies global coordinates, the requested components,
+Z direction, load-face scope, and fixed-support reaction binding. Source and snapshot hashes must agree.</p>
+<p>Saved results must be cleared before their locations can be updated. Generated solver data is cleared
+only in the isolated working copy. Unknown active loads, contacts, command/Python objects, and
+unverified material properties remain rejected.</p>
+<p>Retain failed run directories. Diagnostics include <code>environment.json</code>, <code>run-manifest.json</code>,
+<code>mechanical-artifacts.json</code>, the batch stdout/stderr logs, <code>face-selection-report.json</code>, and
+<code>solver/solve.out</code> when reached. Mechanical messages include source object names/types so empty
+localized error text still identifies its origin. Do not discard an error to force verification to pass.</p>
+<p>Exit codes: <code>2</code> specification, <code>3</code> environment, <code>4</code> Mechanical/transfer, <code>5</code> DPF, <code>6</code> verification.
+Do not publish proprietary geometry, results, license details, certificates, or private paths.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../index.html">Project home</a><a href="../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

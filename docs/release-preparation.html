@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Public release preparation — SimStudio public documentation.">
+  <title>Public release preparation · SimStudio</title>
+  <link rel="icon" href="../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/docs/release-preparation.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#public-release-preparation">Public release preparation</a><ul>
+<li><a href="#final-local-presentation-candidate">Final local presentation candidate</a></li>
+<li><a href="#public-deliverables">Public deliverables</a><ul>
+<li><a href="#source-package-contract">Source-package contract</a></li>
+</ul>
+</li>
+<li><a href="#evidence-publication">Evidence publication</a></li>
+<li><a href="#reproduce-publication-checks">Reproduce publication checks</a><ul>
+<li><a href="#observed-local-preparation-results-september-6-2026">Observed local preparation results — September 6, 2026</a></li>
+<li><a href="#package-contract-review-september-6-2026">Package-contract review — September 6, 2026</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="public-release-preparation">Public release preparation</h1>
+<h2 id="final-local-presentation-candidate">Final local presentation candidate</h2>
+<p>The completed presentation sources were checked on September 6, 2026 with real integration disabled:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Data table"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Observed result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full default suite</td>
+<td>239 passed, 15 skipped in 12.67 s</td>
+</tr>
+<tr>
+<td>Ruff</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>New public-site, distribution and evidence regressions</td>
+<td>64 passed, 4 skipped</td>
+</tr>
+<tr>
+<td>Public snapshot</td>
+<td>All 8 provenance-tracked files verified; 9 historical cases and 5 solves unchanged</td>
+</tr>
+<tr>
+<td>Built website</td>
+<td>13 HTML pages; all internal file links and anchors checked</td>
+</tr>
+<tr>
+<td>Source package / source ZIP</td>
+<td>140 files each; identical member paths and bytes; no private archives</td>
+</tr>
+<tr>
+<td>Wheel</td>
+<td>44 CLI-only files; clean base-dependency installation and DRY_RUN passed</td>
+</tr>
+<tr>
+<td>Unpacked source</td>
+<td>Public evidence verification and website build passed</td>
+</tr>
+</tbody>
+</table></div>
+<p>The 15 local skips comprise nine opt-in real cases and six Windows symbolic-link checks without
+the required OS privilege. No real solve was started for these publication checks. The revised
+site's browser acceptance and the remote workflow results are separate from this local record.</p>
+<p>The 1600 × 900 README figure is composed from the complete, unchanged total-deformation export
+and exact public numerical evidence. Its vector source and generator are included. No missing
+solve images or engineering validation were synthesized.</p>
+<p>This is a source-release candidate for the existing <code>0.1.0</code> alpha. The repository's historical real
+Mechanical acceptance is documented in the <a href="reports/mechanical-test-2026-09-06.html">test report</a>.
+Publication preparation does not expand that acceptance to another version, mesh, or transport.</p>
+<h2 id="public-deliverables">Public deliverables</h2>
+<ul>
+<li>English and Simplified Chinese project READMEs, the <a href="../CHANGELOG.html">Alpha changelog</a>, and
+  <code>docs/assets/overview.png</code> as the project cover, separate from the original solver images.</li>
+<li>Static-site sources under <code>docs/site/</code> and <code>tools/build_site.py</code> for rendering the Markdown
+  reports into a browsable site. The source package retains the report template; the rendered
+  deployment is produced separately by the site builder.</li>
+<li>English and Simplified Chinese test reports under <code>docs/reports/</code>.</li>
+<li>Field-allowlisted evidence, test counts, and original/public SHA-256 values under
+  <code>docs/reports/evidence/2026-09-06/</code>.</li>
+<li>A dependency-free, offline-capable <a href="../examples/cantilever/demo/index.html">cantilever viewer</a>,
+  three original Mechanical plots, and links to the complete YAML and neutral STEP fixture.</li>
+<li>MIT-licensed project source, existing contributor/security guides, and updated image notices.</li>
+</ul>
+<p>The source distribution includes these deliverables. A public source ZIP must be converted from the
+checked sdist, retaining its single top-level directory and identical file bytes. Do not ZIP the
+working tree: local records, environments and solver outputs are not release content.
+The wheel contains only the Python CLI, its runtime package and distribution metadata/licenses.
+Use a repository checkout, sdist or its source ZIP for the complete benchmark and site sources.</p>
+<h3 id="source-package-contract">Source-package contract</h3>
+<p>In addition to the existing reports, evidence, demo, license and neutral geometry, the checker
+requires <code>README.zh-CN.md</code>, <code>CHANGELOG.md</code>, <code>docs/release-preparation.md</code>, <code>docs/assets/overview.png</code>,
+<code>docs/site/index.html</code>, <code>docs/site/site.css</code>, <code>docs/site/report.html</code> and <code>tools/build_site.py</code>.
+<code>MANIFEST.in</code> includes <code>.html</code>, <code>.css</code>, <code>.js</code> and <code>.svg</code> files beneath <code>docs/site/</code>, plus <code>.png</code> and
+<code>.svg</code> files beneath <code>docs/assets/</code>. Existing Markdown and Python rules cover <code>docs/site/README.md</code>
+and <code>tools/check_site.py</code> if supplied. These two files and <code>docs/site/site.js</code> are optional; the
+checker does not require them.</p>
+<p><code>tools/check_distribution.py</code> reads wheel, sdist and source-ZIP member tables without extraction.
+It rejects private directories, solver/project formats, embedded archives, licensing logs,
+non-regular entries including links, unsafe paths, multiple source roots and duplicate file names
+(including case collisions on Windows). Complete member paths are checked before removing the
+source root. For wheels, only runtime Python files under <code>ansys_skill/</code> and <code>.dist-info</code> metadata
+are accepted. Success keeps JSON on stdout; failures use stderr and exit 1, with argument errors
+using exit 2. Presence and path checks do not replace the separate public-evidence hash check.</p>
+<h2 id="evidence-publication">Evidence publication</h2>
+<p>The exporter reads existing saved files only. It never launches a solver or infers new results.
+Its field allowlist removes machine names, absolute paths, free-form diagnostic payloads, and
+license/process details. Exact measured numbers, units, check statuses, suite timing and source hashes
+remain traceable. Synthetic or unknown results are rejected from this dated real benchmark.</p>
+<p>Original Mechanical projects, RST files, raw archives, licensing logs and desktop captures stay in
+ignored local directories. Never upload <code>build/</code>, <code>test-records/</code> or solver files as release assets.
+Both Git ignores and explicit sdist pruning protect <code>build/</code> and <code>test-records/</code>; package checks
+reject their inclusion and known solver/project extensions elsewhere in an archive.
+Three benchmark PNGs are included explicitly,
+with <code>Images used courtesy of ANSYS, Inc.</code> next to their display. See <a href="../NOTICE">NOTICE</a>.</p>
+<p>Ansys academic publication guidance was checked on September 6, 2026. It calls for the product/release
+to be identified and the image acknowledgment to accompany published images; restrictions on academic
+software use still apply. Source: https://ansys.synopsys.com/academic/terms-and-conditions</p>
+<h2 id="reproduce-publication-checks">Reproduce publication checks</h2>
+<h3 id="observed-local-preparation-results-september-6-2026">Observed local preparation results — September 6, 2026</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Data table"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Observed result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Public-evidence regression</td>
+<td>5 passed</td>
+</tr>
+<tr>
+<td>Ruff</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Full default suite with real execution disabled</td>
+<td>180 passed, 11 skipped in 10.15 s</td>
+</tr>
+<tr>
+<td>Source distribution and wheel build</td>
+<td>PASS; wheel added to the development extra after the first no-isolation build identified it as missing</td>
+</tr>
+<tr>
+<td>Package contents</td>
+<td>PASS; public report/demo assets included in sdist, private archives excluded</td>
+</tr>
+<tr>
+<td>Independent wheel installation</td>
+<td>PASS; base runtime dependencies only, no ANSYS clients</td>
+</tr>
+<tr>
+<td>Fresh development environment</td>
+<td>180 passed, 11 skipped in 8.34 s with no ANSYS clients; the dev extra explicitly supplies setuptools and wheel for no-isolation builds</td>
+</tr>
+<tr>
+<td>Wheel validation and default dry-run</td>
+<td>PASS; returned DRY_RUN without starting a solver</td>
+</tr>
+<tr>
+<td>Unpacked-source demo, direct file mode</td>
+<td>PASS at 1440 px and 390 px; three views, nine file links, keyboard activation, no external requests or JavaScript errors</td>
+</tr>
+</tbody>
+</table></div>
+<p>These checks were local Windows checks, not a completed GitHub-hosted matrix run. No new licensed
+solve was performed during publication preparation; the separate nine-case real benchmark remains
+the historical record. Full local logs, dry-run outputs and screenshots are retained outside the
+public distribution.</p>
+<p>The table is the earlier publication-preparation record, not a claim that subsequent site, README
+or package-contract changes have already passed those same checks. Keep new validation results
+separate from both that table and the dated Mechanical acceptance evidence. Configuring CI, a
+release workflow or a Pages workflow does not establish a successful hosted run or deployment.</p>
+<h3 id="package-contract-review-september-6-2026">Package-contract review — September 6, 2026</h3>
+<p>The following results were observed locally after adding the source-package contract and archive
+regressions, while the presentation sources were still being prepared in parallel:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Data table"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Observed result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distribution and public-evidence regressions</td>
+<td>42 passed in 0.64 s</td>
+</tr>
+<tr>
+<td><code>ruff check .</code></td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Full default suite with <code>ANSYS_AVAILABLE=0</code></td>
+<td>217 passed, 11 skipped in 12.36 s</td>
+</tr>
+<tr>
+<td>Public snapshot hash check</td>
+<td>PASS; 8 published files, 9 recorded cases, 5 recorded solves; no solver started</td>
+</tr>
+<tr>
+<td>Historical reports and provenance</td>
+<td>SHA-256 unchanged from the start of this review</td>
+</tr>
+<tr>
+<td>Existing wheel contents</td>
+<td>PASS; 44 files, CLI-only scope</td>
+</tr>
+<tr>
+<td>Existing source ZIP versus existing sdist</td>
+<td>Same member paths and file bytes</td>
+</tr>
+<tr>
+<td>Existing source archives against the new contract</td>
+<td>FAIL as expected: the earlier bundle lacks the changelog and six new core presentation sources</td>
+</tr>
+<tr>
+<td>Rebuilt complete presentation source package</td>
+<td>NOT_RUN at this review; six core presentation sources had not yet landed</td>
+</tr>
+</tbody>
+</table></div>
+<p>The six pending files were <code>README.zh-CN.md</code>, <code>docs/assets/overview.png</code>, <code>docs/site/index.html</code>,
+<code>docs/site/site.css</code>, <code>docs/site/report.html</code> and <code>tools/build_site.py</code>. Rebuild and validate the
+final archives after those files land. Archive-contract fixtures validate the packaging rules but
+do not establish that a complete release artifact was built. Real integration was not enabled
+for this review and remains <code>NOT_RUN</code> here; the historical real acceptance is unchanged.</p>
+<p>Install the existing development extra, then run from the repository root:</p>
+<pre><code class="language-bash">python -m pytest -q tests/unit/test_distribution.py tests/unit/test_public_evidence.py
+ruff check .
+python -m pytest -q
+python tools/export_benchmark_evidence.py
+python -m build --no-isolation
+python tools/check_distribution.py dist
+</code></pre>
+<p>Use a fresh output directory for each candidate so older archives cannot be mistaken for the
+current build. Once the source ZIP has been converted from the validated sdist, run the package
+checker again on the directory containing all final release assets. Compare the ZIP and sdist
+file paths and bytes, including <code>provenance.json</code>, the two historical reports and all published
+evidence. In the unpacked source, run <code>python tools/export_benchmark_evidence.py</code> without
+<code>--archive</code> to verify the existing snapshot without regeneration. Build and check the site from
+that unpacked source using <code>tools/build_site.py</code> and, when present, <code>tools/check_site.py</code>; consult
+their <code>--help</code> for output-directory options. Only the site builder's public output belongs in a
+Pages artifact, never its parent <code>build/</code> directory or the solver records beside it.</p>
+<p>Install the wheel in an independent environment with only its base dependencies, then validate
+and dry-run the source package's cantilever input. Require <code>DRY_RUN</code>; installing a wheel or
+building the documentation must not implicitly start Mechanical.</p>
+<p>Keep <code>ANSYS_AVAILABLE</code> unset or <code>0</code> for these offline checks. Real integration stays explicitly
+opt-in. Dependency installation can require network access; the installed offline tests and public
+evidence checker do not. CI checks editable source plus package contents; its matrix and declared
+dependency ranges are not a claim of byte-identical builds across future runner images.</p>
+<p>For maintainers with the original local archive, regenerate public evidence with:</p>
+<pre><code class="language-bash">python tools/export_benchmark_evidence.py --archive &lt;local-evidence-archive&gt;
+</code></pre>
+<p>Review the changed public files and hashes before release. The full local archive is not an upload
+bundle. No GitHub push, repository visibility change, tag, or public deployment is implied by these
+preparation commands.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../index.html">Project home</a><a href="../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

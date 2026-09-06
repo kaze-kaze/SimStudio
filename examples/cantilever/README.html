@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cantilever benchmark — SimStudio public documentation.">
+  <title>Cantilever benchmark · SimStudio</title>
+  <link rel="icon" href="../../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../../examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/examples/cantilever/README.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#cantilever-benchmark">Cantilever benchmark</a></li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="cantilever-benchmark">Cantilever benchmark</h1>
+<p>View the <a href="demo/index.html">saved real demonstration</a> without installing ANSYS. It includes the
+original mesh, deformation and stress images, the recorded numerical checks, and input downloads.
+Read the <a href="../../docs/reports/mechanical-test-2026-09-06.html">test report</a> or
+<a href="../../docs/reports/mechanical-test-2026-09-06.zh-CN.html">简体中文报告</a> for methods and limits.</p>
+<p>This is a redistributable single-solid rectangular cantilever benchmark. The editable geometry source
+is <code>generate_geometry.py</code>; <code>cantilever.step</code> is the generated neutral CAD fixture used by offline
+validation and compilation.</p>
+<p>Geometry and load:</p>
+<ul>
+<li>length <code>L = 200 mm</code> along +X</li>
+<li>width <code>b = 20 mm</code> along Y</li>
+<li>height <code>h = 40 mm</code> along Z</li>
+<li>explicit <code>Structural Steel</code>, analytical <code>E = 200 GPa</code></li>
+<li>STEP product <code>CantileverBeam</code>; exact imported v261 body name <code>CantileverBeam|Solid</code></li>
+<li>fixed X-min face</li>
+<li><code>F = 1000 N</code> in -Z on the X-max face</li>
+<li><code>I = b h^3 / 12 = 106666.6666667 mm^4</code></li>
+<li>Euler-Bernoulli tip displacement <code>F L^3 / (3 E I) = 0.125 mm</code></li>
+</ul>
+<p>Offline workflow:</p>
+<pre><code class="language-bash">ansys-sim validate examples/cantilever/simulation.yaml --json
+ansys-sim compile examples/cantilever/simulation.yaml --out build/cantilever --json
+ansys-sim run examples/cantilever/simulation.yaml \
+  --out build/cantilever-dry-run \
+  --json
+</code></pre>
+<p>Real execution requires a supported ANSYS Mechanical installation, license, matching body import name,
+and optional PyAnsys dependencies. Start with <code>ansys-sim doctor --json</code>; then add <code>--execute</code> only on an
+execution host.</p>
+<p>The recorded Windows Student 2026 R1 acceptance uses an explicit <code>mechanical_batch</code> backend.
+See <a href="../../docs/windows-testing.html">Windows testing</a> to create a working specification and run
+the serial numerical, image, raw-RST, and template acceptance suite. The original example retains
+the <code>pymechanical_remote</code> selection; batch is never an implicit fallback after a failed connection.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../../index.html">Project home</a><a href="../../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

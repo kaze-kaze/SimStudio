@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Security policy — SimStudio public documentation.">
+  <title>Security policy · SimStudio</title>
+  <link rel="icon" href="./docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/SECURITY.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#security-policy">Security policy</a><ul>
+<li><a href="#supported-versions">Supported versions</a></li>
+<li><a href="#reporting-a-vulnerability">Reporting a vulnerability</a></li>
+<li><a href="#security-invariants">Security invariants</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="security-policy">Security policy</h1>
+<h2 id="supported-versions">Supported versions</h2>
+<p>Security fixes are applied to the latest released minor version.</p>
+<h2 id="reporting-a-vulnerability">Reporting a vulnerability</h2>
+<p>Do not include credentials, license files, private Mechanical projects, proprietary geometry, or
+result archives in a public issue. Contact the repository maintainers privately through the source
+hosting platform's security advisory feature. Include a minimal reproduction that uses synthetic or
+redistributable data.</p>
+<h2 id="security-invariants">Security invariants</h2>
+<ul>
+<li>Real execution is opt-in through <code>--execute</code>.</li>
+<li>Non-local Mechanical hosts require explicit <code>allow_remote: true</code> plus WNUA or mTLS; insecure gRPC
+  is limited to localhost.</li>
+<li>mTLS requires an explicit certificate directory. Secrets are never copied into manifests.</li>
+<li>Specification values are parsed as data; the runtime does not execute user Python or use
+  <code>eval</code>/<code>exec</code>.</li>
+<li>Output artifact paths are contained under the selected run directory.</li>
+<li>The backend closes only Mechanical instances it started.</li>
+<li>Fake backend output is permanently labeled synthetic.</li>
+</ul></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="./index.html">Project home</a><a href="./NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

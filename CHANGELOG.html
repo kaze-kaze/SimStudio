@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Changelog — SimStudio public documentation.">
+  <title>Changelog · SimStudio</title>
+  <link rel="icon" href="./docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/CHANGELOG.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#changelog">Changelog</a><ul>
+<li><a href="#010-alpha-2026-09-06">0.1.0 — Alpha — 2026-09-06</a><ul>
+<li><a href="#compiler-and-explicit-execution">Compiler and explicit execution</a></li>
+<li><a href="#compatibility-fixes-driven-by-real-runs">Compatibility fixes driven by real runs</a></li>
+<li><a href="#recorded-acceptance-and-limits">Recorded acceptance and limits</a></li>
+<li><a href="#public-presentation-and-release-packaging">Public presentation and release packaging</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="changelog">Changelog</h1>
+<h2 id="010-alpha-2026-09-06">0.1.0 — Alpha — 2026-09-06</h2>
+<p>This entry describes the Alpha source-release candidate and its recorded local acceptance.
+It does not assert that a public tag, package upload, hosted CI run or site deployment has completed.</p>
+<h3 id="compiler-and-explicit-execution">Compiler and explicit execution</h3>
+<ul>
+<li>Deterministic, reviewable compilation of <code>simulation.yaml</code> into normalized input, a Mechanical
+  plan and a saved Mechanical script for the supported linear-static structural scope.</li>
+<li>Validation, environment checks, compilation, dry-run, explicitly requested execution,
+  independent DPF extraction, verification and reporting through the <code>ansys-sim</code> CLI and Codex
+  Skill. Dry-run remains the default; a solve requires <code>--execute</code>.</li>
+<li>Explicit local Windows <code>mechanical_batch</code> execution, with no automatic fallback from gRPC.
+  Batch execution checks both process exit code and structured solve status, requires result
+  files, confines reported paths to the run directory, and targets its owned process tree on
+  timeout. Offline tests cover these boundaries without starting Mechanical.</li>
+</ul>
+<h3 id="compatibility-fixes-driven-by-real-runs">Compatibility fixes driven by real runs</h3>
+<ul>
+<li>Adapted the Mechanical compatibility layer to the observed static-analysis enums,
+  <code>ANSYSAnalysisSettings</code> type and passive entries in the built-in Structural Steel inventory.
+  The benchmark uses the observed imported body name <code>CantileverBeam|Solid</code>.</li>
+<li>Cleared evaluated generated results before updating locations; synchronized force and result
+  coordinates, displacement direction/scope and support-reaction binding in saved templates.</li>
+<li>Preserved localized diagnostics with IronPython Unicode conversion and message-source
+  information. Corrected an underdefined fixture coordinate system without suppressing errors.</li>
+<li>Extracted nodal-averaged equivalent stress through DPF <code>stress_eqv_as_mechanical</code> instead of
+  assuming an unavailable result attribute. Support resultants use componentwise reaction sums;
+  the largest single-node reaction is reported separately.</li>
+<li>Documented the Python 3.12+ requirement of PyMechanical 0.13.2 separately from the base CLI's
+  declared Python 3.11–3.13 range. Development dependencies include the local build tools.</li>
+</ul>
+<h3 id="recorded-acceptance-and-limits">Recorded acceptance and limits</h3>
+<ul>
+<li>The September 6, 2026 Windows acceptance on ANSYS Student Mechanical 2026 R1, CPython 3.13.2,
+  PyMechanical 0.13.2 and PyDPF 0.16.1 recorded <strong>9 passing cases across 5 real batch solves</strong>,
+  with zero failures, errors or skips in that final real suite (194.345 seconds in JUnit).
+  Cases cover force, pressure, gravity, three image exports, raw-RST inspection/reporting and
+  <code>.mechdat</code> / <code>.mechdb</code> template synchronization/readback.</li>
+<li>The force case's signed tip-Z displacement was approximately −0.127583 mm, 2.0664% from the
+  0.125 mm analytical magnitude within the recorded 15% tolerance. The support-Z resultant was
+  approximately 1000.000000009 N. All five meshes had 1077 nodes and 160 elements.</li>
+<li><strong>Overall engineering verification remains <code>WARN</code> for all five runs.</strong> Stress-singularity
+  review remains <code>WARN</code>; safety factor and visual engineering review remain <code>NOT_RUN</code>.
+  Independent pressure/gravity benchmark assertions passed, while their generic
+  <code>reaction_balance</code> and <code>cantilever_analytical</code> checks remain <code>NOT_RUN</code>.</li>
+<li>The initial real local gRPC handshake failed; batch acceptance does not establish gRPC
+  recovery. Remote transport/authentication, other Mechanical versions, mesh convergence and
+  explicit element-order overrides remain unverified.</li>
+<li>The historical offline baseline is <strong>175 passed, 11 skipped in 11.03 seconds</strong>. Later local
+  publication checks are documented separately; neither the historical baseline nor an updated
+  test count represents a new licensed solve or a successful hosted CI matrix.</li>
+</ul>
+<p>See the <a href="docs/reports/mechanical-test-2026-09-06.html">English test report</a>,
+<a href="docs/reports/mechanical-test-2026-09-06.zh-CN.html">Simplified Chinese test report</a> and
+<a href="docs/windows-acceptance-2026-09-06.html">Windows acceptance record</a> for full methods and limitations.</p>
+<h3 id="public-presentation-and-release-packaging">Public presentation and release packaging</h3>
+<ul>
+<li>English and Simplified Chinese project READMEs, a project cover, and static-site sources with
+  a report template and a Markdown-to-site builder. Optional site scripts, SVG assets,
+  documentation and a site checker are included when present.</li>
+<li>An offline-capable cantilever viewer with three original Mechanical images, source YAML and
+  STEP links, plus bilingual test reports and field-allowlisted JSON/JUnit evidence. Original
+  source hashes, published-file hashes, measured values and historical report data are retained.
+  The cover and presentation pages do not add solver evidence.</li>
+<li>Source packages include the Skill, benchmark, reports, evidence and presentation sources.
+  The wheel is CLI-only with runtime code and package metadata/licenses. The release source ZIP
+  is derived from the checked sdist rather than the working tree.</li>
+<li>Distribution checks enforce required public sources, reject private solver artifacts and
+  unsafe archive members, and keep optional presentation files optional. Private <code>build/</code> and
+  <code>test-records/</code> content is excluded from public packages.</li>
+</ul>
+<p>See <a href="docs/release-preparation.html">release preparation</a> for package checks, evidence preservation
+and the distinction between observed local verification and hosted publication.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="./index.html">Project home</a><a href="./NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

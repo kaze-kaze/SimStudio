@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Saved real cantilever demonstration — SimStudio public documentation.">
+  <title>Saved real cantilever demonstration · SimStudio</title>
+  <link rel="icon" href="../../../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../../../examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/examples/cantilever/demo/README.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#saved-real-cantilever-demonstration">Saved real cantilever demonstration</a><ul>
+<li><a href="#sources-and-regeneration">Sources and regeneration</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="saved-real-cantilever-demonstration">Saved real cantilever demonstration</h1>
+<p>Open <code>index.html</code> directly in a browser after downloading or extracting the source.
+Direct file mode is the verified viewing path; no local server is needed.
+No npm installation, CDN, server API, ANSYS installation, or license is needed to view it.</p>
+<p>The viewer displays the recorded 2026-09-06 real <code>mechanical_batch</code> cantilever result.
+The three tabs switch unmodified Mechanical exports. Numbers come from <code>evidence.js</code>, generated
+from the <a href="../../../docs/reports/evidence/2026-09-06/summary.json">public evidence</a>. The viewer does
+not run a solver or produce new simulation values.</p>
+<p>The base example remains a default dry-run workflow. See the
+<a href="../../../docs/windows-testing.html">Windows guide</a> for explicit batch reproduction.
+gRPC, mesh convergence, and safety-factor acceptance remain outside this recorded case.</p>
+<h2 id="sources-and-regeneration">Sources and regeneration</h2>
+<p><code>index.html</code>, <code>style.css</code>, and <code>demo.js</code> are viewer source. <code>evidence.js</code> and <code>assets/*.png</code> are
+generated artifacts. Maintainers regenerate them from the saved archive with
+<code>python tools/export_benchmark_evidence.py --archive &lt;local-archive&gt;</code>.
+Readers can verify the committed snapshot without an archive or solver:</p>
+<pre><code class="language-bash">python tools/export_benchmark_evidence.py
+</code></pre>
+<p>The provenance file records source hashes, the field-allowlist transformation, and public-file
+hashes. Raw Mechanical projects, RST files, licensing diagnostics, and desktop screenshots are
+retained locally. See <a href="../../../NOTICE">NOTICE</a>.</p>
+<p>Images used courtesy of ANSYS, Inc.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../../../index.html">Project home</a><a href="../../../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

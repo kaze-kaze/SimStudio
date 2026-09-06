@@ -1,0 +1,35 @@
+# Notices
+
+`text-to-ansys` is independent open-source software. It is not an ANSYS product and is not
+affiliated with, endorsed by, or sponsored by ANSYS, Inc. or its affiliates. ANSYS, Mechanical,
+Workbench, and related names are trademarks of their respective owners.
+
+No ANSYS executable, license file, commercial material library, Mechanical project, RST result file,
+licensing diagnostic, or proprietary documentation is distributed in this repository. Users must
+supply a separately licensed compatible ANSYS installation when they choose real execution.
+
+The public benchmark evidence under `docs/reports/evidence/2026-09-06/` contains selected numerical
+results, check states, and test records from this project's own neutral cantilever fixture. Three
+unmodified Mechanical output images are included under `examples/cantilever/demo/assets/`:
+`mesh.png`, `total-deformation.png`, and `equivalent-stress.png`.
+
+Images used courtesy of ANSYS, Inc.
+
+The recorded run used ANSYS Student 2026 R1. The project's MIT license applies to its original code
+and documentation; it does not grant an ANSYS software license or rights to third-party trademarks.
+The demo is an educational record of this benchmark, not a product endorsement or engineering
+approval. Publication guidance: https://ansys.synopsys.com/academic/terms-and-conditions
+
+Runtime dependencies:
+
+- Pydantic — MIT license
+- Pint — BSD-3-Clause license
+- PyYAML — MIT license
+
+Optional integrations:
+
+- PyMechanical (`ansys-mechanical-core`) — MIT license
+- PyDPF-Core (`ansys-dpf-core`) — MIT license
+- build123d, used only to regenerate the neutral cantilever CAD fixture — Apache-2.0 license
+
+Dependency licenses and notices remain the responsibility of their respective copyright holders.
