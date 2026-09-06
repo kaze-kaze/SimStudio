@@ -1,8 +1,10 @@
 name: Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
     branches: [main]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -13,12 +15,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  publish:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
     env:
       ANSYS_AVAILABLE: "0"
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SOURCE_SHA }}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.13"
@@ -27,19 +40,47 @@ jobs:
       - run: python tools/export_benchmark_evidence.py
       - name: Build and check allowlisted static site
         run: python tools/build_site.py --out build/site
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          path: build/site
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy public site
-        id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+          ref: gh-pages
+          path: build/pages-branch
+      - name: Update the approved publishing branch
+        id: publish
+        run: |
+          current=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [ "$current" != "$SOURCE_SHA" ]; then
+            echo "A newer main commit exists; skipping this older site."
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          rsync -a --delete --exclude=.git build/site/ build/pages-branch/
+          git -C build/pages-branch config user.name 'github-actions[bot]'
+          git -C build/pages-branch config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C build/pages-branch add --all
+          if ! git -C build/pages-branch diff --cached --quiet; then
+            git -C build/pages-branch commit -m "docs: publish site from $SOURCE_SHA"
+            git -C build/pages-branch push origin HEAD:gh-pages
+          fi
+          echo "sha=$(git -C build/pages-branch rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Request and verify the GitHub Pages build
+        if: steps.publish.outputs.skipped != 'true'
+        env:
+          PAGES_SHA: ${{ steps.publish.outputs.sha }}
+        run: |
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
+          for attempt in $(seq 1 40); do
+            result=$(gh api "repos/$GITHUB_REPOSITORY/pages/builds/latest")
+            commit=$(echo "$result" | jq -r .commit)
+            status=$(echo "$result" | jq -r .status)
+            if [ "$commit" = "$PAGES_SHA" ] && [ "$status" = built ]; then
+              echo "Published the verified site from $SOURCE_SHA."
+              exit 0
+            fi
+            if [ "$commit" = "$PAGES_SHA" ] && [ "$status" = errored ]; then
+              echo "$result" | jq .error
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for the matching Pages build."
+          exit 1

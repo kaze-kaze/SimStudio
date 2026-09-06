@@ -36,3 +36,12 @@ exporter and regenerate if evidence must change. Images used courtesy of ANSYS, 
 Browser acceptance should cover desktop and narrow screens, all three demo controls, keyboard
 activation, Markdown table scrolling, report language switching, download links, and console errors.
 Save captures and receipts under a new local `test-records/` directory.
+
+## Publishing
+
+The repository publishes from its protected `gh-pages` source branch. After CI succeeds on
+`main`, the Pages workflow builds the explicit public allowlist, commits only that output to
+`gh-pages` without a force push, requests a Pages build, and waits for the matching commit
+to finish. It does not change environment protections or repository visibility. Older CI runs
+are skipped when `main` has already advanced. The branch must be configured as the Pages
+publishing source when setting up a fork.
