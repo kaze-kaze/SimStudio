@@ -73,20 +73,19 @@ It does not assert that a public tag, package upload, hosted CI run or site depl
 <li>The initial real local gRPC handshake failed; batch acceptance does not establish gRPC
   recovery. Remote transport/authentication, other Mechanical versions, mesh convergence and
   explicit element-order overrides remain unverified.</li>
-<li>The historical offline baseline is <strong>175 passed, 11 skipped in 11.03 seconds</strong>. Later local
-  publication checks are documented separately; neither the historical baseline nor an updated
-  test count represents a new licensed solve or a successful hosted CI matrix.</li>
+<li>The historical offline baseline is <strong>175 passed, 11 skipped in 11.03 seconds</strong>. This historical
+  baseline does not represent a new licensed solve or a successful hosted CI matrix.</li>
 </ul>
 <p>See the <a href="docs/reports/mechanical-test-2026-09-06.html">English test report</a>,
 <a href="docs/reports/mechanical-test-2026-09-06.zh-CN.html">Simplified Chinese test report</a> and
-<a href="docs/windows-acceptance-2026-09-06.html">Windows acceptance record</a> for full methods and limitations.</p>
+<a href="docs/reports/evidence/2026-09-06/summary.json">public JSON summary</a> for methods, recorded data and limitations.</p>
 <h3 id="public-presentation-and-release-packaging">Public presentation and release packaging</h3>
 <ul>
 <li>English and Simplified Chinese project READMEs, a project cover, and static-site sources with
   a report template and a Markdown-to-site builder. Optional site scripts, SVG assets,
   documentation and a site checker are included when present.</li>
 <li>An offline-capable cantilever viewer with three original Mechanical images, source YAML and
-  STEP links, plus bilingual test reports and field-allowlisted JSON/JUnit evidence. Original
+  STEP links, plus bilingual test reports and field-allowlisted JSON data attachments. Original
   source hashes, published-file hashes, measured values and historical report data are retained.
   The cover and presentation pages do not add solver evidence.</li>
 <li>Source packages include the Skill, benchmark, reports, evidence and presentation sources.
@@ -96,8 +95,8 @@ It does not assert that a public tag, package upload, hosted CI run or site depl
   unsafe archive members, and keep optional presentation files optional. Private <code>build/</code> and
   <code>test-records/</code> content is excluded from public packages.</li>
 </ul>
-<p>See <a href="docs/release-preparation.html">release preparation</a> for package checks, evidence preservation
-and the distinction between observed local verification and hosted publication.</p></article></main></div>
+<p>The public JSON files are data attachments to the formal test reports. Original JUnit and local
+execution logs are retained only in the ignored local archive.</p></article></main></div>
   <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="./index.html">Project home</a><a href="./NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
 </body>
 </html>

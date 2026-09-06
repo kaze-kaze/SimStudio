@@ -6,11 +6,11 @@
 
 首轮真实 PyMechanical gRPC 尝试失败；batch 通过未建立 gRPC 已恢复的证据。远程执行保持 `NOT_RUN`。本报告结论限定于记录中的线性静力编译工作流及其具体校核条件。
 
-默认套件的**历史基线为 175 passed、11 skipped，耗时 11.03 秒**。公开整理轮次的检查见[发布准备记录](../release-preparation.md)；历史基准不作为新一轮求解结果。
+默认套件的**历史基线为 175 passed、11 skipped，耗时 11.03 秒**。[公开 JSON 摘要](evidence/2026-09-06/summary.json)提供本报告记录的数据；历史基准不作为新一轮求解结果。
 
 ## 环境和方法
 
-记录环境为 ANSYS Student Mechanical 2026 R1、Windows 11 AMD64、CPython 3.13.2、PyMechanical 0.13.2、PyDPF 0.16.1 和 DPF server 11.0。Student 产品身份依据验收说明；运行时版本和结果已与最终 JSON、JUnit 核对。
+记录环境为 ANSYS Student Mechanical 2026 R1、Windows 11 AMD64、CPython 3.13.2、PyMechanical 0.13.2、PyDPF 0.16.1 和 DPF server 11.0。Student 产品身份依据本地归档的验收证据；运行时版本和结果已与最终 JSON、JUnit 核对。
 
 基准采用 200 × 20 × 40 mm 钢梁，杨氏模量为 200 GPa，X-min 端面固定，X-max 端面施加沿 Z 方向的 −1000 N 力。五个运行均有 1077 个节点、160 个单元，网格全局尺寸为 10 mm，单元阶次为 `program_controlled`。
 
@@ -82,7 +82,7 @@ batch doctor 的 license、port、pymechanical、transport 预检保持 `NOT_RUN
 
 ## 公开证据与图片
 
-公开证据入口：[汇总](evidence/2026-09-06/summary.json)、[用例明细](evidence/2026-09-06/cases.json)、[JUnit](evidence/2026-09-06/junit.xml)、[离线日志](evidence/2026-09-06/offline.log)、[来源记录](evidence/2026-09-06/provenance.json)。公开副本按字段白名单整理，保留精确数值、检查状态与来源哈希，排除机器私有路径和许可证诊断。使用 `python tools/export_benchmark_evidence.py` 可独立检查公开文件。
+公开 JSON 文件仅作为本正式测试报告的数据附件：[汇总](evidence/2026-09-06/summary.json)、[用例明细](evidence/2026-09-06/cases.json)、[来源信息](evidence/2026-09-06/provenance.json)。公开副本按字段白名单整理，保留精确数值、检查状态与来源哈希，排除机器私有路径和许可证诊断。原始 JUnit 和本机执行日志只保存在已忽略的本地归档中。使用 `python tools/export_benchmark_evidence.py` 可独立检查公开文件。
 
 ## 后续验证重点
 

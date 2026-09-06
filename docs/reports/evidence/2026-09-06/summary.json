@@ -11,7 +11,7 @@
     "pymechanical": "0.13.2",
     "pydpf": "0.16.1",
     "dpf_server": "11.0 InProcessServer",
-    "source": "docs/windows-acceptance-2026-09-06.md"
+    "source": "docs/reports/mechanical-test-2026-09-06.md"
   },
   "suite": {
     "tests": 9,

@@ -89,19 +89,11 @@
   "published_files": [
     {
       "path": "docs/reports/evidence/2026-09-06/summary.json",
-      "sha256": "8d7c9ae84eb6e9015601c4665e6deaf506c16f242a327f757bacd8a1d3c0aeb0"
+      "sha256": "78428b89fcc87941c608b04cc3767c502bc9b2f141a7a3456d6e4eadbc4475b7"
     },
     {
       "path": "docs/reports/evidence/2026-09-06/cases.json",
       "sha256": "0cddf3fefec9f2ccd0fa891b42e5697212d1dbcf9df3ced77adec934152f76ab"
-    },
-    {
-      "path": "docs/reports/evidence/2026-09-06/junit.xml",
-      "sha256": "d664c4230e111d37daf9459a5fea85dbf3445e2b3dfc0c4d60de51e61f3ff3f4"
-    },
-    {
-      "path": "docs/reports/evidence/2026-09-06/offline.log",
-      "sha256": "ca38bf37528255e0b039dbf2abcae11e28136a7f09b6021ae64cbfc057872836"
     },
     {
       "path": "examples/cantilever/demo/assets/mesh.png",
@@ -117,7 +109,7 @@
     },
     {
       "path": "examples/cantilever/demo/evidence.js",
-      "sha256": "a7f71429a19811a1f2c58e7bcf109562f451eb6c66a415f82aacc8fcf13af6b1"
+      "sha256": "2159fa592121d1cb9b03c5a345d31a955ca156e9c628bb9c3eb4043ab9cc9ba8"
     }
   ],
   "source_archives": "Original full records are retained locally and are not redistributed."

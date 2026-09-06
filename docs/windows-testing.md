@@ -2,8 +2,13 @@
 
 Local batch execution was tested on ANSYS Student Mechanical 2026 R1 on 2026-09-06. This
 installation's gRPC connection failed during handshake. Use the explicit batch workflow below for
-the recorded execution path, and read the [acceptance record](windows-acceptance-2026-09-06.md).
+the recorded execution path, and read the [formal test report](reports/mechanical-test-2026-09-06.md).
 Other installations, service packs, CAD importers, and licenses require their own acceptance.
+
+The public [JSON summary](reports/evidence/2026-09-06/summary.json),
+[case details](reports/evidence/2026-09-06/cases.json), and
+[provenance](reports/evidence/2026-09-06/provenance.json) are data attachments to the formal report.
+Original JUnit and local execution logs are retained only in the ignored local archive.
 
 ## Python and offline checks
 
