@@ -31,7 +31,7 @@ Images used courtesy of ANSYS, Inc. Cover assembled from recorded results; engin
 
 A **200 × 20 × 40 mm** steel cantilever, fixed at X-min, carries **−1000 N along Z** at X-max. The input uses exact `Structural Steel`, a **10 mm** global mesh size, and `program_controlled` element order. The analytical reference uses **E = 200 GPa**.
 
-The **September 6, 2026** acceptance record contains **9 passed cases across 5 real solves** on Windows 11 with ANSYS Student Mechanical 2026 R1, CPython 3.13.2, PyMechanical 0.13.2, and PyDPF 0.16.1. The explicitly selected backend was `mechanical_batch`. All five runs are non-synthetic; **all five retain overall engineering status `WARN`**.
+The **September 6, 2026** test report records **9 passed cases across 5 real solves** on Windows 11 with ANSYS Student Mechanical 2026 R1, CPython 3.13.2, PyMechanical 0.13.2, and PyDPF 0.16.1. The explicitly selected backend was `mechanical_batch`. All five runs are non-synthetic; **all five retain overall engineering status `WARN`**.
 
 | Force cantilever — recorded quantity | Result |
 | --- | ---: |
@@ -65,7 +65,9 @@ Images used courtesy of ANSYS, Inc. Plot units: Pa; maximum approximately 38.090
 
 </details>
 
-The nine cases cover force, pressure, gravity, `.mechdat` / `.mechdb` template synchronization, three PNG exports, and raw-RST inspection with report regeneration. The [static example](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) displays saved evidence without running a solver. Read the [full report](docs/reports/mechanical-test-2026-09-06.md) for tolerances, failures, and provenance; inspect the [input specification](examples/cantilever/simulation.yaml) and [public evidence](docs/reports/evidence/2026-09-06/summary.json) to trace the numbers.
+The nine cases cover force, pressure, gravity, `.mechdat` / `.mechdb` template synchronization, three PNG exports, and raw-RST inspection with report regeneration. The [static example](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) displays saved evidence without running a solver. Read the [full report](docs/reports/mechanical-test-2026-09-06.md) for tolerances, failures, and provenance; inspect the [input specification](examples/cantilever/simulation.yaml) and [public JSON summary](docs/reports/evidence/2026-09-06/summary.json) to trace the numbers.
+
+The public JSON files are data attachments to the formal test report. Original JUnit and local execution logs are retained only in the ignored local archive.
 
 ## How it works
 
@@ -186,7 +188,7 @@ Ordinary tests require no ANSYS, license, or network. Real tests require explici
 
 - [Schema reference](skills/ansys-mechanical-static/references/schema-reference.md) · [Template example](examples/template-mode/README.md)
 - [Official API map](skills/ansys-mechanical-static/references/official-api-map.md) · [Roadmap](ROADMAP.md)
-- [Release preparation](docs/release-preparation.md) · [Security reporting](SECURITY.md)
+- [Test report](docs/reports/mechanical-test-2026-09-06.md) · [Security reporting](SECURITY.md)
 
 ## License and attribution
 

@@ -28,7 +28,7 @@ backend selected in the specification.
 
 The 2026-09-06 Student 2026 R1 installation passed local batch numerical acceptance, while local
 gRPC failed at HTTP/2 handshake. Read the
-[acceptance record](../../../docs/windows-acceptance-2026-09-06.md) before claiming a tested path.
+[test report](../../../docs/reports/mechanical-test-2026-09-06.md) before claiming a tested path.
 
 ### PyMechanical gRPC
 

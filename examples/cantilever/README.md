@@ -4,6 +4,9 @@ View the [saved real demonstration](demo/index.html) without installing ANSYS. I
 original mesh, deformation and stress images, the recorded numerical checks, and input downloads.
 Read the [test report](../../docs/reports/mechanical-test-2026-09-06.md) or
 [简体中文报告](../../docs/reports/mechanical-test-2026-09-06.zh-CN.md) for methods and limits.
+The [public JSON summary](../../docs/reports/evidence/2026-09-06/summary.json), case details, and
+provenance are data attachments to the formal reports. Original JUnit and local execution logs
+are retained only in the ignored local archive.
 
 This is a redistributable single-solid rectangular cantilever benchmark. The editable geometry source
 is `generate_geometry.py`; `cantilever.step` is the generated neutral CAD fixture used by offline

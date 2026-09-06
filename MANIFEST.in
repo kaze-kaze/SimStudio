@@ -25,8 +25,7 @@ include examples/cantilever/demo/evidence.js
 include examples/cantilever/demo/assets/mesh.png
 include examples/cantilever/demo/assets/total-deformation.png
 include examples/cantilever/demo/assets/equivalent-stress.png
-recursive-include docs/reports/evidence/2026-09-06 *.json *.xml
-include docs/reports/evidence/2026-09-06/offline.log
+recursive-include docs/reports/evidence/2026-09-06 *.json
 recursive-include schemas *.json
 recursive-include skills *.md *.py *.yaml
 recursive-include skills LICENSE
@@ -34,5 +33,6 @@ recursive-include tests *.py
 global-exclude __pycache__ *.py[cod]
 global-exclude *.mechdb *.mechdat *.rst *.rth *.rdb *.db *.cdb *.dat *.out *.err *.full *.emat *.esav *.mode *.mntr *.dsdb *.wbpj *.wbpz
 global-exclude ansyscl.* licdebug.*
+global-exclude *.log junit*.xml release-preparation.md windows-acceptance-*.md
 prune build
 prune test-records

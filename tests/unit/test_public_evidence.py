@@ -14,7 +14,7 @@ TOOL = runpy.run_path(str(ROOT / "tools/export_benchmark_evidence.py"))
 
 def test_public_snapshot_is_self_contained_and_hash_verified():
     assert TOOL["check"](ROOT) == {
-        "status": "PASS", "published_files": 8, "real_cases": 9,
+        "status": "PASS", "published_files": 6, "real_cases": 9,
         "solves": 5, "solver_started": False,
     }
 
@@ -55,4 +55,13 @@ def test_public_check_rejects_tampered_evidence(tmp_path):
     data["cases"][0]["results"]["fixed_reaction"]["canonical_sum_vector"][2] = 1564.25967
     path.write_text(json.dumps(data), encoding="utf-8")
     with pytest.raises(ValueError, match="hash mismatch"):
+        TOOL["check"](tmp_path)
+
+
+@pytest.mark.parametrize("name", ["offline.log", "junit.xml"])
+def test_raw_test_records_cannot_reenter_public_evidence(tmp_path, name):
+    for relative in (TOOL["EVIDENCE"], TOOL["DEMO"]):
+        shutil.copytree(ROOT / relative, tmp_path / relative)
+    (tmp_path / TOOL["EVIDENCE"] / name).write_text("local working record", encoding="utf-8")
+    with pytest.raises(ValueError, match="local archive"):
         TOOL["check"](tmp_path)

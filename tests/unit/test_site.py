@@ -130,7 +130,7 @@ def test_existing_unpublished_source_links_to_repository_without_copying(site_so
 
 @pytest.mark.parametrize("href", ["#absent", "windows-testing.md#absent"])
 def test_build_rejects_missing_markdown_anchor(site_source, tmp_path, href):
-    write(site_source, "docs/release-preparation.md", f"# Release\n\n[Missing]({href})")
+    write(site_source, "docs/windows-testing.md", f"# Release\n\n[Missing]({href})")
     with pytest.raises(ValueError, match="Missing public anchor"):
         TOOL["build"](site_source, tmp_path / "public")
 
@@ -208,10 +208,10 @@ def test_embedded_html_links_are_rewritten_to_readable_markdown_pages(
     site_source, tmp_path, attribute,
 ):
     assignment = attribute if "=" in attribute else attribute + "="
-    write(site_source, "docs/release-preparation.md",
-          f'# Release\n\n<a {assignment}"windows-testing.md#load-cases">Guide</a>')
+    write(site_source, "docs/reports/mechanical-test-2026-09-06.md",
+          f'# Report\n\n<a {assignment}"../windows-testing.md#load-cases">Guide</a>')
     output = tmp_path / "public"
     TOOL["build"](site_source, output)
-    assert "windows-testing.html#load-cases" in parse_page(
-        output / "docs/release-preparation.html",
+    assert "../windows-testing.html#load-cases" in parse_page(
+        output / "docs/reports/mechanical-test-2026-09-06.html",
     ).links

@@ -24,7 +24,6 @@ REPO = "https://github.com/kaze-kaze/SimStudio/blob/main/"
 REPORT = "docs/reports/mechanical-test-2026-09-06"
 DOCUMENTS = (
     REPORT + ".md", REPORT + ".zh-CN.md", "docs/windows-testing.md",
-    "docs/windows-acceptance-2026-09-06.md", "docs/release-preparation.md",
     "CONTRIBUTING.md", "SECURITY.md", "ROADMAP.md", "CHANGELOG.md",
     "examples/cantilever/README.md", "examples/cantilever/demo/README.md",
 )
@@ -37,7 +36,7 @@ ASSETS = (
         "assets/mesh.png", "assets/total-deformation.png", "assets/equivalent-stress.png",
     )),
     *("docs/reports/evidence/2026-09-06/" + name for name in (
-        "summary.json", "cases.json", "junit.xml", "offline.log", "provenance.json",
+        "summary.json", "cases.json", "provenance.json",
     )),
 )
 PAGES = {name: name.removesuffix(".md") + ".html" for name in DOCUMENTS}

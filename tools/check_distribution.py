@@ -13,13 +13,13 @@ PUBLIC_ROOT = "docs/reports/evidence/2026-09-06/"
 DEMO = "examples/cantilever/demo/"
 REQUIRED = {
     "LICENSE", "NOTICE", "README.md", "README.zh-CN.md", "CHANGELOG.md",
-    "docs/release-preparation.md", "examples/cantilever/cantilever.step",
+    "examples/cantilever/cantilever.step",
     "docs/site/index.html", "docs/site/site.css", "docs/site/report.html",
     "docs/assets/overview.png", "tools/build_site.py",
     "examples/cantilever/simulation.yaml", "tools/export_benchmark_evidence.py",
     "tools/check_distribution.py", "docs/reports/mechanical-test-2026-09-06.md",
     "docs/reports/mechanical-test-2026-09-06.zh-CN.md",
-    *(PUBLIC_ROOT + name for name in ("summary.json", "cases.json", "junit.xml", "offline.log", "provenance.json")),
+    *(PUBLIC_ROOT + name for name in ("summary.json", "cases.json", "provenance.json")),
     *(DEMO + name for name in ("index.html", "style.css", "demo.js", "evidence.js", "README.md")),
     *(DEMO + "assets/" + name for name in ("mesh.png", "total-deformation.png", "equivalent-stress.png")),
 }
@@ -30,7 +30,7 @@ PRIVATE_DIRECTORIES = {
 PRIVATE_SUFFIXES = {
     ".mechdb", ".mechdat", ".rst", ".rth", ".rdb", ".db", ".cdb", ".dat",
     ".out", ".err", ".full", ".emat", ".esav", ".mode", ".mntr", ".dsdb",
-    ".wbpj", ".wbpz", ".exe", ".dll", ".pyc", ".pyo", ".zip", ".gz", ".tar", ".7z",
+    ".wbpj", ".wbpz", ".exe", ".dll", ".pyc", ".pyo", ".zip", ".gz", ".tar", ".7z", ".log",
 }
 
 
@@ -44,6 +44,8 @@ def _unsafe_path(name: str) -> bool:
         or bool({part.casefold() for part in path.parts} & PRIVATE_DIRECTORIES)
         or path.suffix.lower() in PRIVATE_SUFFIXES
         or path.name.lower().startswith(("ansyscl.", "licdebug."))
+        or path.name.casefold() in {"junit.xml", "release-preparation.md"}
+        or path.name.casefold().startswith("windows-acceptance-")
     )
 
 

@@ -6,11 +6,11 @@ The recorded local Windows `mechanical_batch` acceptance suite passed **9 cases 
 
 The first real PyMechanical gRPC attempt failed; batch success does not establish gRPC recovery. Remote execution remains `NOT_RUN`. These results cover the recorded linear-static compiler workflow and its stated checks.
 
-The historical default-suite baseline is **175 passed, 11 skipped in 11.03 seconds**. Publication checks are recorded separately in the [release preparation record](../release-preparation.md); the historical benchmark is not presented as a new solve.
+The historical default-suite baseline is **175 passed, 11 skipped in 11.03 seconds**. The [public JSON summary](evidence/2026-09-06/summary.json) provides the report's recorded data; the historical benchmark is not presented as a new solve.
 
 ## Environment and method
 
-Recorded environment: ANSYS Student Mechanical 2026 R1, Windows 11 AMD64, CPython 3.13.2, PyMechanical 0.13.2, PyDPF 0.16.1, and DPF server 11.0. Product identity comes from the acceptance record; runtime versions and results were checked against final JSON and JUnit.
+Recorded environment: ANSYS Student Mechanical 2026 R1, Windows 11 AMD64, CPython 3.13.2, PyMechanical 0.13.2, PyDPF 0.16.1, and DPF server 11.0. Product identity comes from the locally archived acceptance evidence; runtime versions and results were checked against final JSON and JUnit.
 
 The benchmark uses a 200 × 20 × 40 mm steel beam, Young's modulus 200 GPa, a fixed X-min face, and a −1000 N Z load on the X-max face. All five runs contain 1077 nodes and 160 elements, with 10 mm global sizing and `program_controlled` element order.
 
@@ -82,7 +82,7 @@ Follow [Windows testing](../windows-testing.md) from the repository root:
 
 ## Public evidence and images
 
-Public evidence: [summary](evidence/2026-09-06/summary.json), [cases](evidence/2026-09-06/cases.json), [JUnit](evidence/2026-09-06/junit.xml), [offline log](evidence/2026-09-06/offline.log), and [provenance](evidence/2026-09-06/provenance.json). The field-allowlisted snapshot retains exact numbers, check states, and source hashes while excluding host paths and licensing details. Verify it with `python tools/export_benchmark_evidence.py`.
+The public JSON files—[summary](evidence/2026-09-06/summary.json), [cases](evidence/2026-09-06/cases.json), and [provenance](evidence/2026-09-06/provenance.json)—are data attachments to this formal test report. The field-allowlisted snapshot retains exact numbers, check states, and source hashes while excluding host paths and licensing details. Original JUnit and local execution logs are retained only in the ignored local archive. Verify the public files with `python tools/export_benchmark_evidence.py`.
 
 ## Next validation priorities
 

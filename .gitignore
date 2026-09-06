@@ -21,3 +21,9 @@ file*.err
 file*.log
 # Local evidence archives can contain solver files and licensing diagnostics.
 /test-records/
+
+# Working records stay in the local archive, not the public documentation.
+/docs/release-preparation.md
+/docs/windows-acceptance-*.md
+/docs/reports/evidence/**/*.log
+/docs/reports/evidence/**/junit*.xml
