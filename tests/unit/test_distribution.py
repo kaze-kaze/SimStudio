@@ -67,6 +67,9 @@ def test_source_contract_rejects_missing_presentation_sources(tmp_path, missing)
         "BUILD/saved.json", "test-records/archive.json", "docs/site/result.RST",
         "docs/site/ds.dat", "docs/site/solver/state.json", "docs/assets/license/AnsysCL.log",
         "docs/site/private.zip", "../escaped.md", "docs\\site\\private.mechdb",
+        "docs/release-preparation.md", "docs/windows-acceptance-2026-09-06.md",
+        "docs/reports/evidence/2026-09-06/offline.log",
+        "docs/reports/evidence/2026-09-06/junit.xml",
     ],
 )
 def test_source_rejects_private_artifacts_and_unsafe_paths(tmp_path, kind, name):
@@ -133,7 +136,9 @@ def test_wheel_is_cli_only_and_main_preserves_json_and_exit_codes(tmp_path, monk
 def test_manifest_includes_public_site_assets_and_excludes_local_solver_outputs(tmp_path, monkeypatch):
     public = TOOL["REQUIRED"] | OPTIONAL
     private = {"build/secret.json", "test-records/secret.json", "docs/site/job.rst",
-               "docs/site/job.dat", "docs/site/ansyscl.log"}
+               "docs/site/job.dat", "docs/site/ansyscl.log",
+               "docs/release-preparation.md", "docs/windows-acceptance-2026-09-06.md",
+               "docs/reports/evidence/2026-09-06/junit.xml"}
     for name in public | private:
         path = tmp_path / name
         path.parent.mkdir(parents=True, exist_ok=True)

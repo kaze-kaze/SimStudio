@@ -6,8 +6,12 @@ No npm installation, CDN, server API, ANSYS installation, or license is needed t
 
 The viewer displays the recorded 2026-09-06 real `mechanical_batch` cantilever result.
 The three tabs switch unmodified Mechanical exports. Numbers come from `evidence.js`, generated
-from the [public evidence](../../../docs/reports/evidence/2026-09-06/summary.json). The viewer does
+from the [public JSON summary](../../../docs/reports/evidence/2026-09-06/summary.json). The viewer does
 not run a solver or produce new simulation values.
+
+The public JSON files are data attachments to the
+[formal test report](../../../docs/reports/mechanical-test-2026-09-06.md). Original JUnit and local
+execution logs are retained only in the ignored local archive.
 
 The base example remains a default dry-run workflow. See the
 [Windows guide](../../../docs/windows-testing.md) for explicit batch reproduction.

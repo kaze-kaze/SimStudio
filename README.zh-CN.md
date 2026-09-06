@@ -31,7 +31,7 @@ Images used courtesy of ANSYS, Inc. 封面由已记录的真实结果排版组�
 
 一根 **200 × 20 × 40 mm** 的钢制悬臂梁，X-min 端面固定，X-max 端面承受 **Z 方向 −1000 N** 的力。输入指定精确材料名 `Structural Steel`、**10 mm** 全局网格尺寸和 `program_controlled` 单元阶次；解析参考采用 **E = 200 GPa**。
 
-**2026 年 9 月 6 日**的验收记录包含 **9 项用例通过，对应 5 次真实求解**。环境为 Windows 11、ANSYS Student Mechanical 2026 R1、CPython 3.13.2、PyMechanical 0.13.2 和 PyDPF 0.16.1，显式选择 `mechanical_batch` 后端。五次运行均为非合成结果，**工程校核总状态均保留为 `WARN`**。
+**2026 年 9 月 6 日**的测试报告记录了 **9 项用例通过，对应 5 次真实求解**。环境为 Windows 11、ANSYS Student Mechanical 2026 R1、CPython 3.13.2、PyMechanical 0.13.2 和 PyDPF 0.16.1，显式选择 `mechanical_batch` 后端。五次运行均为非合成结果，**工程校核总状态均保留为 `WARN`**。
 
 | 力载荷悬臂梁：记录的量 | 结果 |
 | --- | ---: |
@@ -65,7 +65,9 @@ Images used courtesy of ANSYS, Inc. 图中单位为 Pa；最大值约为 38.0902
 
 </details>
 
-9 项用例覆盖力载荷、压力、重力、`.mechdat` / `.mechdb` 模板同步、三张 PNG 导出，以及原始 RST 检查与报告再生成。[静态实例](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) 展示已保存的证据，无需启动求解器。完整容差、失败过程和来源见[测试报告](docs/reports/mechanical-test-2026-09-06.zh-CN.md)；数值可追溯至[输入规格](examples/cantilever/simulation.yaml)和[公开证据](docs/reports/evidence/2026-09-06/summary.json)。
+9 项用例覆盖力载荷、压力、重力、`.mechdat` / `.mechdb` 模板同步、三张 PNG 导出，以及原始 RST 检查与报告再生成。[静态实例](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) 展示已保存的证据，无需启动求解器。完整容差、失败情况和来源见[测试报告](docs/reports/mechanical-test-2026-09-06.zh-CN.md)；数值可追溯至[输入规格](examples/cantilever/simulation.yaml)和[公开 JSON 摘要](docs/reports/evidence/2026-09-06/summary.json)。
+
+公开 JSON 仅作为正式测试报告的数据附件。原始 JUnit 和本机执行日志只保存在已忽略的本地归档中。
 
 ## 工作方法
 
@@ -186,7 +188,7 @@ pytest -q
 
 - [Schema 参考](skills/ansys-mechanical-static/references/schema-reference.md) · [模板示例](examples/template-mode/README.md)
 - [官方 API 对照](skills/ansys-mechanical-static/references/official-api-map.md) · [路线图](ROADMAP.md)
-- [发布准备](docs/release-preparation.md) · [安全问题报告](SECURITY.md)
+- [测试报告](docs/reports/mechanical-test-2026-09-06.zh-CN.md) · [安全问题报告](SECURITY.md)
 
 ## 许可与署名
 

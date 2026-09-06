@@ -49,13 +49,12 @@ It does not assert that a public tag, package upload, hosted CI run or site depl
 - The initial real local gRPC handshake failed; batch acceptance does not establish gRPC
   recovery. Remote transport/authentication, other Mechanical versions, mesh convergence and
   explicit element-order overrides remain unverified.
-- The historical offline baseline is **175 passed, 11 skipped in 11.03 seconds**. Later local
-  publication checks are documented separately; neither the historical baseline nor an updated
-  test count represents a new licensed solve or a successful hosted CI matrix.
+- The historical offline baseline is **175 passed, 11 skipped in 11.03 seconds**. This historical
+  baseline does not represent a new licensed solve or a successful hosted CI matrix.
 
 See the [English test report](docs/reports/mechanical-test-2026-09-06.md),
 [Simplified Chinese test report](docs/reports/mechanical-test-2026-09-06.zh-CN.md) and
-[Windows acceptance record](docs/windows-acceptance-2026-09-06.md) for full methods and limitations.
+[public JSON summary](docs/reports/evidence/2026-09-06/summary.json) for methods, recorded data and limitations.
 
 ### Public presentation and release packaging
 
@@ -63,7 +62,7 @@ See the [English test report](docs/reports/mechanical-test-2026-09-06.md),
   a report template and a Markdown-to-site builder. Optional site scripts, SVG assets,
   documentation and a site checker are included when present.
 - An offline-capable cantilever viewer with three original Mechanical images, source YAML and
-  STEP links, plus bilingual test reports and field-allowlisted JSON/JUnit evidence. Original
+  STEP links, plus bilingual test reports and field-allowlisted JSON data attachments. Original
   source hashes, published-file hashes, measured values and historical report data are retained.
   The cover and presentation pages do not add solver evidence.
 - Source packages include the Skill, benchmark, reports, evidence and presentation sources.
@@ -73,5 +72,5 @@ See the [English test report](docs/reports/mechanical-test-2026-09-06.md),
   unsafe archive members, and keep optional presentation files optional. Private `build/` and
   `test-records/` content is excluded from public packages.
 
-See [release preparation](docs/release-preparation.md) for package checks, evidence preservation
-and the distinction between observed local verification and hosted publication.
+The public JSON files are data attachments to the formal test reports. Original JUnit and local
+execution logs are retained only in the ignored local archive.

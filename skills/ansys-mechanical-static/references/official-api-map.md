@@ -40,7 +40,7 @@ exit and a `SOLVED` artifact with real RST files. Timeout cleanup targets only i
 
 This backend is Windows-local-only and explicitly selected; it is never a fallback after gRPC
 failure. Both `run` modes still require `--execute` to start a product. See
-[`docs/windows-acceptance-2026-09-06.md`](../../../docs/windows-acceptance-2026-09-06.md)
+[`docs/reports/mechanical-test-2026-09-06.md`](../../../docs/reports/mechanical-test-2026-09-06.md)
 for numerical results, test coverage, and the remaining transport limitations.
 
 Official command-line implementation/reference:
