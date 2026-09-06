@@ -11,6 +11,28 @@ class MechanicalCompat(object):
     """All version-sensitive Mechanical object-model access lives here."""
 
     @staticmethod
+    def product_version():
+        return TEXT_TYPE(ExtAPI.DataModel.Project.ProductVersion)
+
+    @staticmethod
+    def messages():
+        collected = []
+        try:
+            for message in ExtAPI.Application.Messages:
+                item = {"severity": TEXT_TYPE(message.Severity),
+                        "text": TEXT_TYPE(message.DisplayString)}
+                collected.append(item)
+                source = message.Source
+                if source is not None:
+                    item["source_type"] = TEXT_TYPE(source.GetType().Name)
+                    item["source_name"] = TEXT_TYPE(source.Name)
+        except Exception as exc:
+            collected.append({"severity": "UNKNOWN",
+                              "text": "Message API unavailable: {}".format(exc),
+                              "traceback": traceback.format_exc()})
+        return collected
+
+    @staticmethod
     def open_project(input_path):
         global Model, DataModel
         project = ExtAPI.DataModel.Project
@@ -89,8 +111,8 @@ class MechanicalCompat(object):
             result.BoundaryConditionSelection = CREATED["supports"][item["support"]]
             result.Orientation = MechanicalCompat.global_coordinate_system()
         else:
-            result.ScopingMethod = (Ansys.Mechanical.DataModel.Enums.GeometryDefineByType.NamedSelection
-                                    if item.get("scope") else Ansys.Mechanical.DataModel.Enums.GeometryDefineByType.GeometrySelection)
+            # Location also updates Geometry/Component scoping. ScopingMethod can
+            # be read-only on saved template results in Mechanical 2026 R1.
             result.Location = scope_location(item["scope"]) if item.get("scope") else MechanicalCompat.all_body_selection()
             result.CoordinateSystem = MechanicalCompat.global_coordinate_system()
             if item["type"] == "directional_deformation":
@@ -108,7 +130,9 @@ class MechanicalCompat(object):
                    "thermalconductivity", "isotropicthermalconductivity",
                    "specificheat", "specificheatconstantpressure",
                    "coefficientofthermalexpansion", "isotropicsecantcoefficientofthermalexpansion",
-                   "sncurve", "strainlifeparameters", "alternatingstress", "strainlife"}
+                   "sncurve", "strainlifeparameters", "alternatingstress", "strainlife",
+                   # Passive metadata/electromagnetic properties present on v261 Structural Steel.
+                   "appearance", "materialuniqueid", "resistivity", "relativepermeability"}
         unsupported = [name for name in names if name not in allowed]
         if unsupported or not ({"elasticity", "isotropicelasticity"} & set(names)):
             raise TextToAnsysError("Material {!r} has unsupported or unverified properties: {}".format(body.Material, properties))
@@ -119,7 +143,8 @@ class MechanicalCompat(object):
         if len(list(Model.Analyses)) != 1:
             raise TextToAnsysError("Exactly one analysis is supported per model")
         allowed_loads = set(item["object_name"] for item in PLAN["loads"] + PLAN["supports"] if item.get("object_name"))
-        allowed_types = {"analysissettings", "solution", "solutioninformation", "treegroupingfolder"}
+        allowed_types = {"analysissettings", "ansysanalysissettings", "solution",
+                         "solutioninformation", "treegroupingfolder"}
         forbidden_types = {"contactregion", "joint", "spring", "commandsnippet", "pythoncode", "pythoncodeeventbased"}
         pending = [Model]
         while pending:
@@ -291,7 +316,7 @@ class MechanicalCompat(object):
             raise UnsupportedMechanicalApi(
                 "Analysis type or LargeDeflection API is unavailable: {}".format(exc)
             )
-        if "static" not in analysis_type.lower() or "structural" not in physics_type.lower():
+        if analysis_type.lower() != "static" or physics_type.lower() != "mechanical":
             raise TextToAnsysError(
                 "Expected a static structural analysis; found AnalysisType={!r}, "
                 "PhysicsType={!r}".format(analysis_type, physics_type)

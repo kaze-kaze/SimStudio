@@ -11,7 +11,28 @@ execution consumes that snapshot rather than rereading a potentially changed ori
 
 ## Session model
 
-The real backend uses official PyMechanical remote-session APIs. It executes saved files with
+### Explicit local Windows batch
+
+`execution.backend: mechanical_batch` invokes the discovered `AnsysWBU.exe` with
+`-DSApplet -AppModeMech -b -script <saved-script> -x`. The compiler's input snapshot and fixed
+runtime are used with the isolated run directory as the process working directory.
+`mechanical-batch-stdout.log` and `mechanical-batch-stderr.log` retain native diagnostics.
+The backend requires the structured `SOLVED` status and real RST files even when the process exits
+with `0`; caught script failures can also return `0` from Mechanical.
+
+This backend is local Windows only. It starts and exits its own process, rejects settings requesting
+a remote or existing instance, and uses no gRPC transport. A timeout terminates only the process tree
+created by that run. There is no automatic switch from a failed gRPC call to batch execution.
+Standalone `doctor` describes the default gRPC setup; `run` also records a doctor report for the
+backend selected in the specification.
+
+The 2026-09-06 Student 2026 R1 installation passed local batch numerical acceptance, while local
+gRPC failed at HTTP/2 handshake. Read the
+[acceptance record](../../../docs/windows-acceptance-2026-09-06.md) before claiming a tested path.
+
+### PyMechanical gRPC
+
+This backend uses official PyMechanical remote-session APIs. It executes saved files with
 `run_python_script_from_file`; it does not send the full Mechanical program as an untracked string. A
 small saved bootstrap script sets the run working directory.
 
@@ -58,3 +79,8 @@ and solver directory, not from a recursive search of the Python working director
 copies are stored under `solver/`; inspection prefers the recorded result over duplicate project copies.
 The backend downloads known remote artifacts into the isolated run directory. A structured result
 return is never sufficient evidence of an engineering-successful solve.
+
+Saved template results are cleared in the isolated input snapshot before changing their locations.
+Assigning `Location` updates Geometry/Component scoping; setting `ScopingMethod` directly can be
+read-only on saved v261 results. The original template remains unchanged. Mechanical messages retain
+severity, text, and source object details, including errors whose localized display text is empty.

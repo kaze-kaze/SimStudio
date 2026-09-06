@@ -6,7 +6,7 @@ from types import SimpleNamespace as NS
 import pytest
 from ansys_skill.cli import _find_result_file, _real_postprocess
 from ansys_skill.errors import PostprocessingError
-from ansys_skill.postprocessing.dpf import _evaluate, _resolve_scope
+from ansys_skill.postprocessing.dpf import _equivalent_stress, _evaluate, _resolve_scope
 from ansys_skill.postprocessing.fields import field_summary
 from ansys_skill.schema import load_spec
 
@@ -53,6 +53,29 @@ def test_stress_requests_nodal_values_before_reporting_entity_ids():
     field = NS(unit="Pa", location="ElementalNodal", data=[1.0, 2.0], scoping=NS(ids=[10]))
     with pytest.raises(PostprocessingError, match="one-to-one"):
         field_summary([field], dimension="pressure")
+
+
+@pytest.mark.parametrize("scope", [None, "TIP"])
+def test_equivalent_stress_is_derived_from_tensor_with_mechanical_averaging(scope):
+    calls = []
+    field = NS(unit="Pa", location="Nodal", data=[10.0], scoping=NS(ids=[42]))
+
+    def operator(**kwargs):
+        calls.append(kwargs)
+        return NS(outputs=NS(fields_container=lambda: [field]))
+
+    model = NS(results=NS(stress=object()), _server=object(), metadata=NS(
+        data_sources=object(), time_freq_support=NS(n_sets=3),
+        named_selection=lambda name: (name, [42]),
+    ))
+    dpf = NS(operators=NS(result=NS(stress_eqv_as_mechanical=operator)))
+    fields = _equivalent_stress(dpf, model, scope)
+    assert calls == [{
+        "data_sources": model.metadata.data_sources, "time_scoping": [3],
+        "mesh_scoping": ("TIP", [42]) if scope else None,
+        "requested_location": "Nodal", "server": model._server,
+    }]
+    assert field_summary(fields, dimension="pressure")["scoping_id"] == 42
 
 
 def test_recorded_result_takes_precedence_over_project_copy(tmp_path):

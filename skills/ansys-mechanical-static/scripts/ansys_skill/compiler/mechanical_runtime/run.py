@@ -2,6 +2,8 @@
 outcome = None
 try:
     analysis = prepare_model()
+    # Saved template results must be cleared before changing their locations.
+    analysis.Solution.ClearGeneratedData()
     apply_materials()
     for scope in PLAN["scopes"]:
         scope_location(scope["id"])
@@ -11,7 +13,6 @@ try:
     apply_mesh()
     if PLAN["output"].get("save_project"):
         MechanicalCompat.save_project()
-    analysis.Solution.ClearGeneratedData()
     analysis.Solve(True)
     if PLAN["output"].get("save_project"):
         MechanicalCompat.save_project()

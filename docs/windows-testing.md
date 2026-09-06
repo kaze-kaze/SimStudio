@@ -1,92 +1,131 @@
 # Windows acceptance testing
 
-This guide uses PowerShell, Python 3.13, and a separately installed, licensed ANSYS Mechanical.
-Mechanical 2026 R1 is the first acceptance target for the current runtime. Offline tests do not
-prove that a particular product version, service pack, CAD importer, or license works.
+Local batch execution was tested on ANSYS Student Mechanical 2026 R1 on 2026-09-06. This
+installation's gRPC connection failed during handshake. Use the explicit batch workflow below for
+the recorded execution path, and read the [acceptance record](windows-acceptance-2026-09-06.md).
+Other installations, service packs, CAD importers, and licenses require their own acceptance.
 
-## Install and run the offline checks
+## Python and offline checks
 
-Use a checkout containing the workflow fixes. Uncommitted changes on another computer are not
-included in `git clone`. Do not copy that computer's `.venv`; create a Windows environment.
+The base offline CLI supports Python 3.11–3.13. The optional `ansys` extra supports
+Python 3.12–3.13; Python 3.13 is recommended. PyMechanical 0.13.2 declares
+`Requires-Python: >=3.12,<4.0`, so installing that extra on Python 3.11 fails.
+
+Create a Windows environment rather than copying another machine's environment:
 
 ```powershell
 git clone https://github.com/kaze-kaze/SimStudio.git
 cd SimStudio
 py -3.13 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev,ansys]"
-.\.venv\Scripts\python.exe -m pip check
-.\.venv\Scripts\ruff.exe check .
-.\.venv\Scripts\python.exe -m pytest -q -m "not ansys_integration"
+./.venv/Scripts/python.exe -m pip install -e ".[dev,ansys]"
+./.venv/Scripts/python.exe -m pip check
+./.venv/Scripts/ruff.exe check .
+./.venv/Scripts/python.exe -m pytest -q -m "not ansys_integration"
 ```
 
-Calling the environment's executables directly avoids changing PowerShell's activation policy.
-Installing the optional clients does not install Mechanical or supply a license.
+Calling the environment executables directly avoids changing the PowerShell activation policy.
+Offline-only users can choose Python 3.11/3.12 and install `.[dev]` without the optional clients.
+Installing clients does not install Mechanical or provide a license.
+
+The two real symbolic-link checks report `NOT_RUN` when Windows denies link creation with
+`WinError 1314`. Their original rejection assertions still run on a host with that privilege.
+Other symbolic-link errors are not hidden.
+
+## Prepare an explicit batch specification
+
+Create a run-specific copy of the benchmark with `execution.backend: mechanical_batch`.
+Absolute geometry paths keep the copy independent of its new directory; existing copies are not overwritten.
 
 ```powershell
-.\.venv\Scripts\python.exe -m ansys_skill.cli doctor --json
-.\.venv\Scripts\python.exe -m ansys_skill.cli validate examples/cantilever/simulation.yaml --json
-.\.venv\Scripts\python.exe -m ansys_skill.cli run examples/cantilever/simulation.yaml --out build/windows-dry-01 --json
+@'
+from pathlib import Path
+import yaml
+source = Path("examples/cantilever/simulation.yaml").resolve()
+document = yaml.safe_load(source.read_text(encoding="utf-8"))
+document["inputs"]["geometry_file"] = str((source.parent / document["inputs"]["geometry_file"]).resolve())
+document["execution"]["backend"] = "mechanical_batch"
+target = Path("build/windows-inputs/simulation.yaml")
+target.parent.mkdir(parents=True, exist_ok=True)
+with target.open("x", encoding="utf-8") as stream:
+    yaml.safe_dump(document, stream, sort_keys=False)
+'@ | ./.venv/Scripts/python.exe -
+./.venv/Scripts/python.exe -m ansys_skill.cli doctor --json
+./.venv/Scripts/python.exe -m ansys_skill.cli validate build/windows-inputs/simulation.yaml --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-dry-01 --json
 ```
 
-The last command must return `DRY_RUN`; no solver or Mechanical network connection is started.
-Inspect the generated plan, input snapshot, script, and report before proceeding. Use a new or empty
-output directory for every compile/run; reusing `windows-dry-01` is intentionally refused.
+The last command must return `DRY_RUN` and start no Mechanical process. Review the normalized
+specification, plan, saved script, and input snapshot. Use a new or empty output directory for every run.
+Standalone `doctor` describes the default gRPC setup; `run` additionally records a doctor report
+for the selected backend. Neither environment discovery nor an open TCP port proves a successful solve.
 
-## Explicitly run the licensed benchmark
+## Explicitly run the installed solver
 
-This step starts Mechanical and can consume a commercial license. Run it only after reviewing the
-specification and obtaining permission to use the installed solver.
+This command starts Mechanical and can consume its installed license. Use it only for an explicitly
+requested real solve after reviewing the specification:
 
 ```powershell
-.\.venv\Scripts\python.exe -m ansys_skill.cli doctor --strict --json
-.\.venv\Scripts\python.exe -m ansys_skill.cli run examples/cantilever/simulation.yaml --out build/windows-real-01 --execute --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-real-01 --execute --json
+./.venv/Scripts/python.exe -m ansys_skill.cli inspect build/windows-real-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli report build/windows-real-01 --json
 ```
 
-The result should contain `synthetic: false`. Inspect `verification.json`, not just the process exit
-code or the `SOLVED` label. At minimum, require `PASS` for requested results, reaction balance,
-small deformation, and the cantilever analytical comparison. The current benchmark uses:
+Batch starts and exits a task-owned local Windows process, captures stdout/stderr, and uses no gRPC
+connection. It rejects a remote host, a configured port, `start_instance: no`, certificates, or
+settings that request keeping the instance alive. Batch is never an automatic fallback from gRPC.
 
-- tip Z displacement: approximately `-0.125 mm`, with a 15% relative analytical tolerance;
-- applied force: `-1000 N` along Z;
-- support reaction: approximately `+1000 N` along Z, with a 5% force-balance tolerance.
+Require `synthetic: false` and inspect `verification.json`, not just the executable exit code or
+`SOLVED` label. The cantilever requires `PASS` for requested results, reaction balance,
+small deformation, and the analytical comparison. Its benchmark is:
 
-Stress-singularity review can remain `WARN`. Safety factor and actual visual review remain
-`NOT_RUN`; image export is reported separately and is not engineering approval.
+- tip Z displacement about `-0.125 mm`, with 15% relative analytical tolerance;
+- applied force `-1000 N` along Z;
+- support reaction about `+1000 N` along Z, within 5% relative force-balance tolerance.
+
+Stress-singularity review remains `WARN`. Safety factor and automatic visual review remain
+`NOT_RUN`. Image export is reported separately; opening an RST or exporting an image is not design approval.
+
+## Automated real acceptance
+
+The suite performs five serial solves: the cantilever, pressure, gravity, and two template formats.
+It also checks all three PNGs, raw-RST inspection, report regeneration, input hashes, and saved
+Mechanical object settings. Enable real tests explicitly and restore both environment variables:
 
 ```powershell
-.\.venv\Scripts\python.exe -m ansys_skill.cli inspect build/windows-real-01 --json
-.\.venv\Scripts\python.exe -m ansys_skill.cli report build/windows-real-01 --json
+$previousAnsysAvailable = $env:ANSYS_AVAILABLE
+$previousTestBackend = $env:ANSYS_TEST_BACKEND
+try {
+    $env:ANSYS_AVAILABLE = "1"
+    $env:ANSYS_TEST_BACKEND = "mechanical_batch"
+    ./.venv/Scripts/python.exe -m pytest -q -m ansys_integration --basetemp build/windows-integration-01 --junitxml=build/windows-integration-01.xml
+}
+finally {
+    $env:ANSYS_AVAILABLE = $previousAnsysAvailable
+    $env:ANSYS_TEST_BACKEND = $previousTestBackend
+}
 ```
 
-Alternatively, the automated acceptance test performs its own additional licensed solve and checks
-the numerical acceptance conditions. Enable it explicitly and reset the opt-in afterward:
+Choose a fresh `--basetemp` directory: pytest owns and may clear it. Never use existing results
+or user files as the base directory. Keep these tests serial; parallel pytest workers are rejected
+before starting Mechanical. With no explicit `ANSYS_TEST_BACKEND`, the test backend remains
+`pymechanical_remote`; `fake` is rejected. Use gRPC only on an independently verified host.
 
-```powershell
-$env:ANSYS_AVAILABLE = "1"
-.\.venv\Scripts\python.exe -m pytest -q -m ansys_integration --basetemp build/windows-integration-01
-$env:ANSYS_AVAILABLE = "0"
-```
+## Template and failure evidence
 
-Choose a fresh `--basetemp` directory: pytest owns and may clear that directory. Do not point it at
-existing simulation results or user files.
+The automated template cases create isolated `.mechdat` and `.mechdb` fixtures from the solved
+benchmark. A fully defined rotated coordinate system, wrong load components, wrong result axis/scope,
+and an alternate reaction support are deliberately configured. After compilation and solving, a fresh
+Mechanical process reads the saved output and verifies global coordinates, the requested components,
+Z direction, load-face scope, and fixed-support reaction binding. Source and snapshot hashes must agree.
 
-## Template and failure checks
+Saved results must be cleared before their locations can be updated. Generated solver data is cleared
+only in the isolated working copy. Unknown active loads, contacts, command/Python objects, and
+unverified material properties remain rejected.
 
-Make a separate copy of a trusted `.mechdat`/`.mechdb` template before testing. The current guard
-expects one analysis, declared active bodies, exact object names, and verified linear materials.
-Contacts, joints, springs, command/Python objects, and undeclared active analysis objects are blocked.
-Clear the example's open questions only after checking all inputs and names.
-
-For a template regression, begin with a force using a rotated coordinate system and a directional
-result using another axis; verify that the saved output uses the YAML's global force and requested
-result axis. Verify the reaction result points to the configured support. The source template should
-remain unchanged because execution opens the compiled input snapshot.
-
-If a run fails, retain the complete output directory. Useful diagnostics include `environment.json`,
-`run-manifest.json`, `mechanical-artifacts.json`, `face-selection-report.json`, and `solver/solve.out`
-when those stages were reached. A missing or unverified material-property API must be investigated
-against the installed version, not bypassed by deleting the guard.
+Retain failed run directories. Diagnostics include `environment.json`, `run-manifest.json`,
+`mechanical-artifacts.json`, the batch stdout/stderr logs, `face-selection-report.json`, and
+`solver/solve.out` when reached. Mechanical messages include source object names/types so empty
+localized error text still identifies its origin. Do not discard an error to force verification to pass.
 
 Exit codes: `2` specification, `3` environment, `4` Mechanical/transfer, `5` DPF, `6` verification.
-Do not publish proprietary CAD, RST files, license information, certificates, or private paths in
-public issues. Report the product/service-pack version and a redacted error first.
+Do not publish proprietary geometry, results, license details, certificates, or private paths.

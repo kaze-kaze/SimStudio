@@ -1,17 +1,6 @@
 # Mechanical-injected globals; compatible with IronPython 2.7.
 def collect_messages():
-    collected = []
-    try:
-        for message in ExtAPI.Application.Messages:
-            collected.append(
-                {
-                    "severity": TEXT_TYPE(getattr(message, "Severity", "UNKNOWN")),
-                    "text": TEXT_TYPE(getattr(message, "DisplayString", message)),
-                }
-            )
-    except Exception as exc:
-        collected.append({"severity": "UNKNOWN", "text": "Message API unavailable: {}".format(exc)})
-    return collected
+    return MechanicalCompat.messages()
 
 
 def export_current_image(filename):
@@ -72,6 +61,7 @@ def write_artifacts(status, error=None):
         "error": error,
         "face_selections": FACE_SELECTIONS,
         "analysis": ANALYSIS_INFO,
+        "mechanical_product_version": ANALYSIS_INFO.get("mechanical_product_version"),
         "object_types": OBJECT_TYPES,
         "run_directory": RUN_DIRECTORY,
         "project_file": os.path.join(RUN_DIRECTORY, "text-to-ansys.mechdb")

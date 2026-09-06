@@ -57,6 +57,17 @@ not silently approximated as Earth gravity.
 
 ## Execution transport
 
+`execution.backend` selects `pymechanical_remote` (the default), `mechanical_batch`, or the
+synthetic test-only `fake` backend. `run` remains dry-run unless `--execute` is present.
+
+`mechanical_batch` explicitly starts a new local Windows Mechanical process with the saved script.
+It requires a loopback host, no port, `allow_remote: false`, `start_instance: auto` or `yes`,
+and `cleanup_owned_instance: true`. Leave `transport_mode: insecure` and omit `certs_dir`; these
+connection defaults are not used for communication, and doctor records transport as `NOT_RUN`.
+Remote, existing-instance, or authenticated-transport options are rejected for this backend.
+
+The following transport rules apply to `pymechanical_remote`:
+
 Localhost defaults to explicit `insecure` gRPC. A non-local host requires `allow_remote: true` and
 authenticated `wnua` or `mtls`; `wnua` requires a Windows client and `mtls` requires an existing
 certificate directory. `start_instance: yes` is local-only.

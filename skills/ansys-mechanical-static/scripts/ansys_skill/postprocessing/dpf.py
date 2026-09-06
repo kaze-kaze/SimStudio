@@ -44,6 +44,19 @@ def _resolve_scope(model: Any, name: str | None) -> str | None:
     return matches[0]
 
 
+def _equivalent_stress(dpf: Any, model: Any, scope_name: str | None = None) -> list[Any]:
+    # Equivalent stress is derived from the stored stress tensor; it is not a
+    # named result provider in a normal Mechanical RST. Use Mechanical's averaging.
+    operator = dpf.operators.result.stress_eqv_as_mechanical(
+        data_sources=model.metadata.data_sources,
+        time_scoping=[model.metadata.time_freq_support.n_sets],
+        mesh_scoping=model.metadata.named_selection(scope_name) if scope_name else None,
+        requested_location="Nodal",
+        server=model._server,
+    )
+    return list(operator.outputs.fields_container())
+
+
 def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> dict[str, object]:
     try:
         from ansys.dpf import core as dpf
@@ -63,23 +76,27 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
         if spec is None:
             raw_requests = [
                 ("total_deformation", "displacement"),
-                ("equivalent_stress", "stress_eqv_von_mises"),
+                ("equivalent_stress", "stress_eqv_as_mechanical"),
                 ("reaction_force", "reaction_force"),
             ]
             for result_id, provider_name in raw_requests:
                 try:
-                    result = getattr(model.results, provider_name, None)
-                    if result is None:
-                        raise PostprocessingError(
-                            f"Result provider {provider_name!r} is unavailable"
-                        )
+                    if result_id == "equivalent_stress":
+                        fields = _equivalent_stress(dpf, model)
+                    else:
+                        result = getattr(model.results, provider_name, None)
+                        if result is None:
+                            raise PostprocessingError(
+                                f"Result provider {provider_name!r} is unavailable"
+                            )
+                        fields = _evaluate(result)
                     dimension = {
                         "total_deformation": "length",
                         "equivalent_stress": "pressure",
                         "reaction_force": "force",
                     }[result_id]
                     results[result_id] = _field_summary(
-                        _evaluate(result, nodal=provider_name == "stress_eqv_von_mises"), dimension=dimension
+                        fields, dimension=dimension
                     )
                 except Exception as exc:
                     unavailable_results[result_id] = str(exc)
@@ -123,13 +140,8 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
                     report_unit=spec.units.length,
                 )
             elif request.type is ResultType.EQUIVALENT_VON_MISES_STRESS:
-                result = getattr(model.results, "stress_eqv_von_mises", None)
-                if result is None:
-                    raise PostprocessingError(
-                        "The result file does not expose stress_eqv_von_mises"
-                    )
                 results[request.id] = _field_summary(
-                    _evaluate(result, scope_name, nodal=True),
+                    _equivalent_stress(dpf, model, scope_name),
                     dimension="pressure",
                     report_unit=spec.units.stress,
                 )

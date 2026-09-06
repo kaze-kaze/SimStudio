@@ -1,223 +1,149 @@
 <div align="center">
-  <h1>text-to-ansys</h1>
-  <p><strong>Auditable ANSYS Mechanical workflows, from engineering intent to reviewable artifacts.</strong></p>
-  <p>Simulation compiler · Codex Skill · Python CLI</p>
-
+  <h1>SimStudio</h1>
+  <p><strong>From engineering intent to auditable ANSYS Mechanical results.</strong></p>
+  <p>Codex Skill · Deterministic simulation compiler · <code>ansys-sim</code> CLI</p>
   <p>
-    <a href="https://github.com/kaze-kaze/SimStudio/actions/workflows/ci.yml"><img src="https://github.com/kaze-kaze/SimStudio/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
-    <img src="https://img.shields.io/badge/Python-3.11--3.13-3776AB?logo=python&amp;logoColor=white" alt="Python 3.11 to 3.13">
-    <img src="https://img.shields.io/badge/status-alpha-F59E0B" alt="Project status: alpha">
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F" alt="MIT License"></a>
+    <a href="https://github.com/kaze-kaze/SimStudio/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/kaze-kaze/SimStudio/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI on main"></a>
+    <img src="https://img.shields.io/badge/Python-3.11--3.13-3776AB?logo=python&amp;logoColor=white" alt="Base CLI: Python 3.11–3.13">
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2EA44F" alt="MIT License"></a>
+    <img src="https://img.shields.io/badge/Status-Alpha-F59E0B" alt="Alpha">
   </p>
-
   <p>
-    <a href="#quick-start">Quick start</a> ·
-    <a href="#how-it-works">How it works</a> ·
-    <a href="#supported-scope">Scope</a> ·
-    <a href="#codex-skill">Codex Skill</a> ·
-    <a href="#development">Development</a>
+    <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a><br>
+    <a href="https://kaze-kaze.github.io/SimStudio/">Website</a> ·
+    <a href="https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/">Explore the example</a> ·
+    <a href="https://kaze-kaze.github.io/SimStudio/docs/reports/mechanical-test-2026-09-06.html">Test report</a> ·
+    <a href="#quick-start">Quick start</a>
   </p>
 </div>
 
----
+[![SimStudio — recorded ANSYS Mechanical cantilever results](docs/assets/overview.png)](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/)
 
-`text-to-ansys` is an open-source Codex Skill and deterministic Python CLI for ANSYS Mechanical
-linear static structural analysis. It turns a reviewed engineering request into a strict
-`simulation.yaml`, compiles saved Mechanical scripts, records traceable manifests, optionally runs
-Mechanical through PyMechanical, inspects results through PyDPF, and produces structured checks and
-reports.
+Images used courtesy of ANSYS, Inc. Cover assembled from recorded results; engineering verification remains **WARN**.
 
-> [!IMPORTANT]
-> This project is an AI-assisted simulation compiler, not an autonomous CAE engineer. It does not
-> provide certification, regulatory compliance, design approval, or final engineering sign-off.
+**SimStudio** turns a reviewed engineering request into an explicit `simulation.yaml`, saved Mechanical scripts, traceable run manifests, numerical checks, and reports. The Python package is **`text-to-ansys`**; its command is **`ansys-sim`**. The Codex Skill structures the request, and the deterministic compiler makes the resulting setup inspectable and repeatable.
 
-## Why text-to-ansys?
+- **Review before solving.** Units, materials, supports, loads, scopes, and assumptions are explicit.
+- **Start offline.** Validate, compile, and dry-run without ANSYS or a license. Real execution requires `--execute`.
+- **Keep the evidence.** Inspect saved results through PyDPF and distinguish `PASS`, `WARN`, `FAIL`, and `NOT_RUN`.
 
-| Reviewable by design | Safe by default | Reproducible output |
-| --- | --- | --- |
-| Requirements, assumptions, units, scopes, and open questions remain explicit. | Dry-run is the default. A real solver can only be reached with `--execute`. | The same validated specification produces deterministic plans and saved scripts. |
-| Every check reports `PASS`, `WARN`, `FAIL`, or `NOT_RUN`. | Vague materials, supports, load scopes, and unsupported physics are never silently inferred. | Manifests hash source inputs and record the generated artifact set. |
+## A real example, with its limits
 
-### At a glance
+A **200 × 20 × 40 mm** steel cantilever, fixed at X-min, carries **−1000 N along Z** at X-max. The input uses exact `Structural Steel`, a **10 mm** global mesh size, and `program_controlled` element order. The analytical reference uses **E = 200 GPa**.
 
-| Area | v0.1 capability |
-| --- | --- |
-| Input modes | Exact-name `.mechdat` / `.mechdb` templates, or one simple STEP/STP solid |
-| Analysis | Linear static structural, small deformation |
-| Offline workflow | Schema validation, engineering preflight, deterministic compile, dry-run, reports |
-| Optional integration | PyMechanical execution and PyDPF result inspection |
-| Outputs | Normalized YAML, Mechanical plan, saved script, JSON/CSV checks, report, manifest |
-| Safety model | Explicit units, unique scopes, no user-supplied Python execution, opt-in solver access |
+The **September 6, 2026** acceptance record contains **9 passed cases across 5 real solves** on Windows 11 with ANSYS Student Mechanical 2026 R1, CPython 3.13.2, PyMechanical 0.13.2, and PyDPF 0.16.1. The explicitly selected backend was `mechanical_batch`. All five runs are non-synthetic; **all five retain overall engineering status `WARN`**.
+
+| Force cantilever — recorded quantity | Result |
+| --- | ---: |
+| Mesh | 1,077 nodes · 160 elements |
+| Tip Z displacement | −0.127583 mm |
+| Euler–Bernoulli reference magnitude | 0.125 mm |
+| Analytical deviation / allowed tolerance | 2.0664% / 15% |
+| Maximum total displacement | 0.128951 mm |
+| Maximum nodal-averaged equivalent stress | 38.0902 MPa |
+| Support reaction Z, summed over support nodes | +1000.000000009 N |
+
+Tip Z is the largest absolute Z component among 37 load-face nodes, with its sign retained. The support reaction is a vector sum, not the maximum single-node reaction. Peak stress still requires an engineering review of stress concentrations and mesh convergence.
+
+<details>
+<summary><strong>View the original mesh and result plots</strong></summary>
+
+### Mesh
+![Recorded cantilever mesh](examples/cantilever/demo/assets/mesh.png)
+
+Images used courtesy of ANSYS, Inc. Recorded mesh: 1,077 nodes and 160 elements.
+
+### Total deformation
+![Recorded cantilever total deformation](examples/cantilever/demo/assets/total-deformation.png)
+
+Images used courtesy of ANSYS, Inc. Plot units: m; maximum approximately 0.128951 mm.
+
+### Equivalent stress
+![Recorded cantilever equivalent stress](examples/cantilever/demo/assets/equivalent-stress.png)
+
+Images used courtesy of ANSYS, Inc. Plot units: Pa; maximum approximately 38.0902 MPa. Engineering status: `WARN`.
+
+</details>
+
+The nine cases cover force, pressure, gravity, `.mechdat` / `.mechdb` template synchronization, three PNG exports, and raw-RST inspection with report regeneration. The [static example](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) displays saved evidence without running a solver. Read the [full report](docs/reports/mechanical-test-2026-09-06.md) for tolerances, failures, and provenance; inspect the [input specification](examples/cantilever/simulation.yaml) and [public evidence](docs/reports/evidence/2026-09-06/summary.json) to trace the numbers.
+
+## How it works
+
+1. **Describe and review** — the Skill records engineering intent, assumptions, and open questions in `simulation_brief.md` and a strict, unit-aware `simulation.yaml`.
+2. **Validate and compile** — schema and engineering preflight checks produce a deterministic Mechanical plan and saved script. Exact object names and unique scopes keep selections explicit.
+3. **Dry-run, then explicitly execute** — inspect the plan offline; request `--execute` only on a prepared Mechanical host with a valid license.
+4. **Inspect and report** — PyDPF extracts numerical results; checks, reports, and input hashes preserve what ran and what remains unverified.
+
+The specification, compiler source, and reference documents are the sources of truth. Fix them and regenerate outputs. User-supplied Python and prose are never executed as source code.
 
 ## Quick start
 
-### 1. Install the base CLI
+### 1. Install the CLI
 
-Python 3.11 through 3.13 is supported. The base installation does not require ANSYS, a commercial
-license, or the optional PyAnsys clients.
+The base CLI supports **Python 3.11–3.13**. Use **Python 3.13** if you also plan to install the optional ANSYS clients, which require **Python 3.12–3.13** within this project's supported range.
 
 ```bash
 git clone https://github.com/kaze-kaze/SimStudio.git
 cd SimStudio
-python3.13 -m venv .venv
-source .venv/bin/activate
+python -m venv .venv
+```
+
+Activate the environment with `source .venv/bin/activate` on Linux/macOS or `.\.venv\Scripts\Activate.ps1` in PowerShell, then install:
+
+```bash
 python -m pip install -e .
 ```
 
-Use `python3.11`, `python3.12`, or `python3.13` according to the supported interpreter installed on
-your system. Python 3.14 is intentionally outside the current compatibility range.
-For Windows/PowerShell setup and licensed acceptance checks, see [Windows testing](docs/windows-testing.md).
+For Windows setup without changing PowerShell's activation policy, use the direct executable commands in [Windows testing](docs/windows-testing.md).
 
-### 2. Run the cantilever example offline
+### 2. Try the cantilever offline
 
 ```bash
 ansys-sim doctor --json
 ansys-sim validate examples/cantilever/simulation.yaml --json
-ansys-sim compile examples/cantilever/simulation.yaml \
-  --out build/cantilever \
-  --json
-ansys-sim run examples/cantilever/simulation.yaml \
-  --out build/cantilever-dry-run \
-  --json
+ansys-sim compile examples/cantilever/simulation.yaml --out build/cantilever-compile --json
+ansys-sim run examples/cantilever/simulation.yaml --out build/cantilever-dry-run --json
 ```
 
-No Mechanical process is started. The dry-run produces reviewable artifacts such as:
+The final command returns `DRY_RUN` and starts no Mechanical process. `doctor` can report unavailable solver components on an offline machine. Use a **new or empty output directory** for every compile/run.
 
-```text
-build/cantilever-dry-run/
-├── normalized-simulation.yaml
-├── mechanical-plan.json
-├── generated-mechanical.py
-├── execution-plan.json
-├── verification.json
-├── results-summary.json
-├── report.md
-└── run-manifest.json
-```
+Review `normalized-simulation.yaml`, `mechanical-plan.json`, and `generated-mechanical.py`; the dry-run also saves `execution-plan.json`, `verification.json`, `results-summary.json`, `report.md`, and `run-manifest.json`, plus an `inputs/` snapshot. A dry-run does not establish numerical solver results.
 
-Use a new or empty output directory for every compile/run. Each run also saves its input snapshot
-under `inputs/`; existing simulation outputs are not overwritten.
+### 3. Run Mechanical explicitly
 
-### 3. Enable real Mechanical execution only when ready
-
-Install the optional official clients on a compatible, separately licensed execution host:
+On a separately provisioned and licensed host:
 
 ```bash
 python -m pip install -e ".[ansys]"
-ansys-sim doctor --json --strict
-ansys-sim run examples/cantilever/simulation.yaml \
-  --out build/cantilever-real \
-  --execute \
-  --json
 ```
 
-> [!CAUTION]
-> Installing `ansys-mechanical-core` and `ansys-dpf-core` does not install ANSYS Mechanical, provide
-> a license, or prove that the target Mechanical version is compatible. Review `doctor` output and
-> the generated plan before using `--execute`.
+Follow [Windows testing](docs/windows-testing.md) to create `build/windows-inputs/simulation.yaml`, preserve the geometry path, and explicitly set `execution.backend: mechanical_batch`. Validate and dry-run that copy before solving:
 
-## Reproducible benchmark
-
-The committed [cantilever example](examples/cantilever/README.md) provides a neutral STEP fixture and
-an analytical reference for offline compilation and result validation.
-
-| Property | Value |
-| --- | --- |
-| Geometry | `200 mm × 20 mm × 40 mm` rectangular beam |
-| Material reference | `Structural Steel`, analytical `E = 200 GPa` |
-| Boundary condition | Fixed X-min face |
-| Load | `1000 N` in the negative Z direction on the X-max face |
-| Analytical tip displacement | `0.125 mm` using Euler-Bernoulli beam theory |
-
-The benchmark does not masquerade as a real solve: analytical checks are only compared with FEA
-results after an actual Mechanical run has produced inspectable result data.
-
-## How it works
-
-```mermaid
-flowchart LR
-    A["Engineering request"] --> B["simulation_brief.md"]
-    B --> C["simulation.yaml"]
-    C --> D["Schema + engineering preflight"]
-    D --> E["Deterministic compiler"]
-    E --> F["Mechanical plan + saved script"]
-    F --> G{"Explicit --execute?"}
-    G -- No --> H["Dry-run artifacts"]
-    G -- Yes --> I["PyMechanical"]
-    I --> J["PyDPF + numerical checks"]
-    H --> K["Manifest + report"]
-    J --> K
+```bash
+ansys-sim run build/windows-inputs/simulation.yaml --out build/windows-real-01 --execute --json
+ansys-sim inspect build/windows-real-01 --json
+ansys-sim report build/windows-real-01 --json
 ```
 
-The editable specification, compiler source, and reference documents are the sources of truth.
-`normalized-simulation.yaml`, `mechanical-plan.json`, `generated-mechanical.py`, manifests, reports,
-images, and solver files are generated artifacts. Fix the source and regenerate; do not patch a
-generated script as the primary solution.
+The original example selects `pymechanical_remote`. Its first recorded gRPC attempt failed during handshake; batch success does not verify gRPC. Batch is an explicit local Windows choice, never an automatic fallback. Installing the clients does not install Mechanical or provide a license. See [execution details](skills/ansys-mechanical-static/references/mechanical-execution.md) for other configurations and their requirements.
 
-## Supported scope
-
-### Supported in v0.1
-
-- exact-name template workflows from `.mechdat` or `.mechdb`
-- one simple solid imported from STEP/STP
-- exact Mechanical object names, named selections, and strictly unique `axis_extreme_face` scopes
-- exact Engineering Data material names
-- fixed support, force, pressure, and gravity
-- global element size
-- total and directional deformation, equivalent von Mises stress, reaction force, solver messages,
-  node count, and element count
-- force-only reaction balance, small-deformation, result-completeness, and cantilever analytical checks
-- deterministic compile and dry-run without ANSYS
-- optional PyMechanical execution and PyDPF result inspection
-
-Custom isotropic material properties can be represented by the schema, but real material authoring is
-blocked until that path is verified against a live supported Mechanical version.
-
-### Deliberately out of scope
-
-- Fluent, CFX, explicit dynamics, and LS-DYNA
-- transient, nonlinear material, plasticity, large deformation, buckling, fatigue, and fracture
-- modal, topology optimization, or arbitrary multi-body assembly workflows
-- automatic contact inference or ambiguous load/support/material scope inference
-- safety-factor claims without explicit yield-strength data
-- certification, design approval, or automatic declarations that a design is safe
-
-See the full [supported-scope contract](skills/ansys-mechanical-static/references/supported-scope.md)
-before extending the compiler to new physics or topology.
-
-## CLI reference
+## Everyday operations
 
 | Command | Purpose |
 | --- | --- |
-| `ansys-sim doctor [--json] [--strict]` | Diagnose Mechanical, DPF, platform, transport, and execution readiness |
-| `ansys-sim init <directory>` | Create starter `simulation.yaml` and brief templates |
-| `ansys-sim validate <simulation.yaml> [--json]` | Validate schema, units, references, scope rules, and engineering preflight |
-| `ansys-sim compile <simulation.yaml> --out <directory> [--json]` | Generate deterministic plans, scripts, environment data, and a manifest |
-| `ansys-sim run <simulation.yaml> [--out <directory>] [--execute] [--json]` | Create a dry-run by default, or explicitly execute Mechanical |
-| `ansys-sim inspect <run-directory-or-rst> [--json]` | Inspect saved run data or an existing RST result |
-| `ansys-sim report <run-directory> [--json]` | Rebuild human-readable and machine-readable reports |
+| `ansys-sim init <directory>` | Create a starter specification and brief |
+| `ansys-sim doctor --json` | Diagnose the environment and default transport |
+| `ansys-sim validate <spec> --json` | Check schema, units, references, and engineering constraints |
+| `ansys-sim compile <spec> --out <directory> --json` | Save plans, scripts, and a manifest |
+| `ansys-sim run <spec> --out <directory> --json` | Dry-run; add `--execute` for an explicitly requested solve |
+| `ansys-sim inspect <run-directory-or-rst> --json` | Inspect saved run data or an RST file |
+| `ansys-sim report <run-directory> --json` | Regenerate reports from saved artifacts |
 
-stdout remains machine-readable when JSON output is requested; progress and diagnostics go to stderr.
-Stable exit codes are `0` success, `2` specification/engineering validation, `3` environment/license,
-`4` Mechanical/solve, `5` postprocessing, and `6` verification.
+With `--json`, stdout is machine-readable; progress goes to stderr. Exit codes: `0` success, `2` specification/engineering validation, `3` environment/license, `4` Mechanical/solve, `5` postprocessing, `6` verification.
 
-## Validation semantics
+### Use with Codex
 
-| State | Meaning |
-| --- | --- |
-| `PASS` | The check ran and its acceptance condition was satisfied |
-| `WARN` | The workflow can continue, but engineering review is required |
-| `FAIL` | A required condition failed and the result must not be accepted |
-| `NOT_RUN` | The evidence or environment needed for the check was unavailable |
-
-Unavailable solver, DPF, image, or licensing evidence is never converted into `PASS`. Fake-backend
-outputs remain permanently labeled synthetic.
-
-## Codex Skill
-
-The repository root is also a Codex plugin. Its manifest points to the single Skill implementation at
-[`skills/ansys-mechanical-static`](skills/ansys-mechanical-static/SKILL.md). For local plugin
-development, use a clean checkout and replace the example path below with its absolute path:
+The repository includes the [`ansys-mechanical-static` Skill](skills/ansys-mechanical-static/SKILL.md) and a [local plugin marketplace](.agents/plugins/marketplace.json). Following the existing local-development setup, replace the path with your checkout's absolute path:
 
 ```bash
 codex plugin marketplace add /absolute/path/to/SimStudio --json
@@ -225,65 +151,43 @@ codex plugin add text-to-ansys@text-to-ansys-local --json
 codex plugin list --json
 ```
 
-Start a new Codex task after installation so Skill discovery is refreshed. The Skill handles
-Mechanical linear-static setup, exact-name template changes, dry-runs, explicit solves, RST
-inspection, and reporting; it intentionally declines unsupported physics and certification requests.
+Start a new Codex task to refresh Skill discovery. For the included fixture, try:
 
-## Project structure
+> Prepare a dry-run for examples/cantilever/simulation.yaml. Review the units, fixed support, −1000 N Z load, mesh, and analytical comparison. Show the generated plan and unresolved checks.
 
-```text
-SimStudio/
-├── .codex-plugin/                 # Codex plugin manifest
-├── .agents/plugins/               # Local marketplace definition
-├── schemas/                       # Public simulation JSON Schema
-├── skills/ansys-mechanical-static/
-│   ├── SKILL.md                   # Skill behavior and safety contract
-│   ├── references/                # API, schema, execution, and validation notes
-│   └── scripts/ansys_skill/       # CLI, compiler, backends, checks, and reporting
-├── examples/
-│   ├── cantilever/                # Reproducible geometry-mode benchmark
-│   └── template-mode/             # Exact-name template workflow
-└── tests/                         # Offline unit tests and opt-in ANSYS integration tests
-```
+## Scope and verification boundaries
 
-## Documentation
+**v0.1 scope:** Mechanical linear static structural analysis with small deformation; exact-name `.mechdat` / `.mechdb` templates or one simple STEP/STP solid; fixed supports, forces, pressure, gravity, global mesh sizing, deformation, equivalent stress, and reaction results. Custom isotropic material properties can be represented in the schema, but live material authoring remains blocked pending verification.
 
-| Guide | Description |
+Fluent/CFX, nonlinear or transient physics, contact inference, arbitrary assemblies, modal analysis, buckling, fatigue, fracture, and design certification are outside this Skill. See the [supported-scope contract](skills/ansys-mechanical-static/references/supported-scope.md).
+
+| State | Meaning and recorded limits |
 | --- | --- |
-| [Schema reference](skills/ansys-mechanical-static/references/schema-reference.md) | `simulation.yaml` fields, units, and constraints |
-| [Mechanical execution](skills/ansys-mechanical-static/references/mechanical-execution.md) | Local/remote execution, transport, ownership, and timeouts |
-| [Validation policy](skills/ansys-mechanical-static/references/validation-policy.md) | Pre-solve and post-solve acceptance rules |
-| [Official API map](skills/ansys-mechanical-static/references/official-api-map.md) | Supported client versions, signatures, and verification status |
-| [Engineering safety](skills/ansys-mechanical-static/references/engineering-safety.md) | Human-review and certification boundaries |
-| [Template-mode example](examples/template-mode/README.md) | Safe setup for an existing licensed Mechanical project |
+| `PASS` | A check ran and met its stated condition. The recorded suite passed 9 cases; this is not design approval. |
+| `WARN` | Engineering review is required. All five runs retain `stress_singularity_review: WARN`. |
+| `FAIL` | A required condition failed. The initial gRPC attempt failed and remains unresolved. |
+| `NOT_RUN` | A check was unavailable or not exercised. Missing evidence is never treated as a pass. |
 
-## Development
+Safety factor (no specified yield strength), visual engineering review, remote execution, and raw-RST engineering validation/specification recovery remain `NOT_RUN`. Pressure/gravity passed independent benchmark assertions, while their generic `reaction_balance` and `cantilever_analytical` checks remain `NOT_RUN`. Mesh convergence, explicit element-order variants, and other Mechanical versions remain unverified. Image-export checks establish usable files, not completed visual engineering review.
 
-Install the development dependencies and run the same offline checks used by CI:
+SimStudio supports engineering review; it does not provide certification, design approval, or final engineering sign-off. See the [validation policy](skills/ansys-mechanical-static/references/validation-policy.md) and [recorded limitations](docs/reports/mechanical-test-2026-09-06.md#warn-and-not_run).
+
+## Contribute and learn more
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Run the relevant focused checks, then:
 
 ```bash
 python -m pip install -e ".[dev]"
 ruff check .
-pytest -q -m "not ansys_integration"
+pytest -q
 ```
 
-The ordinary test suite must not require ANSYS, a license, or network access. Real integration tests
-are separate and must be enabled only on a compatible licensed host:
+Ordinary tests require no ANSYS, license, or network. Real tests require explicit `ANSYS_AVAILABLE=1`; reproduce the recorded batch suite serially using [Windows testing](docs/windows-testing.md). Report unrun integrations as `NOT_RUN`, preserve acceptance criteria, and fix sources before regenerating artifacts.
 
-```bash
-ANSYS_AVAILABLE=1 pytest -q -m ansys_integration
-```
+- [Schema reference](skills/ansys-mechanical-static/references/schema-reference.md) · [Template example](examples/template-mode/README.md)
+- [Official API map](skills/ansys-mechanical-static/references/official-api-map.md) · [Roadmap](ROADMAP.md)
+- [Release preparation](docs/release-preparation.md) · [Security reporting](SECURITY.md)
 
-Before opening a change, read [CONTRIBUTING.md](CONTRIBUTING.md), inspect the final diff, and report
-any integration that remained `NOT_RUN`. Future directions are tracked in [ROADMAP.md](ROADMAP.md).
+## License and attribution
 
-## Security, licensing, and trademarks
-
-Please report vulnerabilities through the source host's private security-advisory flow described in
-[SECURITY.md](SECURITY.md). Do not attach proprietary geometry, Mechanical projects, result archives,
-credentials, license data, or private paths to public issues.
-
-This project is available under the [MIT License](LICENSE). It is independent open-source software
-and is not affiliated with, endorsed by, or sponsored by ANSYS, Inc. or its affiliates. ANSYS,
-Mechanical, Workbench, and related names are trademarks of their respective owners. See [NOTICE](NOTICE)
-for dependency and redistribution details.
+[MIT](LICENSE). SimStudio is independent open-source software, not affiliated with, endorsed by, or sponsored by ANSYS, Inc. or its affiliates. ANSYS, Mechanical, and Workbench are trademarks of their respective owners. See [NOTICE](NOTICE) for attribution and redistribution details. Do not publish proprietary models, solver archives, license data, credentials, or private paths in issues or contributions.

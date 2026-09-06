@@ -8,7 +8,7 @@ tip Z displacement against Euler-Bernoulli beam theory.
 ## Inputs
 
 - Geometry: generated `cantilever.step`
-- One solid named `CantileverBeam`
+- One solid with the Mechanical 2026 R1 tree name `CantileverBeam|Solid`
 - Dimensions: `200 mm x 20 mm x 40 mm` (X/Y/Z)
 - Global coordinate system
 
@@ -43,7 +43,7 @@ tip Z displacement against Euler-Bernoulli beam theory.
 ## Assumptions
 
 - The benchmark intentionally uses Euler-Bernoulli theory as an approximate check, not certification.
-- The single imported solid preserves the exact body name `CantileverBeam`.
+- The STEP product is `CantileverBeam`; Mechanical 2026 R1 imports its solid as `CantileverBeam|Solid`.
 
 ## Open questions
 

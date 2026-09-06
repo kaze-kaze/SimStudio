@@ -41,7 +41,9 @@ contact, fatigue, buckling, fracture, or other unsupported physics as linear sta
    those generated files as the primary fix.
 7. Run `ansys-sim doctor --json`. Read
    [`references/mechanical-execution.md`](references/mechanical-execution.md) for connection,
-   transport, ownership, timeout, and platform rules.
+   transport, ownership, timeout, and platform rules. On a local Windows installation, the user
+   may explicitly select `execution.backend: mechanical_batch` to run the saved script through
+   Mechanical's batch entry point. It is not an automatic fallback from a failed gRPC solve.
 8. Default to `ansys-sim run ... --json` without `--execute`. Show the execution plan and unresolved
    blockers. Use `--execute` only when the user explicitly requests a real solve and the specification
    has no open questions, unknown units, ambiguous scopes, or unsupported material authoring.

@@ -19,6 +19,28 @@ def tree_object(name, kind, parent=None, **attributes):
     )
 
 
+@pytest.mark.parametrize(
+    ("analysis_type", "physics_type", "supported"),
+    [("Static", "Mechanical", True), ("Static", "Thermal", False),
+     ("Transient", "Mechanical", False)],
+)
+def test_analysis_contract_uses_mechanical_physics_enum(
+    mechanical_runtime, analysis_type, physics_type, supported
+):
+    env = mechanical_runtime({})
+    analysis = NS(AnalysisType=analysis_type, PhysicsType=physics_type,
+                  AnalysisSettings=NS(LargeDeflection=True))
+    check = env["MechanicalCompat"].assert_static_structural
+    if supported:
+        result = check(analysis)
+        assert result == {"analysis_type": "Static", "physics_type": "Mechanical",
+                          "large_deflection": False}
+        assert analysis.AnalysisSettings.LargeDeflection is False
+    else:
+        with pytest.raises(env["TextToAnsysError"], match="static structural"):
+            check(analysis)
+
+
 def test_force_explicitly_uses_global_coordinates(mechanical_runtime):
     env = mechanical_runtime({})
     global_cs = NS(CoordinateSystemID=0)
@@ -38,8 +60,28 @@ def test_force_explicitly_uses_global_coordinates(mechanical_runtime):
     assert force.XComponent.Output.DiscreteValues == ["1 [N]"]
 
 
+@pytest.mark.parametrize("message_text", ["", "网格生成失败"])
+def test_mechanical_messages_preserve_localized_text_and_error_severity(mechanical_runtime, message_text):
+    env = mechanical_runtime({})
+    source = tree_object("Coordinates", "CoordinateSystem")
+    env["ExtAPI"] = NS(Application=NS(Messages=[NS(Severity="Error", DisplayString=message_text, Source=source)]))
+    assert env["collect_messages"]() == [{
+        "severity": "Error", "text": message_text,
+        "source_type": "CoordinateSystem", "source_name": "Coordinates",
+    }]
+
+
 @pytest.mark.parametrize("scope", [None, "tip"])
 def test_template_results_are_synchronized(mechanical_runtime, scope):
+    class SavedResult(NS):
+        @property
+        def ScopingMethod(self):
+            return "Component" if self.Location == "tip selection" else "Geometry"
+
+        @ScopingMethod.setter
+        def ScopingMethod(self, value):
+            raise ValueError("This property is read-only.")
+
     plan = {
         "mode": "template",
         "requested_results": [
@@ -65,14 +107,14 @@ def test_template_results_are_synchronized(mechanical_runtime, scope):
     analysis = tree_object("Analysis", "Analysis")
     solution = tree_object("Solution", "Solution", analysis)
     analysis.Solution = solution
-    direction = tree_object(
+    direction_object = tree_object(
         "Direction",
         "DirectionalDeformation",
         solution,
         NormalOrientation="XAxis",
         Location="old scope",
-        ScopingMethod="old method",
     )
+    direction = SavedResult(**vars(direction_object))
     reaction = tree_object(
         "Reaction", "ForceReaction", solution, BoundaryConditionSelection="old support"
     )
@@ -87,7 +129,7 @@ def test_template_results_are_synchronized(mechanical_runtime, scope):
                     Enums=NS(
                         NormalOrientationType=NS(ZAxis="ZAxis"),
                         GeometryDefineByType=NS(
-                            GeometrySelection="GeometrySelection", NamedSelection="NamedSelection"
+                            Geometry="Geometry", Component="Component"
                         ),
                         LocationDefinitionMethod=NS(BoundaryCondition="BoundaryCondition"),
                     )
@@ -101,6 +143,7 @@ def test_template_results_are_synchronized(mechanical_runtime, scope):
     env["apply_results"](analysis)
     assert direction.NormalOrientation == "ZAxis"
     assert direction.Location == ("tip selection" if scope else "all bodies")
+    assert direction.ScopingMethod == ("Component" if scope else "Geometry")
     assert reaction.BoundaryConditionSelection is support
     assert env["CREATED"]["results"]["reaction"] is reaction
 
@@ -169,7 +212,13 @@ def test_early_failure_preserves_original_error(mechanical_runtime, tmp_path):
 @pytest.mark.parametrize("extra", [None, "Bilinear Isotropic Hardening"])
 def test_material_inventory_rejects_nonlinear_properties(mechanical_runtime, monkeypatch, extra):
     env = mechanical_runtime({})
-    properties = ["Density", "Elasticity"] + ([extra] if extra else [])
+    properties = [
+        "Appearance", "Compressive Ultimate Strength", "Compressive Yield Strength",
+        "Density", "Tensile Yield Strength", "Tensile Ultimate Strength",
+        "Coefficient of Thermal Expansion", "Specific Heat", "Thermal Conductivity",
+        "S-N Curve", "Strain-Life Parameters", "Resistivity", "Elasticity",
+        "Relative Permeability", "Material Unique Id",
+    ] + ([extra] if extra else [])
     module = ModuleType("materials")
     module.GetListMaterialProperties = lambda _: properties
     monkeypatch.setitem(sys.modules, "materials", module)
@@ -189,8 +238,9 @@ def test_actual_model_rejects_undeclared_or_unsupported_objects(mechanical_runti
     analysis = tree_object("Static Structural", "Analysis", model)
     model.Analyses = [analysis]
     model.Children = [analysis]
+    analysis.Children = [tree_object("分析设置", "ANSYSAnalysisSettings", analysis)]
     if extra_kind:
-        analysis.Children = [tree_object("undeclared", extra_kind, analysis)]
+        analysis.Children.append(tree_object("undeclared", extra_kind, analysis))
     env["Model"] = model
     if extra_kind:
         with pytest.raises(env["TextToAnsysError"], match=r"U(?:nsupported|ndeclared)"):

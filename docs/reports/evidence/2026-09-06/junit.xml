@@ -1,0 +1,13 @@
+<testsuites>
+  <testsuite name="pytest" tests="9" failures="0" errors="0" skipped="0" time="194.345" timestamp="2026-09-06T02:42:49.859730-05:00">
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_cantilever" time="35.465" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_image_export[mesh.png]" time="0.001" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_image_export[total-deformation.png]" time="0.001" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_image_export[equivalent-stress.png]" time="0.001" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_raw_rst_inspect_and_report" time="3.269" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_pressure" time="34.591" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_gravity" time="35.379" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_template_synchronization[.mechdat]" time="42.889" />
+    <testcase classname="tests.integration.test_ansys_real" name="test_real_template_synchronization[.mechdb]" time="42.706" />
+  </testsuite>
+</testsuites>

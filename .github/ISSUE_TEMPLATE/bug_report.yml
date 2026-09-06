@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a reproducible compiler, CLI, or Mechanical compatibility issue.
+title: "[Bug]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Expected and observed behavior
+      description: Include exact CLI exit codes and status keys when available.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include commands and a minimal simulation specification that you may share publicly.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python, SimStudio revision, backend, and optional Mechanical / PyMechanical / DPF versions.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Relevant evidence
+      description: Share sanitized errors or public result summaries. Exclude credentials, licensing diagnostics, private paths, and raw solver archives.

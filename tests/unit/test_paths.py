@@ -12,11 +12,11 @@ def test_safe_join_blocks_escape(tmp_path: Path) -> None:
         safe_join(tmp_path, "../outside.txt")
 
 
-def test_output_directory_symlink_is_rejected(tmp_path: Path) -> None:
+def test_output_directory_symlink_is_rejected(tmp_path: Path, create_symlink) -> None:
     real = tmp_path / "real"
     real.mkdir()
     link = tmp_path / "link"
-    link.symlink_to(real, target_is_directory=True)
+    create_symlink(link, real, is_directory=True)
     with pytest.raises(PathSafetyError, match="symbolic link"):
         prepare_output_dir(link)
 

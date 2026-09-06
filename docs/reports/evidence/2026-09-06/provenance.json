@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "recorded_on": "2026-09-06",
+  "sources": [
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/results-summary.json",
+      "sha256": "316ce87ce5895919fee44baa50dd45bfb5ed05181423314e554e262e62547000"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/verification.json",
+      "sha256": "6f61a0bb0e99bb4b1596c446a2d7eaa26150c4d138db66e59ecc366ffb826173"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/run-manifest.json",
+      "sha256": "b99d6743bea398704c88e7da1aa1bb96610ea1d6bca74a7c8c30b68792d2b7b3"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/results-summary.json",
+      "sha256": "d61b18d0ff1001cb9d7d24c2298fc0e62c423ee47dc2754bcb3c14769622f3ca"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/verification.json",
+      "sha256": "08d425b17efae50d96de7bbb30ae3a3e889fcd94bcb0ded622aa889881cd7779"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/run-manifest.json",
+      "sha256": "7736b57f6b86a531cc21d1bf06af57eaccd1ca09020cb2d29da393878468fea1"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/results-summary.json",
+      "sha256": "0e580fd9101d67665d4f8231c6051ea9131e4f9ca5bddc825cb6c5eaccaa9c89"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/verification.json",
+      "sha256": "0f7ab5928ff44b3ee13506c5c5f3a8210bd029ffc9ed7a9397ea010ec09ea63d"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/run-manifest.json",
+      "sha256": "75be781b70c2c9060bd2c30b829e77e56dbdfa44533173cd91d1aed47d8a35a5"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/results-summary.json",
+      "sha256": "6fdaa7d258e95f07e40b301b735e88dc5614c6ead7c612671e6178004e1d9301"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/verification.json",
+      "sha256": "a5db2f498fea4abb1ed0aed8b94535b092997e59950733c52de80b268999526a"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/run-manifest.json",
+      "sha256": "832449c5e1f87476741ea3150f31fc40e85b5cac1d037673fb962b4b52cdeaf4"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/results-summary.json",
+      "sha256": "771eaf6f05ef57b7b2e8da08c8351ec696ead5900dae48fd8834507bf4441e26"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/verification.json",
+      "sha256": "e54aae4228a2caf8f405b38f2d21791a7e09bbdc7092b4aaee0780d30638d7f6"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/run-manifest.json",
+      "sha256": "d09f5d6afbc754774b80eee63eca8fbfccdda9f918db57adcf72bfad63d3cac1"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906.xml",
+      "sha256": "c9babe97ebb4e7bc738d84651fccf3e1a99e6bf5060b0a09bf37699b5e3c51b6"
+    },
+    {
+      "source_artifact": "offline-final.log",
+      "sha256": "ca38bf37528255e0b039dbf2abcae11e28136a7f09b6021ae64cbfc057872836"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/mesh.png",
+      "sha256": "13c204c184054d0c55d942d0e949c2d38960a1ecdc3f9bc9fa2092241b7891c6"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/total-deformation.png",
+      "sha256": "4258faad890ad942258e0933eea0fd57fc9dce57f2fde3e08e43482682afb704"
+    },
+    {
+      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/equivalent-stress.png",
+      "sha256": "3d89bcfab7c8dcb1c44a4e0040362c9284a9a6d3e5f71acb57dc811a47f47c37"
+    }
+  ],
+  "transformation": "tools/export_benchmark_evidence.py",
+  "policy": "Field allowlist; remove hostname, absolute paths, free-form logs and process/license details. Preserve numbers and check states.",
+  "images": "Three unmodified PNG files from the repository-authored cantilever benchmark. Images used courtesy of ANSYS, Inc.",
+  "published_files": [
+    {
+      "path": "docs/reports/evidence/2026-09-06/summary.json",
+      "sha256": "8d7c9ae84eb6e9015601c4665e6deaf506c16f242a327f757bacd8a1d3c0aeb0"
+    },
+    {
+      "path": "docs/reports/evidence/2026-09-06/cases.json",
+      "sha256": "0cddf3fefec9f2ccd0fa891b42e5697212d1dbcf9df3ced77adec934152f76ab"
+    },
+    {
+      "path": "docs/reports/evidence/2026-09-06/junit.xml",
+      "sha256": "d664c4230e111d37daf9459a5fea85dbf3445e2b3dfc0c4d60de51e61f3ff3f4"
+    },
+    {
+      "path": "docs/reports/evidence/2026-09-06/offline.log",
+      "sha256": "ca38bf37528255e0b039dbf2abcae11e28136a7f09b6021ae64cbfc057872836"
+    },
+    {
+      "path": "examples/cantilever/demo/assets/mesh.png",
+      "sha256": "13c204c184054d0c55d942d0e949c2d38960a1ecdc3f9bc9fa2092241b7891c6"
+    },
+    {
+      "path": "examples/cantilever/demo/assets/total-deformation.png",
+      "sha256": "4258faad890ad942258e0933eea0fd57fc9dce57f2fde3e08e43482682afb704"
+    },
+    {
+      "path": "examples/cantilever/demo/assets/equivalent-stress.png",
+      "sha256": "3d89bcfab7c8dcb1c44a4e0040362c9284a9a6d3e5f71acb57dc811a47f47c37"
+    },
+    {
+      "path": "examples/cantilever/demo/evidence.js",
+      "sha256": "a7f71429a19811a1f2c58e7bcf109562f451eb6c66a415f82aacc8fcf13af6b1"
+    }
+  ],
+  "source_archives": "Original full records are retained locally and are not redistributed."
+}

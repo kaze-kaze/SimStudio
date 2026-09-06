@@ -15,6 +15,7 @@ def prepare_model():
         analysis = Model.AddStaticStructuralAnalysis()
         analysis.Name = "text-to-ansys static structural"
     ANALYSIS_INFO.update(MechanicalCompat.assert_static_structural(analysis))
+    ANALYSIS_INFO["mechanical_product_version"] = MechanicalCompat.product_version()
     CREATED["analysis"] = analysis
     MechanicalCompat.assert_body_inventory()
     MechanicalCompat.assert_model_contract(analysis)

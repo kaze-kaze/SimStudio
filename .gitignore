@@ -19,3 +19,5 @@ build/
 solve.out
 file*.err
 file*.log
+# Local evidence archives can contain solver files and licensing diagnostics.
+/test-records/
