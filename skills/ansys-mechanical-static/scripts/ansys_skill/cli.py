@@ -8,8 +8,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ansys_skill.backends import FakeMechanicalBackend, PyMechanicalRemoteBackend
-from ansys_skill.backends.pymechanical import doctor_report
+from ansys_skill.backends import (
+    FakeMechanicalBackend,
+    MechanicalBatchBackend,
+    PyMechanicalRemoteBackend,
+)
+from ansys_skill.backends.environment import doctor_report
 from ansys_skill.compiler import compile_simulation
 from ansys_skill.errors import (
     AnsysSimError,
@@ -516,9 +520,11 @@ def command_run(args: argparse.Namespace) -> int:
         )
         _mark_failure(run_dir, "ENVIRONMENT_UNAVAILABLE", "environment", exc)
         raise exc
-    backend = (
-        FakeMechanicalBackend() if spec.execution.backend == "fake" else PyMechanicalRemoteBackend()
-    )
+    backend = {
+        "fake": FakeMechanicalBackend,
+        "mechanical_batch": MechanicalBatchBackend,
+        "pymechanical_remote": PyMechanicalRemoteBackend,
+    }[spec.execution.backend]()
     progress(f"Executing backend {spec.execution.backend}")
     try:
         outcome = backend.execute(spec, spec_path, run_dir, Path(artifacts["generated_script"]))

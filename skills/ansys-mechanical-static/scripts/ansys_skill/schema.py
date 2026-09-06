@@ -346,7 +346,7 @@ class OutputSpec(StrictModel):
 
 
 class ExecutionSpec(StrictModel):
-    backend: Literal["pymechanical_remote", "fake"] = "pymechanical_remote"
+    backend: Literal["pymechanical_remote", "mechanical_batch", "fake"] = "pymechanical_remote"
     host: str = "127.0.0.1"
     port: int | None = Field(default=None, ge=1, le=65535)
     allow_remote: bool = False
@@ -360,6 +360,23 @@ class ExecutionSpec(StrictModel):
     def validate_connection(self) -> ExecutionSpec:
         local_hosts = {"127.0.0.1", "localhost", "::1"}
         remote = self.host not in local_hosts
+        if self.backend == "mechanical_batch":
+            incompatible = {
+                "host": remote,
+                "allow_remote": self.allow_remote,
+                "port": self.port is not None,
+                "start_instance": self.start_instance == "no",
+                "transport_mode": self.transport_mode != "insecure",
+                "certs_dir": self.certs_dir is not None,
+                "cleanup_owned_instance": not self.cleanup_owned_instance,
+            }
+            rejected = [name for name, invalid in incompatible.items() if invalid]
+            if rejected:
+                raise ValueError(
+                    "mechanical_batch starts and exits its own local process; incompatible "
+                    f"execution options: {', '.join(rejected)}"
+                )
+            return self
         if remote and not self.allow_remote:
             raise ValueError("non-local Mechanical host requires allow_remote: true")
         if remote and self.transport_mode == "insecure":

@@ -33,7 +33,10 @@ ansys = [
   "ansys-dpf-core>=0.16.1,<0.17",
 ]
 dev = [
+  "Markdown>=3.10,<4",
   "build>=1.3,<2",
+  "setuptools>=80",
+  "wheel>=0.45,<1",
   "pytest>=8.4,<10",
   "pytest-cov>=6,<8",
   "ruff>=0.12,<1",
@@ -44,6 +47,12 @@ cad-fixture = [
 
 [project.scripts]
 ansys-sim = "ansys_skill.cli:main"
+
+[project.urls]
+Homepage = "https://kaze-kaze.github.io/SimStudio/"
+Repository = "https://github.com/kaze-kaze/SimStudio"
+Documentation = "https://github.com/kaze-kaze/SimStudio#readme"
+Issues = "https://github.com/kaze-kaze/SimStudio/issues"
 
 [tool.setuptools]
 package-dir = { "" = "skills/ansys-mechanical-static/scripts" }

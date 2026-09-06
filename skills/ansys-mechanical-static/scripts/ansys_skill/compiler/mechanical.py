@@ -38,7 +38,10 @@ import units
 SENTINEL = "TEXT_TO_ANSYS_RESULT:"
 PLAN = json.loads(base64.b64decode("__PLAN_BASE64__").decode("utf-8"))
 RUN_DIRECTORY = os.path.abspath(getattr(os, "getcwdu", os.getcwd)())
-TEXT_TYPE = type(u"")
+try:
+    TEXT_TYPE = unicode
+except NameError:
+    TEXT_TYPE = str
 FACE_SELECTIONS = []
 CREATED = {"supports": {}, "loads": {}, "results": {}}
 CREATED_SCOPES = {}

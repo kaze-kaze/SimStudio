@@ -8,13 +8,18 @@ Current mappings:
 
 - total deformation: vector norm of `model.results.displacement`
 - directional deformation: selected X/Y/Z component of displacement
-- equivalent von Mises stress: `model.results.stress_eqv_von_mises.on_location("Nodal")`
+- equivalent von Mises stress: `dpf.operators.result.stress_eqv_as_mechanical`, with explicit
+  data sources, last result-set ID, nodal location, and optional named-selection scoping
 - reaction force: `model.results.reaction_force`; fail explicitly if unavailable rather than
   substituting the different `nodal_force` provider
 
 Resolve each named selection uniquely against the actual names in the RST. Generated selections are
 sent to the solver explicitly. Do not guess a scope from topology order or silently choose one of
 multiple case-insensitive matches.
+
+Equivalent stress is derived from the stored stress tensor. A normal Mechanical RST need not expose
+an equivalent-stress attribute in `model.results`; requiring that attribute rejected the real
+2026 R1 benchmark. The explicit operator was verified against Mechanical's exported stress maximum.
 
 Evaluate the last time/frequency set. Record the original maximum and field unit, canonical SI value
 and unit, the specification-selected reporting value/unit, native location, scoping ID, value count,

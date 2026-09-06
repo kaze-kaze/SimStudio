@@ -1,19 +1,38 @@
 include AGENTS.md
+include .gitattributes
+include .gitignore
+include CHANGELOG.md
 include CONTRIBUTING.md
 include LICENSE
 include NOTICE
 include README.md
+include README.zh-CN.md
 include ROADMAP.md
 include SECURITY.md
 include pyproject.toml
 recursive-include .codex-plugin *.json
 recursive-include .agents *.json
-recursive-include .github *.yml
+recursive-include .github *.yml *.md
 recursive-include examples *.md *.py *.json *.yaml *.step
 recursive-include docs *.md
+recursive-include docs/site *.html *.css *.js *.svg
+recursive-include docs/assets *.png *.svg
+recursive-include tools *.py
+include examples/cantilever/demo/index.html
+include examples/cantilever/demo/style.css
+include examples/cantilever/demo/demo.js
+include examples/cantilever/demo/evidence.js
+include examples/cantilever/demo/assets/mesh.png
+include examples/cantilever/demo/assets/total-deformation.png
+include examples/cantilever/demo/assets/equivalent-stress.png
+recursive-include docs/reports/evidence/2026-09-06 *.json *.xml
+include docs/reports/evidence/2026-09-06/offline.log
 recursive-include schemas *.json
 recursive-include skills *.md *.py *.yaml
 recursive-include skills LICENSE
 recursive-include tests *.py
 global-exclude __pycache__ *.py[cod]
+global-exclude *.mechdb *.mechdat *.rst *.rth *.rdb *.db *.cdb *.dat *.out *.err *.full *.emat *.esav *.mode *.mntr *.dsdb *.wbpj *.wbpz
+global-exclude ansyscl.* licdebug.*
 prune build
+prune test-records

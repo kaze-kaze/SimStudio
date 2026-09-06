@@ -15,7 +15,7 @@ coordinate_systems:
   - name: Global Coordinate System
     kind: global
 bodies:
-  - name: CantileverBeam
+  - name: CantileverBeam|Solid
     material: structural_steel
 materials:
   - name: structural_steel
@@ -24,13 +24,13 @@ materials:
 scopes:
   - id: fixed_face
     kind: axis_extreme_face
-    body: CantileverBeam
+    body: CantileverBeam|Solid
     axis: x
     extreme: min
     tolerance: 0.001 mm
   - id: load_face
     kind: axis_extreme_face
-    body: CantileverBeam
+    body: CantileverBeam|Solid
     axis: x
     extreme: max
     tolerance: 0.001 mm
@@ -86,7 +86,7 @@ validation:
 assumptions:
   - text: Euler-Bernoulli beam theory is an approximate benchmark for this slenderness and mesh.
     source: engineering_default
-  - text: The generated STEP import preserves the exact body name CantileverBeam.
+  - text: Mechanical 2026 R1 imports this STEP solid with the exact tree name CantileverBeam|Solid.
     source: program
 open_questions: []
 output:

@@ -69,13 +69,14 @@ def _port_state(host: str, port: int | None) -> dict[str, object]:
 
 def doctor_report(spec: SimulationSpec | None = None, *, probe_port: bool = True) -> dict[str, object]:
     execution = spec.execution if spec else None
+    batch = bool(execution and execution.backend == "mechanical_batch")
     host = execution.host if execution else "127.0.0.1"
     port = execution.port if execution else None
     system = platform.system()
     mechanical_path = _find_mechanical_executable()
     pymechanical = _find_module("ansys.mechanical.core")
     dpf = _find_module("ansys.dpf.core")
-    supported_os = system in {"Windows", "Linux"}
+    supported_os = system == "Windows" if batch else system in {"Windows", "Linux"}
     local = host in LOCAL_HOSTS
     remote_allowed = bool(execution and execution.allow_remote)
     transport = execution.transport_mode if execution else "insecure"
@@ -87,7 +88,7 @@ def doctor_report(spec: SimulationSpec | None = None, *, probe_port: bool = True
     certs_ok = transport != "mtls" or bool(certs_path and certs_path.is_dir())
     transport_os_ok = transport != "wnua" or system == "Windows"
     remote_transport_ok = local or transport in {"wnua", "mtls"}
-    port_check = _port_state(host, port) if probe_port else {
+    port_check = _port_state(host, port) if probe_port and not batch else {
         "status": CheckStatus.NOT_RUN.value, "message": "Dry-run does not contact Mechanical"
     }
     start_mode = execution.start_instance if execution else "auto"
@@ -113,6 +114,14 @@ def doctor_report(spec: SimulationSpec | None = None, *, probe_port: bool = True
         and port_check["status"] == CheckStatus.PASS.value
     )
     can_execute = can_connect and (can_start or can_use_existing) and dpf
+    batch_policy_error = None
+    if batch:
+        try:
+            execution.validate_connection()
+        except ValueError as exc:
+            batch_policy_error = str(exc)
+        can_start = supported_os and mechanical_path is not None and batch_policy_error is None
+        can_execute = can_start and dpf
     checks = {
         "operating_system": {
             "status": CheckStatus.PASS.value if supported_os else CheckStatus.WARN.value,
@@ -174,6 +183,23 @@ def doctor_report(spec: SimulationSpec | None = None, *, probe_port: bool = True
             "message": "A license is consumed and verified only during an explicitly requested real execution",
         },
     }
+    if batch:
+        checks["operating_system"]["message"] = "mechanical_batch supports local Windows execution only"
+        checks["pymechanical"].update(
+            status=CheckStatus.NOT_RUN.value, message="mechanical_batch does not use PyMechanical gRPC"
+        )
+        checks["connection_policy"].update(
+            status=CheckStatus.FAIL.value if batch_policy_error else CheckStatus.PASS.value,
+            message=batch_policy_error or "A new task-owned local batch process is required",
+        )
+        checks["mechanical_executable"].update(
+            status=CheckStatus.PASS.value if mechanical_path else CheckStatus.FAIL.value,
+            message="mechanical_batch requires a local Mechanical executable",
+        )
+        for name in ("transport", "port"):
+            checks[name].update(
+                status=CheckStatus.NOT_RUN.value, message="mechanical_batch does not use a gRPC connection"
+            )
     return {
         "status": CheckStatus.PASS.value if can_execute else CheckStatus.NOT_RUN.value,
         "can_start_local": can_start,

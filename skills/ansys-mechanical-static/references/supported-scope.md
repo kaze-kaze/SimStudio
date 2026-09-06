@@ -43,8 +43,10 @@ synchronized with the specification.
 
 Engineering Data properties are checked against the explicit linear-static allowlist in
 `MechanicalCompat.assert_linear_material`. Unknown or nonlinear property sets fail with the actual
-property inventory for review. A material name alone is not proof of linear behavior. The first
-licensed acceptance target is Mechanical 2026 R1; these guards still require live product testing.
+property inventory for review. A material name alone is not proof of linear behavior. The installed
+Student Mechanical 2026 R1 Structural Steel inventory, template object types, and both template
+formats were exercised through explicit local batch execution on 2026-09-06. This does not certify
+other material libraries or product versions; see the recorded acceptance evidence.
 
 ## Unsupported
 

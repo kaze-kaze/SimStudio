@@ -1,0 +1,56 @@
+[
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_cantilever",
+    "duration_seconds": 35.465,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_image_export[mesh.png]",
+    "duration_seconds": 0.001,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_image_export[total-deformation.png]",
+    "duration_seconds": 0.001,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_image_export[equivalent-stress.png]",
+    "duration_seconds": 0.001,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_raw_rst_inspect_and_report",
+    "duration_seconds": 3.269,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_pressure",
+    "duration_seconds": 34.591,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_gravity",
+    "duration_seconds": 35.379,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_template_synchronization[.mechdat]",
+    "duration_seconds": 42.889,
+    "status": "PASS"
+  },
+  {
+    "classname": "tests.integration.test_ansys_real",
+    "name": "test_real_template_synchronization[.mechdb]",
+    "duration_seconds": 42.706,
+    "status": "PASS"
+  }
+]

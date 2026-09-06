@@ -193,6 +193,7 @@
           "default": "pymechanical_remote",
           "enum": [
             "pymechanical_remote",
+            "mechanical_batch",
             "fake"
           ],
           "title": "Backend",

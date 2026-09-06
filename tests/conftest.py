@@ -15,6 +15,19 @@ CANTILEVER = ROOT / "examples" / "cantilever"
 
 
 @pytest.fixture
+def create_symlink():
+    """Retain real symlink assertions; report a missing Windows privilege explicitly."""
+    def create(link: Path, target: Path, *, is_directory: bool = False) -> None:
+        try:
+            link.symlink_to(target, target_is_directory=is_directory)
+        except OSError as exc:
+            if getattr(exc, "winerror", None) == 1314:
+                pytest.skip("NOT_RUN: Windows does not grant symbolic-link creation (WinError 1314)")
+            raise
+    return create
+
+
+@pytest.fixture
 def valid_document() -> dict[str, object]:
     return yaml.safe_load((CANTILEVER / "simulation.yaml").read_text(encoding="utf-8"))
 
