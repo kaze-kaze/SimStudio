@@ -1,101 +1,217 @@
-# Mechanical acceptance report — 2026-09-06
+# Mechanical engineering acceptance report: twin-rib equipment bracket — 2026-09-06
+
+Dates use the recorded host timezone, America/Chicago (UTC−05:00).
+
+This stable report path now presents the primary bracket example. It summarizes the preceding
+completed bracket validation; replacing the presentation does not add a new solve. The former
+cantilever remains only as an internal analytical fixture under `tests/fixtures/cantilever`.
+Earlier cantilever, template-synchronization, and gRPC diagnostics are historical records and
+are not part of the five solves reported here.
+
+[简体中文报告](mechanical-test-2026-09-06.zh-CN.md) ·
+[Interactive example](../../examples/gusseted-bracket/demo/index.html) ·
+[Public summary](evidence/2026-09-06/summary.json) ·
+[Case details](evidence/2026-09-06/cases.json) ·
+[Provenance and hashes](evidence/2026-09-06/provenance.json)
 
 ## Conclusion
 
-The recorded local Windows `mechanical_batch` acceptance suite passed **9 cases across 5 real solves**, with zero failures, errors, or skips. JUnit records 194.345 seconds from `2026-09-06T02:42:49.859730-05:00`. Every solve has `synthetic=false`, a `SOLVED` manifest, and `POSTPROCESSED` numerical results. **Overall engineering status remains WARN for all five runs.**
+The recorded study passed **5 real integration tests across 5 serial Mechanical solves in
+208.16 seconds**. Every run is `SOLVED` and `synthetic: false`. Both mesh-refinement steps meet
+the displacement and bearing-pad stress-statistic tolerances. Independent force balance, moment
+balance, and gravity-corrected full-field linearity all passed. The elapsed time covers the study
+tests and their checks, not isolated solver time.
 
-The first real PyMechanical gRPC attempt failed; batch success does not establish gRPC recovery. Remote execution remains `NOT_RUN`. These results cover the recorded linear-static compiler workflow and its stated checks.
+The preceding validation also completed one nominal 8 mm exploratory solve and the first 12 mm
+case of an unsuccessful study attempt: **7 completed real solves in that validation round**,
+including the final five. The other four cases in the unsuccessful attempt failed during Python
+startup and are not counted as solves. Reopening the fine project to export views did not solve.
 
-The historical default-suite baseline is **175 passed, 11 skipped in 11.03 seconds**. The [public JSON summary](evidence/2026-09-06/summary.json) provides the report's recorded data; the historical benchmark is not presented as a new solve.
+The preceding full offline regression recorded **252 passed, 20 skipped**, with `ruff check .`
+passing. These are historical baseline results, not freshly executed tests for this presentation
+replacement. Skipped integrations remain unexecuted and are not counted as passes.
 
-## Environment and method
+**Overall engineering status remains WARN.** Global stress peaks require local engineering
+interpretation, and no safety factor was calculated. Passing refers to the stated regression
+criteria, not design approval.
 
-Recorded environment: ANSYS Student Mechanical 2026 R1, Windows 11 AMD64, CPython 3.13.2, PyMechanical 0.13.2, PyDPF 0.16.1, and DPF server 11.0. Product identity comes from the locally archived acceptance evidence; runtime versions and results were checked against final JSON and JUnit.
+## Model, loads, and environment
 
-The benchmark uses a 200 × 20 × 40 mm steel beam, Young's modulus 200 GPa, a fixed X-min face, and a −1000 N Z load on the X-max face. All five runs contain 1077 nodes and 160 elements, with 10 mm global sizing and `program_controlled` element order.
+Sources are the [example](../../examples/gusseted-bracket/README.md),
+[simulation.yaml](../../examples/gusseted-bracket/simulation.yaml),
+[simulation brief](../../examples/gusseted-bracket/simulation_brief.md),
+[geometry generator](../../examples/gusseted-bracket/generate_geometry.py), and
+[CAD properties](../../examples/gusseted-bracket/geometry-properties.json).
+This is an authored engineering regression model with explicitly defined test dimensions and loads.
 
-Compilation, explicit local batch execution, independent DPF extraction, verification, and reporting were exercised serially. Template fixtures deliberately changed coordinates, forces, result scope/axis, and reaction binding; fresh processes read back saved outputs. Input-preservation claims refer to historical test assertions.
+- One connected solid with 34 CAD faces; overall size 240 × 160 × 188 mm.
+- Back plate / shelf / rib thicknesses: 16 / 20 / 12 mm; eight 14 mm mounting holes.
+- Inside bend R10, rib-profile rounds R6; eccentric bearing pad 70 × 60 × 8 mm.
+- Full X-min rear-face clamp represents an ideal rigid mounting interface.
+- Front-face force [1000, 1500, −500] N acts at [240, 0, 170] mm.
+- Pad pressure 0.8 MPa over 4200 mm² produces 3360 N along −Z at [165, 35, 188] mm.
+- Self-weight acts along −Z with gravitational acceleration 9.80665 m/s².
+- CAD volume: 1,532,280.529125 mm³; centroid: [83.288077, 0.767483, 134.178550] mm.
+  At 7850 kg/m³ the reference mass is 12.028402 kg and weight is 117.958330 N.
 
-## Nine acceptance cases
+The recorded host used Windows 11, ANSYS Student Mechanical 2026 R1, explicit `mechanical_batch`,
+Python 3.13.2, PyMechanical 0.13.2, PyDPF 0.16.1, and local DPF Server 11.0.
+Actual `ds.dat` input confirms E = 200 GPa, Poisson ratio 0.3, density 7850 kg/m³, and SOLID187.
+SURF154 is permitted for surface loading; independent DPF extraction confirms quadratic solid
+topology. The committed specification uses an 8 mm nominal mesh; the study generates explicit
+12 / 8 / 5 mm variants.
 
-| JUnit case | Run | Status | Seconds |
-| --- | --- | --- | ---: |
-| `test_real_cantilever` | R1 | PASS | 35.465 |
-| `test_real_image_export[mesh.png]` | R1 reused | PASS | 0.001 |
-| `test_real_image_export[total-deformation.png]` | R1 reused | PASS | 0.001 |
-| `test_real_image_export[equivalent-stress.png]` | R1 reused | PASS | 0.001 |
-| `test_real_raw_rst_inspect_and_report` | R1 reused | PASS | 3.269 |
-| `test_real_pressure` | R2 | PASS | 34.591 |
-| `test_real_gravity` | R3 | PASS | 35.379 |
-| `test_real_template_synchronization[.mechdat]` | R4 | PASS | 42.889 |
-| `test_real_template_synchronization[.mechdb]` | R5 | PASS | 42.706 |
+## Five recorded solves
 
-Durations are JUnit case times, not isolated solver timings. PNG checks require a unique PASS export record, more than 33 bytes, valid PNG/IHDR headers, and positive dimensions. They independently cover R1 only; other image-export statuses come from JSON.
+| Case ID | Loading | Mesh mm | Nodes | Elements | Maximum displacement mm | Maximum equivalent stress MPa |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| `mixed_12mm` | Force + eccentric pressure + self-weight | 12 | 7,452 | 3,890 | 0.019119825 | 8.987440 |
+| `mixed_8mm` | Force + eccentric pressure + self-weight | 8 | 11,680 | 6,241 | 0.019221773 | 9.008833 |
+| `mixed_5mm` | Force + eccentric pressure + self-weight | 5 | 27,980 | 15,508 | 0.019348617 | 9.040418 |
+| `gravity_5mm` | Self-weight only | 5 | 27,980 | 15,508 | 0.000159944 | 0.084056 |
+| `double_mechanical_5mm` | Twice force/pressure + unchanged self-weight | 5 | 27,980 | 15,508 | 0.038545872 | 18.016176 |
 
-Raw-RST extraction matched baseline displacement, stress, and nodal reaction maxima with `rel=1e-8, abs=1e-12` in canonical units; reaction vectors used `rel=1e-8, abs=1e-6 N`. Report regeneration preserved summaries and RST hashes in the historical assertions.
+Values are rounded. The primary presentation case is `mixed_5mm`. Its bearing-pad largest
+absolute Z component is −0.013381324 mm, mean Z displacement is −0.009268916 mm, and front-face
+largest absolute Y component is +0.005086454 mm. Directional extrema retain their signs; they
+are not face averages. Global equivalent stress is the maximum of nodal-averaged output and
+is reported without using it as a strength acceptance condition.
 
-Both template readbacks confirmed coordinate IDs 0, force `[0,0,-1000] N`, `ZAxis`, `Component` scope `TTA_SCOPE_LOAD_FACE`, and `BoundaryCondition` reaction binding to `fixed_support`.
+## Independent engineering acceptance
 
-## Numerical results and tolerances
+### Force and moment balance: PASS
 
-Displayed values below are rounded. Directional displacement selects the largest absolute component among 37 load-face nodes while retaining its sign; it is not a face average. Stress is the maximum of `stress_eqv_as_mechanical` nodal-averaged output.
+Pressure and weight resultants use CAD area, centroid, and volume. The selected Mechanical
+faces are checked for position, area, and normal before DPF coordinates and reactions are aligned
+by node ID to compute `ΣR` and `Σ(r × R)`. Moments use the global origin and N·m, with coordinates
+converted to meters.
 
-| Run | Tip component (mm) | Maximum total displacement (mm) | Maximum equivalent stress (MPa) | Maximum nodal reaction magnitude (N) |
-| --- | ---: | ---: | ---: | ---: |
-| R1 force | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
-| R2 pressure | X: −0.000995021458 | 0.000995586612 | 1.19715891066 | 59.1860091398 |
-| R3 gravity | Z: −0.000592845373 | 0.000597726930 | 0.230504482861 | 9.53210636828 |
-| R4 .mechdat | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
-| R5 .mechdb | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
+For the 5 mm combined-load case:
 
-**Support resultants sum all 37 support-node reactions componentwise.** Their recorded principal components are R1/R4/R5 Z = `1000.0000000088805 N`, R2 X = `799.999999999942 N`, and R3 Z = `12.317152400047146 N`; transverse components are near zero. R1's `1564.2596703544452 N` is the maximum single-node magnitude at node 936, not the support resultant. Balance uses `canonical_sum_vector`, not `reported_maximum`.
+| Quantity | X | Y | Z |
+| --- | ---: | ---: | ---: |
+| Applied force resultant N | 1000.000000 | 1500.000000 | −3977.958330 |
+| Support force resultant N | −999.999998 | −1500.000002 | 3977.967017 |
+| Applied moment resultant N·m | −372.690531 | 854.224522 | 360.000000 |
+| Support moment resultant N·m | 372.690562 | −854.224661 | −360.000000 |
 
-- **Force:** `||R + [0,0,-1000]||₂ / 1000 ≤ 0.05`; recorded relative residual `1.1759996441626767e-11`. Euler–Bernoulli reference magnitude is approximately 0.125 mm; `abs(abs(actual)-expected)/expected = 0.020664203857241034`, or 2.0664%, against 15% tolerance. R4/R5 share these results.
-- **Pressure:** `pA = 1 MPa × 800 mm² = 800 N`. Vector distance from `[800,0,0] N` must be ≤ 40 N; axial displacement is compared with −0.001 mm at 5% relative tolerance.
-- **Gravity:** `ρVg = 7850 × (0.2 × 0.02 × 0.04) × 9.80665 = 12.3171524 N`. Vector error must be ≤ 5% of this weight. Displacement must be finite, negative, and expressed in meters; no analytical gravity-deflection tolerance was asserted.
-- **Small deformation:** maximum displacement / 200 mm is 0.000644753179, 0.00000497793306, and 0.00000298863465 for force, pressure, and gravity respectively. All pass below 0.02; [0.02, 0.1) gives WARN, and ≥ 0.1 gives FAIL.
+Its relative force residual is 1.9891 × 10⁻⁶ and relative moment residual is 1.4196 × 10⁻⁷.
+Across all five solves, the largest residuals are **0.007362% for force** and **0.001448% for
+moment**, below the respective **0.5% and 1%** tolerances. Each relative residual is the norm
+of the resultant residual vector divided by the norm of the corresponding applied vector.
+Support resultants sum nodal vectors; they do not use the maximum single-node reaction.
+Fixed-support displacement, nonempty mesh, result units, and finite-value checks also passed.
 
-Pressure/gravity independent assertions passed, while generic `reaction_balance` and `cantilever_analytical` remain `NOT_RUN`. Their independent residual scalars were not separately archived.
+### Mesh-change criteria: PASS
 
-## Failure-driven fixes
+Both consecutive refinements use `abs(fine - coarse) / abs(fine)`.
 
-Python 3.11 installation failed against PyMechanical 0.13.2's Python ≥ 3.12 requirement. Recovered output confirms exit 1 but is truncated. The first real gRPC case failed after 604.240 seconds with CLI exit 4; connection probes, including grpcio 1.71.0, did not resolve it. Its precise root cause remains open. Batch was explicitly selected, never an automatic fallback.
+| Quantity | 12 → 8 mm | 8 → 5 mm | Tolerance |
+| --- | ---: | ---: | ---: |
+| Maximum total displacement | 0.5304% | 0.6556% | 5% |
+| Bearing-pad mean Z displacement | 0.0713% | 0.7879% | 5% |
+| Bearing-pad mean equivalent stress | 1.2553% | 2.5512% | 10% |
+| Bearing-pad 95th-percentile equivalent stress | 2.3662% | 2.6099% | 10% |
 
-Early batch failures exposed static-analysis enum, built-in material inventory, and result-scoping compatibility defects. The exact imported body name was corrected in the input. DPF extraction switched from an unavailable equivalent-stress property to `stress_eqv_as_mechanical`; a temporary missing batch-module import also interrupted inspection.
+At 5 mm the pad mean stress is 1.291825 MPa and its 95th percentile is 2.027259 MPa.
+Pad statistics weight nodes equally; they are not area-weighted. Passing establishes that these
+meshes and quantities meet the stated change thresholds. It does not establish a full-field error
+bound or general convergence of peaks at fixed edges.
 
-The first complete suite had 7 passes and 2 template failures. Subsequent fixes addressed IronPython Unicode conversion, read-only scoping, and clearing evaluated results before changing `Location`. An empty-text Error then identified an underdefined fixture coordinate system. Completing its definition enabled readback acceptance without weakening error checks. Native exit 0 had accompanied script failure, so structured status must also be checked.
+### Gravity-corrected full-field linearity: PASS
+
+Let P denote front-face force and pad pressure, and G denote self-weight. The relation checked is
+`u(2P+G) = 2u(P+G) − u(G)`. All three fine-mesh results have the same 27,980 node IDs, with zero
+coordinate difference. Every node is compared using
+`1e-12 m + 1e-6 × ||predicted displacement||`; no nodes fail.
+
+The full-field relative L2 error is **1.8077 × 10⁻¹¹**, and the largest nodal absolute error is
+1.5611 × 10⁻¹⁵ m. Because gravity is unchanged, the test does not simply double a maximum
+displacement that includes self-weight.
+
+## Execution failure and corrections
+
+After the first solve in the initial serial attempt, DPF initialization inside the test process
+changed the Python environment. Later Python 3.13 subprocesses read the ANSYS-bundled Python 3.10
+standard library and failed with `AssertionError: SRE module mismatch`. That attempt reported
+five failed tests; the original directories and logs were retained.
+
+The bracket test now performs independent DPF checks in a separate Python worker with separate
+DPF logs. Read-only checks against existing RST files confirmed that the parent environment was
+unchanged before and after the worker. The final five-solve study then passed in a new directory.
+Numerical tolerances were not relaxed; production compiler and default dry-run behavior were not
+changed by that fix.
+
+Geometry was generated with build123d 0.9.1; 0.11.1 failed while importing local system fonts.
+ANSYS and CAD dependency ranges were unchanged. STEP Git attributes disable newline conversion
+to preserve the geometry-properties SHA256 across checkouts.
+
+## Images and modeling boundaries
+
+Each case exported native mesh, total-deformation, and equivalent-stress PNGs. Review found that
+a header-only PNG check could accept truncated files. Pillow was added to the development extra
+for file-structure verification and complete pixel decoding, with regressions for a valid image,
+a header-only image, and an image missing its end block. All 15 saved original exports passed
+complete decoding after the correction; no solve was repeated for image verification. The
+supplemental receipt is `png-decode-verification.json`; the three offline image tests passed.
+
+Z-up and underside views were exported from the saved 5 mm project, with identical project SHA256
+before and after. The recorded review of geometry, underside, mesh, deformation, and stress images
+confirmed preserved ribs and holes, continuous mesh, largest displacement near the free end, and
+stress hotspots near rib-to-shelf transitions. Image inspection does not replace numerical checks.
+Its `visual-review.json` records the hashes of the images actually viewed; it is separate from the
+CLI automatic `visual_review` status.
+
+The full rear clamp represents a rigid backing. Mounting holes are geometry only; bolt preload,
+contact, slip, and backing compliance are not solved. Ribs, plates, and pad form one continuous
+solid; individual weld details are unresolved.
+
+## Reproduction and retained evidence
+
+The primary integration entry is
+[test_engineering_bracket.py](../../tests/integration/test_engineering_bracket.py). Follow the
+[example README](../../examples/gusseted-bracket/README.md) or
+[Windows guide](../windows-testing.md). Real tests require explicit `ANSYS_AVAILABLE=1` and
+`ANSYS_TEST_BACKEND=mechanical_batch`, serial execution, and a fresh output directory.
+
+Local archived sources:
+
+- `build/bracket-study-20260906-02/engineering-bracket0/`: final five solves, `study-summary.json`,
+  nodal evidence, per-run checks, saved Mechanical projects, and RST files.
+- `build/bracket-study-20260906-01/engineering-bracket0/`: unsuccessful first study evidence.
+- `build/engineering-bracket-20260906-01/`: nominal trial, dry-run, doctor, both study JUnit files
+  and terminal logs, offline regression, and supplemental image evidence.
+
+These ignored local directories are not part of the public software package. Public JSON uses
+a field allowlist for numerical values, statuses, and source hashes; it excludes private absolute
+paths, licensing logs, Mechanical projects, and RST files.
+
+## Recorded 5 mm presentation images
+
+All images below are unchanged `fine-views` exports from the saved `mixed_5mm` project. The
+homepage, cover, and example use this same case. Exported files are checked by SHA256 before
+publication, without cropping or recoloring and without a new solve.
+
+![Twin-rib bracket 5 mm mesh](../../examples/gusseted-bracket/demo/assets/mesh.png)
+
+![Twin-rib bracket 5 mm total deformation](../../examples/gusseted-bracket/demo/assets/total-deformation.png)
+
+![Twin-rib bracket 5 mm equivalent stress](../../examples/gusseted-bracket/demo/assets/equivalent-stress.png)
+
+Images used courtesy of ANSYS, Inc. The
+[geometry](../../examples/gusseted-bracket/demo/assets/geometry.png) and
+[underside](../../examples/gusseted-bracket/demo/assets/underside.png) views show the solid, ribs,
+and holes and contain no new simulated results.
 
 ## WARN and NOT_RUN
 
-All runs retain `stress_singularity_review: WARN`, `safety_factor: NOT_RUN` because yield strength is absent from the v1 specification, and `visual_review: NOT_RUN`. Raw-RST engineering validation and specification recovery remain `NOT_RUN`.
-
-Batch doctor retains `license`, `port`, `pymechanical`, and `transport` prechecks as `NOT_RUN`. Remote authentication, transfer/upload/download, live gRPC timeout/cancellation, mesh convergence, explicit element-order coverage, and other Mechanical versions remain unverified. Historical skips comprise nine opt-in real cases and two native symlink checks blocked by `WinError 1314`; those two remain `NOT_RUN`.
-
-## Reproduction
-
-Follow [Windows testing](../windows-testing.md) from the repository root:
-
-1. Create a Python 3.13 environment and install `.[dev,ansys]`; provision Mechanical separately.
-2. Copy the existing [specification](../../examples/cantilever/simulation.yaml) using the documented procedure, preserving geometry resolution and explicitly choosing `mechanical_batch`.
-3. Run `doctor`, `validate`, and the default dry-run; require `DRY_RUN` and review generated inputs before execution.
-4. For an explicitly requested solve, follow the documented `run --execute`, `inspect`, and `report` commands. For all nine cases, use the documented serial pytest invocation with `ANSYS_AVAILABLE=1` and `ANSYS_TEST_BACKEND=mechanical_batch`, restoring both variables afterward. Use fresh output and pytest directories.
-
-## Public evidence and images
-
-The public JSON files—[summary](evidence/2026-09-06/summary.json), [cases](evidence/2026-09-06/cases.json), and [provenance](evidence/2026-09-06/provenance.json)—are data attachments to this formal test report. The field-allowlisted snapshot retains exact numbers, check states, and source hashes while excluding host paths and licensing details. Original JUnit and local execution logs are retained only in the ignored local archive. Verify the public files with `python tools/export_benchmark_evidence.py`.
-
-## Next validation priorities
-
-Before expanding compatibility claims, reproduce the gRPC handshake failure on a supported execution
-host and exercise a second Mechanical version. Before using peak stress for design decisions, add a
-mesh-refinement study and an engineering review of fixed-end and load-region stress concentrations.
-Whether pressure/gravity resultants can be generalized safely, and whether explicit element-order
-settings behave consistently, remain open implementation questions.
-
-[Cantilever demonstration](../../examples/cantilever/demo/index.html). Original Student exports:
-
-- [Mesh](../../examples/cantilever/demo/assets/mesh.png) — Images used courtesy of ANSYS, Inc.
-- [Total deformation](../../examples/cantilever/demo/assets/total-deformation.png) — Images used courtesy of ANSYS, Inc.
-- [Equivalent stress](../../examples/cantilever/demo/assets/equivalent-stress.png) — Images used courtesy of ANSYS, Inc.
-
-Exports establish artifact availability; visual engineering review remains pending. Later interface captures do not substitute for solve images. Early manifests sometimes stop at `COMPILED`; empty logs, truncated outputs, and reused intermediate directories limit historical reconstruction. No missing timings, hashes, or failure details are inferred.
+- All five runs retain `stress_singularity_review: WARN`; global peak stress is not a strength
+  acceptance criterion.
+- `safety_factor: NOT_RUN` reflects unspecified yield strength. Automatic `visual_review: NOT_RUN`
+  remains unchanged; the separate recorded manual image review does not turn it into PASS.
+- Generic CLI `reaction_balance: NOT_RUN` remains for mixed pressure/gravity loads. Separate
+  study force and moment checks passed. Disabled `cantilever_analytical` also remains NOT_RUN.
+- Other Mechanical versions and remote execution remain unverified. An earlier local gRPC
+  handshake failed; this bracket study did not retest it.
+- Mesh-change acceptance covers the two refinements and four quantities listed above, not a
+  full-field error bound, general fixed-edge peak convergence, or design approval.

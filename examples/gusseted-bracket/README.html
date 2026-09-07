@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eccentrically loaded gusseted equipment bracket — SimStudio public documentation.">
+  <title>Eccentrically loaded gusseted equipment bracket · SimStudio</title>
+  <link rel="icon" href="../../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../../examples/gusseted-bracket/demo/index.html">Equipment bracket demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/examples/gusseted-bracket/README.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#eccentrically-loaded-gusseted-equipment-bracket">Eccentrically loaded gusseted equipment bracket</a><ul>
+<li><a href="#inputs-and-dry-run">Inputs and dry-run</a></li>
+<li><a href="#five-solve-engineering-study">Five-solve engineering study</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="eccentrically-loaded-gusseted-equipment-bracket">Eccentrically loaded gusseted equipment bracket</h1>
+<p>The primary engineering regression example with two rounded ribs, eight mounting holes, an
+eccentric bearing pad, multiaxial force, pressure, and self-weight. The
+<a href="https://github.com/kaze-kaze/SimStudio/blob/main/examples/gusseted-bracket/simulation_brief.md">simulation brief</a> defines dimensions, assumptions, and acceptance criteria.</p>
+<p>The <a href="../../docs/reports/mechanical-test-2026-09-06.html">2026-09-06 test report</a>
+(<a href="../../docs/reports/mechanical-test-2026-09-06.zh-CN.html">简体中文</a>)
+records five passed integration tests across five real study solves in 208.16 seconds. The fine mesh has 27,980 nodes and 15,508 elements;
+maximum displacement is 0.019348617 mm and reported global stress maximum is 9.040418 MPa.
+Force/moment balance, mesh-change criteria, and full-field gravity-corrected linearity passed.
+The engineering aggregate remains WARN for the stated stress-review limitations. The
+<a href="demo/index.html">static demonstration</a> displays all five cases, both mesh-refinement steps, and
+three unchanged result views from <code>mixed_5mm</code>, with optional geometry and underside views.</p>
+<p>The 252 passed / 20 skipped offline baseline belongs to the preceding validation round. Replacing
+the public example does not create a new test or solve record. Public evidence remains available
+at the stable <a href="../../docs/reports/evidence/2026-09-06/summary.json">summary</a>,
+<a href="../../docs/reports/evidence/2026-09-06/cases.json">cases</a>, and
+<a href="../../docs/reports/evidence/2026-09-06/provenance.json">provenance</a> paths.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Data table"><table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Overall dimensions</td>
+<td>240 by 160 by 188 mm</td>
+</tr>
+<tr>
+<td>Back / shelf / rib thickness</td>
+<td>16 / 20 / 12 mm</td>
+</tr>
+<tr>
+<td>Hole diameter / count</td>
+<td>14 mm / 8</td>
+</tr>
+<tr>
+<td>Inside bend / rib profile radius</td>
+<td>10 / 6 mm</td>
+</tr>
+<tr>
+<td>Material</td>
+<td>Installed Structural Steel: E = 200 GPa, nu = 0.3, density = 7850 kg/m^3</td>
+</tr>
+<tr>
+<td>Backing</td>
+<td>Full rear-face clamp, ideal rigid connection</td>
+</tr>
+<tr>
+<td>Front-face force</td>
+<td>[1000, 1500, -500] N at [240, 0, 170] mm</td>
+</tr>
+<tr>
+<td>Pad pressure</td>
+<td>0.8 MPa; 3360 N downward at [165, 35, 188] mm</td>
+</tr>
+<tr>
+<td>Self-weight</td>
+<td>Earth gravity, -Z; mass and centroid from CAD</td>
+</tr>
+<tr>
+<td>Reference mass</td>
+<td>12.028402 kg at 7850 kg/m^3</td>
+</tr>
+<tr>
+<td>Nominal specification mesh</td>
+<td>8 mm, explicit quadratic order</td>
+</tr>
+<tr>
+<td>Study meshes / primary display</td>
+<td>12 / 8 / 5 mm; mixed-load 5 mm images</td>
+</tr>
+</tbody>
+</table></div>
+<p>This is one continuous solid. The ideal backing excludes bolt preload, slip, contact, and mounting
+compliance. Ribs and plates transfer load continuously; individual weld stresses are not modeled.</p>
+<h2 id="inputs-and-dry-run">Inputs and dry-run</h2>
+<p>The committed STEP and its generated <a href="geometry-properties.json">CAD properties</a> are ready to use.
+CAD dependencies are required only to regenerate them. On the tested Windows host, use
+<code>build123d==0.9.1</code> for regeneration (0.11.1 encountered a local system-font import error):</p>
+<pre><code class="language-powershell">./.venv/Scripts/python.exe -m pip install &quot;build123d==0.9.1&quot;
+./.venv/Scripts/python.exe examples/gusseted-bracket/generate_geometry.py
+</code></pre>
+<p>From the repository root:</p>
+<pre><code class="language-powershell">./.venv/Scripts/python.exe -m ansys_skill.cli validate examples/gusseted-bracket/simulation.yaml --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run examples/gusseted-bracket/simulation.yaml --out build/bracket-dry-01 --json
+</code></pre>
+<p>The specification explicitly selects local Windows <code>mechanical_batch</code>. The command above remains
+<code>DRY_RUN</code>. After reviewing inputs and explicitly choosing to solve on an installed, licensed host:</p>
+<pre><code class="language-powershell">./.venv/Scripts/python.exe -m ansys_skill.cli run examples/gusseted-bracket/simulation.yaml --out build/bracket-real-01 --execute --json
+</code></pre>
+<h2 id="five-solve-engineering-study">Five-solve engineering study</h2>
+<p>Install the project's <code>dev</code> and <code>ansys</code> extras as described in
+<a href="../../docs/windows-testing.html">Windows testing</a>. The development extra includes Pillow for
+complete PNG structure verification and pixel decoding.</p>
+<p>The integration study performs three combined-load solves on 12, 8, and 5 mm quadratic meshes,
+then gravity-only and doubled force/pressure solves on the 5 mm mesh. Gravity stays constant.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Data table"><table>
+<thead>
+<tr>
+<th>Recorded case</th>
+<th style="text-align: right;">Nodes</th>
+<th style="text-align: right;">Elements</th>
+<th style="text-align: right;">Max displacement mm</th>
+<th style="text-align: right;">Max equivalent stress MPa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mixed_12mm</code></td>
+<td style="text-align: right;">7,452</td>
+<td style="text-align: right;">3,890</td>
+<td style="text-align: right;">0.019119825</td>
+<td style="text-align: right;">8.987440</td>
+</tr>
+<tr>
+<td><code>mixed_8mm</code></td>
+<td style="text-align: right;">11,680</td>
+<td style="text-align: right;">6,241</td>
+<td style="text-align: right;">0.019221773</td>
+<td style="text-align: right;">9.008833</td>
+</tr>
+<tr>
+<td><code>mixed_5mm</code></td>
+<td style="text-align: right;">27,980</td>
+<td style="text-align: right;">15,508</td>
+<td style="text-align: right;">0.019348617</td>
+<td style="text-align: right;">9.040418</td>
+</tr>
+<tr>
+<td><code>gravity_5mm</code></td>
+<td style="text-align: right;">27,980</td>
+<td style="text-align: right;">15,508</td>
+<td style="text-align: right;">0.000159944</td>
+<td style="text-align: right;">0.084056</td>
+</tr>
+<tr>
+<td><code>double_mechanical_5mm</code></td>
+<td style="text-align: right;">27,980</td>
+<td style="text-align: right;">15,508</td>
+<td style="text-align: right;">0.038545872</td>
+<td style="text-align: right;">18.016176</td>
+</tr>
+</tbody>
+</table></div>
+<p>It checks CAD-based force and moment balance, displacement convergence, pad stress statistics,
+whole-field linear superposition, native images, solver element/material settings, and input hashes.
+Force and moment relative tolerances are 0.5% and 1%. Both consecutive mesh refinements must
+meet 5% displacement and 10% pad stress-statistic thresholds. Pad mean and percentile statistics
+weight nodes equally, not by area. The 8 → 5 mm maximum-displacement change is 0.6556%.
+Full-field relative L2 error is 1.8077 × 10^-11, with no failing nodes at the stated per-node
+<code>1e-12 m + 1e-6 × ||predicted displacement||</code> tolerance.</p>
+<p>Run serially with explicit opt-in and a fresh <code>--basetemp</code> directory:</p>
+<pre><code class="language-powershell">$previousAvailable = $env:ANSYS_AVAILABLE
+$previousBackend = $env:ANSYS_TEST_BACKEND
+try {
+    $env:ANSYS_AVAILABLE = &quot;1&quot;
+    $env:ANSYS_TEST_BACKEND = &quot;mechanical_batch&quot;
+    ./.venv/Scripts/python.exe -m pytest -q tests/integration/test_engineering_bracket.py --basetemp build/bracket-study-01 --junitxml=build/bracket-study-01.xml
+}
+finally {
+    $env:ANSYS_AVAILABLE = $previousAvailable
+    $env:ANSYS_TEST_BACKEND = $previousBackend
+}
+</code></pre>
+<p>Pytest owns its temporary directory; choose a new path for each study. Each run retains
+<code>engineering-checks.json</code>, ordinary CLI reports, RST, saved Mechanical project, and solver logs.
+The study directory contains <code>study-summary.json</code>. An ordinary offline <code>pytest -q</code> skips real
+integration tests and starts no solver.</p>
+<p>The general CLI still reports pressure/gravity <code>reaction_balance: NOT_RUN</code>; this fixture's separate
+checks supply the independently calculated resultants. <code>safety_factor</code> and automatic
+<code>visual_review</code> remain <code>NOT_RUN</code>; the recorded manual image review is separate. Global peak stress retains a review warning
+and is not a strength acceptance criterion. Compare the entire displacement field as
+<code>u(2P+G) = 2u(P+G) - u(G)</code>; do not simply double displacement maxima that include self-weight.</p>
+<p><code>export_views.py</code> is an optional fixed Mechanical script for reopening a solved project and exporting
+Z-up and underside views. It requires <code>ANSYS_AVAILABLE=1</code>, <code>BRACKET_VIEW_PROJECT</code> (absolute saved
+project path), and <code>BRACKET_VIEW_OUTPUT</code> (new directory). It neither solves nor saves the project.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../../index.html">Project home</a><a href="../../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

@@ -1,56 +1,32 @@
 [
   {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_cantilever",
-    "duration_seconds": 35.465,
+    "classname": "tests.integration.test_engineering_bracket",
+    "name": "test_real_bracket_solver_and_model_contract",
+    "duration_seconds": 208.107,
     "status": "PASS"
   },
   {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_image_export[mesh.png]",
-    "duration_seconds": 0.001,
+    "classname": "tests.integration.test_engineering_bracket",
+    "name": "test_real_bracket_force_and_moment_balance",
+    "duration_seconds": 0.0,
     "status": "PASS"
   },
   {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_image_export[total-deformation.png]",
-    "duration_seconds": 0.001,
+    "classname": "tests.integration.test_engineering_bracket",
+    "name": "test_real_bracket_mesh_convergence",
+    "duration_seconds": 0.0,
     "status": "PASS"
   },
   {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_image_export[equivalent-stress.png]",
-    "duration_seconds": 0.001,
+    "classname": "tests.integration.test_engineering_bracket",
+    "name": "test_real_bracket_gravity_corrected_linearity",
+    "duration_seconds": 0.0,
     "status": "PASS"
   },
   {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_raw_rst_inspect_and_report",
-    "duration_seconds": 3.269,
-    "status": "PASS"
-  },
-  {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_pressure",
-    "duration_seconds": 34.591,
-    "status": "PASS"
-  },
-  {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_gravity",
-    "duration_seconds": 35.379,
-    "status": "PASS"
-  },
-  {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_template_synchronization[.mechdat]",
-    "duration_seconds": 42.889,
-    "status": "PASS"
-  },
-  {
-    "classname": "tests.integration.test_ansys_real",
-    "name": "test_real_template_synchronization[.mechdb]",
-    "duration_seconds": 42.706,
+    "classname": "tests.integration.test_engineering_bracket",
+    "name": "test_real_bracket_images_and_provenance",
+    "duration_seconds": 0.0,
     "status": "PASS"
   }
 ]

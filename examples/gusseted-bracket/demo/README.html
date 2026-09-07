@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Saved real twin-rib bracket demonstration — SimStudio public documentation.">
+  <title>Saved real twin-rib bracket demonstration · SimStudio</title>
+  <link rel="icon" href="../../../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../../docs/site/site.css">
+</head>
+<body class="report-page">
+  <a class="skip-link" href="#report">Skip to content</a>
+  <header class="site-header"><a class="brand" href="../../../index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="../../../examples/gusseted-bracket/demo/index.html">Equipment bracket demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/examples/gusseted-bracket/demo/README.md">View source ↗</a></nav></header>
+  <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
+<ul>
+<li><a href="#saved-real-twin-rib-bracket-demonstration">Saved real twin-rib bracket demonstration</a><ul>
+<li><a href="#evidence-and-status">Evidence and status</a></li>
+<li><a href="#sources-and-regeneration">Sources and regeneration</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="saved-real-twin-rib-bracket-demonstration">Saved real twin-rib bracket demonstration</h1>
+<p>Open <code>index.html</code> directly in a browser after downloading or extracting the source, or use the
+project's static site. No npm installation, CDN, server API, ANSYS installation, or license is
+required to view it. The page has no solver endpoint and cannot start Mechanical.</p>
+<p>The viewer presents the September 6, 2026 study: <strong>five passed tests, five real serial solves,
+three quadratic mesh sizes, and 208.16 seconds</strong>. The primary image and side metrics always
+refer to <strong><code>mixed_5mm</code></strong>. The three image buttons switch its unchanged mesh, total-deformation,
+and equivalent-stress exports. Geometry and underside images are optional supplemental views
+from the same saved project. No image is synthesized for a different mesh or load case.</p>
+<p>The five-case table includes <code>mixed_12mm</code>, <code>mixed_8mm</code>, <code>mixed_5mm</code>, <code>gravity_5mm</code>, and
+<code>double_mechanical_5mm</code>. The mesh table shows all four acceptance quantities and both consecutive
+relative changes. Full-field linearity preserves gravity: <code>u(2P+G) = 2u(P+G) - u(G)</code>.
+Pad stress statistics give each node equal weight; they are not area-weighted.</p>
+<p>The former cantilever demonstration is archived locally under
+<code>test-records/bracket-primary-swap/old-demo</code> and is excluded from the public example and site.
+The beam remains only as the internal analytical fixture <code>tests/fixtures/cantilever</code>.</p>
+<h2 id="evidence-and-status">Evidence and status</h2>
+<p>Numbers and check states come from <code>evidence.js</code>, generated from the
+<a href="../../../docs/reports/evidence/2026-09-06/summary.json">public JSON summary</a>.
+It exposes <code>window.SIMSTUDIO_BENCHMARK</code> with <code>primary_case: mixed_5mm</code>, five <code>cases</code>,
+<code>convergence.series</code>, <code>linearity</code>, <code>suite</code>, and <code>fixture</code>. The viewer performs display-only unit
+conversion for convergence values and does not interpolate, solve, or invent new results.
+Missing complete real-case evidence is reported as NOT_RUN, never PASS.</p>
+<p>These files are attachments to the stable
+<a href="../../../docs/reports/mechanical-test-2026-09-06.html">English report</a> and
+<a href="../../../docs/reports/mechanical-test-2026-09-06.zh-CN.html">Chinese report</a>.
+Independent numerical checks passed, but global stress-peak review remains WARN; safety factor
+and automatic visual review remain NOT_RUN. The recorded manual image review is separate.
+Other Mechanical versions and remote execution were not verified. The 252 passed / 20 skipped
+offline baseline is from the preceding validation round, not new tests for this viewer replacement.</p>
+<h2 id="sources-and-regeneration">Sources and regeneration</h2>
+<p><code>index.html</code>, <code>style.css</code>, and <code>demo.js</code> are viewer source. <code>evidence.js</code> and <code>assets/*.png</code> are
+generated artifacts. Maintainers regenerate the snapshot using the exporter and the local folder
+containing the saved study plus supplemental process records:</p>
+<pre><code class="language-bash">python tools/export_benchmark_evidence.py --archive &lt;local-archive-root&gt;
+</code></pre>
+<p>Readers can verify the committed snapshot without the private archive or a solver:</p>
+<pre><code class="language-bash">python tools/export_benchmark_evidence.py
+</code></pre>
+<p>The <a href="../../../docs/reports/evidence/2026-09-06/provenance.json">provenance file</a> records source
+hashes, the field-allowlist transformation, and public-file hashes. All five 1600 × 1000 PNGs
+are byte-identical exports from the unchanged saved fine-mesh project; reopening it neither
+solved nor saved the project. Original JUnit, Mechanical projects, RST files, and logs stay local.</p>
+<p>The committed specification uses an <strong>8 mm nominal mesh</strong> and defaults to dry-run. See the
+<a href="../README.html">example README</a> and <a href="../../../docs/windows-testing.html">Windows guide</a> for explicit
+batch execution and the complete five-solve study. See <a href="../../../NOTICE">NOTICE</a> for attribution.</p>
+<p>Images used courtesy of ANSYS, Inc.</p></article></main></div>
+  <footer class="site-footer"><span>SimStudio <small>/ text-to-ansys</small></span><a href="../../../index.html">Project home</a><a href="../../../NOTICE">Notices</a><a href="https://github.com/kaze-kaze/SimStudio">GitHub ↗</a></footer>
+</body>
+</html>

@@ -2,11 +2,11 @@
   "schema_version": 1,
   "recorded_on": "2026-09-06",
   "synthetic": false,
-  "evidence_kind": "saved_real_benchmark; not a new solve or a live service",
+  "evidence_kind": "saved_real_bracket_study; not a new solve or a live service",
+  "primary_case": "mixed_5mm",
   "environment": {
     "os": "Windows 11 AMD64",
     "mechanical": "ANSYS Student 2026 R1",
-    "file_version": "26,2026,13,1",
     "python": "3.13.2",
     "pymechanical": "0.13.2",
     "pydpf": "0.16.1",
@@ -14,103 +14,132 @@
     "source": "docs/reports/mechanical-test-2026-09-06.md"
   },
   "suite": {
-    "tests": 9,
+    "tests": 5,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
-    "duration_seconds": 194.345,
-    "started_at": "2026-09-06T02:42:49.859730-05:00"
+    "duration_seconds": 208.155,
+    "started_at": "2026-09-06T19:02:31.204169-05:00"
   },
   "offline_baseline": {
-    "passed": 175,
-    "skipped": 11,
-    "duration_seconds": 11.03,
-    "skip_details": {
-      "real_opt_in": 9,
-      "native_symlink_permission": 2
-    }
+    "passed": 252,
+    "skipped": 20,
+    "duration_seconds": 16.98,
+    "kind": "recorded before primary-example migration"
   },
   "fixture": {
     "dimensions_mm": [
-      200,
-      20,
-      40
+      240.0,
+      160.0,
+      188.0
     ],
     "force_N": [
-      0,
-      0,
-      -1000
+      1000,
+      1500,
+      -500
     ],
+    "pressure_MPa": 0.8,
+    "pressure_area_mm2": 4200.0,
+    "mass_kg": 12.028402153633305,
+    "gravity_m_s2": 9.80665,
     "material": "Structural Steel",
     "youngs_modulus_GPa": 200,
-    "second_moment_of_area_mm4": 106666.6666667,
-    "element_size_mm": 10,
-    "element_order": "program_controlled",
+    "density_kg_m3": 7850,
+    "poissons_ratio": 0.3,
+    "mesh_sizes_mm": [
+      12,
+      8,
+      5
+    ],
+    "element_order": "quadratic",
+    "mounting_hole_count": 8,
     "fixed_face": "X-min",
-    "load_face": "X-max",
-    "source": "examples/cantilever/simulation.yaml"
+    "source": "examples/gusseted-bracket/simulation.yaml",
+    "geometry_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14"
   },
   "cases": [
     {
-      "id": "cantilever",
+      "id": "mixed_12mm",
       "synthetic": false,
       "execution_mode": "mechanical_batch",
       "solver_status": "SOLVED",
       "verification_status": "WARN",
-      "started_at": "2026-09-06T07:42:50+00:00",
-      "ended_at": "2026-09-06T07:43:25+00:00",
-      "node_count": 1077,
-      "element_count": 160,
+      "started_at": "2026-09-07T00:02:31+00:00",
+      "ended_at": "2026-09-07T00:03:08+00:00",
+      "node_count": 7452,
+      "element_count": 3890,
       "results": {
         "equivalent_stress": {
-          "canonical_maximum": 38090217.31630064,
+          "canonical_maximum": 8987440.338309024,
           "canonical_unit": "pascal",
-          "reported_maximum": 38.09021731630064,
+          "reported_maximum": 8.987440338309023,
           "reported_unit": "MPa",
           "location": "Nodal",
-          "value_count": 1077
+          "value_count": 7452
         },
-        "fixed_reaction": {
-          "canonical_maximum": 1564.2596703544452,
+        "front_y": {
+          "canonical_maximum": 5.0499637763105306e-06,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.005049963776310531,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.00014584670559368332,
+            0.00038414858709616575,
+            -0.0013851016588696367
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 93
+        },
+        "mounting_reaction": {
+          "canonical_maximum": 246.557283305314,
           "canonical_unit": "newton",
-          "reported_maximum": 1564.2596703544452,
+          "reported_maximum": 246.557283305314,
           "reported_unit": "N",
           "canonical_sum_vector": [
-            -5.125230018165894e-09,
-            5.758963084190327e-09,
-            1000.0000000088805
+            -999.9999999972501,
+            -1500.000000009764,
+            3977.9675132851544
           ],
           "canonical_sum_vector_unit": "newton",
           "location": "Nodal",
-          "value_count": 37
+          "value_count": 879
         },
-        "tip_z": {
-          "canonical_maximum": -0.00012758302548211527,
+        "pad_stress": {
+          "canonical_maximum": 2252918.1271628747,
+          "canonical_unit": "pascal",
+          "reported_maximum": 2.2529181271628747,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 87
+        },
+        "pad_z": {
+          "canonical_maximum": -1.3259027634648379e-05,
           "canonical_unit": "meter",
-          "reported_maximum": -0.12758302548211525,
+          "reported_maximum": -0.013259027634648379,
           "reported_unit": "mm",
           "canonical_sum_vector": [
-            1.1873030228252979e-16,
-            -2.6562143726061104e-14,
-            -0.004718044319728119
+            0.0002255258470492925,
+            0.00025264884256546104,
+            -0.0008006121341310238
           ],
           "canonical_sum_vector_unit": "meter",
           "location": "Nodal",
-          "value_count": 37
+          "value_count": 87
         },
         "total_deformation": {
-          "canonical_maximum": 0.0001289506357807832,
+          "canonical_maximum": 1.9119824642490454e-05,
           "canonical_unit": "meter",
-          "reported_maximum": 0.1289506357807832,
+          "reported_maximum": 0.019119824642490454,
           "reported_unit": "mm",
           "canonical_sum_vector": [
-            2.705722972205097e-15,
-            -3.673973751771089e-13,
-            -0.05245442346845259
+            0.0030043105229627513,
+            0.006481330823219803,
+            -0.02177998455748027
           ],
           "canonical_sum_vector_unit": "meter",
           "location": "Nodal",
-          "value_count": 1077
+          "value_count": 7452
         }
       },
       "checks": [
@@ -172,621 +201,246 @@
         },
         {
           "name": "reaction_balance",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "small_deformation",
           "status": "PASS",
           "evidence": {
-            "relative_residual": 1.1759996441626767e-11,
-            "relative_tolerance": 0.05,
-            "applied_force_N": [
-              0.0,
-              0.0,
-              -1000.0
+            "ratio": 7.966593601037689e-05
+          }
+        },
+        {
+          "name": "cantilever_analytical",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "stress_singularity_review",
+          "status": "WARN"
+        },
+        {
+          "name": "safety_factor",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "image_export",
+          "status": "PASS"
+        },
+        {
+          "name": "visual_review",
+          "status": "NOT_RUN"
+        }
+      ],
+      "hashes": {
+        "generated_script_sha256": "73a88aa4fb27dd3e079fb3af9f3e0c618fc86731ba7696a6af346d3ae52dd6c3",
+        "input_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14",
+        "normalized_spec_sha256": "c200604418a44d064dc621a1db16005dc0a10167fc253ac11772d8ffa306d428",
+        "source_spec_sha256": "4968f7438deb56317f9caca9df224789f35c7125443cfcedcb0ad1e2cf5a9371"
+      },
+      "mesh_mm": 12,
+      "force_and_pressure_factor": 1.0,
+      "metrics": {
+        "node_count": 7452,
+        "element_count": 3890,
+        "maximum_total_displacement_m": 1.9119824642490454e-05,
+        "pad_mean_uz_m": -9.202438323345101e-06,
+        "pad_mean_von_mises_Pa": 1274670.0431593256,
+        "pad_p95_von_mises_Pa": 1927632.0570469024,
+        "pad_node_count": 87
+      },
+      "engineering_checks": [
+        {
+          "name": "real_solve",
+          "status": "PASS"
+        },
+        {
+          "name": "compiler_verification",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_element_types",
+          "status": "PASS"
+        },
+        {
+          "name": "selected_face_geometry",
+          "status": "PASS"
+        },
+        {
+          "name": "rst_preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "quadratic_solid_mesh",
+          "status": "PASS"
+        },
+        {
+          "name": "physical_scopes",
+          "status": "PASS"
+        },
+        {
+          "name": "force_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              1000.0,
+              1500.0,
+              -3977.958329979928
             ],
-            "reaction_force_N": [
-              -5.125230018165894e-09,
-              5.758963084190327e-09,
-              1000.0000000088805
-            ]
-          }
-        },
-        {
-          "name": "small_deformation",
-          "status": "PASS",
-          "evidence": {
-            "ratio": 0.000644753178903916
-          }
-        },
-        {
-          "name": "cantilever_analytical",
-          "status": "PASS",
-          "evidence": {
-            "actual_m": -0.00012758302548211527,
-            "expected_m": 0.00012499999999996094,
-            "relative_error": 0.020664203857241034,
-            "relative_tolerance": 0.15
-          }
-        },
-        {
-          "name": "stress_singularity_review",
-          "status": "WARN"
-        },
-        {
-          "name": "safety_factor",
-          "status": "NOT_RUN"
-        },
-        {
-          "name": "image_export",
-          "status": "PASS"
-        },
-        {
-          "name": "visual_review",
-          "status": "NOT_RUN"
-        }
-      ],
-      "hashes": {
-        "generated_script_sha256": "ef6bdb3420e7ebb1b2005350c523fff4e6e5b758f76af0c01f93b467fac61e68",
-        "input_sha256": "af9d6111c31ee448916d0c29e0361a9307265bf1f45c3333bd71d3a199fb56db",
-        "normalized_spec_sha256": "97e3398acde787ccad4845275d28f58c7b0f2a17c2fc0bc1ebb5033f439c98de",
-        "source_spec_sha256": "5ebe3128f1dace739e9f36100cb0e52998ae018b07dfd1067ba9d7d1d8081a2b"
-      }
-    },
-    {
-      "id": "pressure",
-      "synthetic": false,
-      "execution_mode": "mechanical_batch",
-      "solver_status": "SOLVED",
-      "verification_status": "WARN",
-      "started_at": "2026-09-06T07:43:29+00:00",
-      "ended_at": "2026-09-06T07:44:03+00:00",
-      "node_count": 1077,
-      "element_count": 160,
-      "results": {
-        "equivalent_stress": {
-          "canonical_maximum": 1197158.9106605507,
-          "canonical_unit": "pascal",
-          "reported_maximum": 1.1971589106605507,
-          "reported_unit": "MPa",
-          "location": "Nodal",
-          "value_count": 1077
-        },
-        "fixed_reaction": {
-          "canonical_maximum": 59.186009139782826,
-          "canonical_unit": "newton",
-          "reported_maximum": 59.186009139782826,
-          "reported_unit": "N",
-          "canonical_sum_vector": [
-            799.999999999942,
-            1.4588996677389332e-11,
-            -5.920774981404975e-11
-          ],
-          "canonical_sum_vector_unit": "newton",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "tip_x": {
-          "canonical_maximum": -9.950214579369739e-07,
-          "canonical_unit": "meter",
-          "reported_maximum": -0.000995021457936974,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            -3.6815793942007555e-05,
-            -5.03041652459584e-16,
-            9.552668834289038e-17
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "total_deformation": {
-          "canonical_maximum": 9.955866117938442e-07,
-          "canonical_unit": "meter",
-          "reported_maximum": 0.0009955866117938442,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            -0.0005334654351260835,
-            -5.157748492779851e-15,
-            1.2500641005622475e-15
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 1077
-        }
-      },
-      "checks": [
-        {
-          "name": "schema_complete",
-          "status": "PASS"
-        },
-        {
-          "name": "analysis_supported",
-          "status": "PASS"
-        },
-        {
-          "name": "body_materials",
-          "status": "PASS"
-        },
-        {
-          "name": "supports_present",
-          "status": "PASS"
-        },
-        {
-          "name": "loads_present",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_size",
-          "status": "PASS"
-        },
-        {
-          "name": "input_file",
-          "status": "PASS"
-        },
-        {
-          "name": "open_questions",
-          "status": "PASS"
-        },
-        {
-          "name": "material_authoring",
-          "status": "PASS"
-        },
-        {
-          "name": "scope_resolution",
-          "status": "PASS"
-        },
-        {
-          "name": "mechanical_messages",
-          "status": "PASS"
-        },
-        {
-          "name": "result_file",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_counts",
-          "status": "PASS"
-        },
-        {
-          "name": "requested_results",
-          "status": "PASS"
-        },
-        {
-          "name": "reaction_balance",
-          "status": "NOT_RUN",
-          "evidence": {}
-        },
-        {
-          "name": "small_deformation",
-          "status": "PASS",
-          "evidence": {
-            "ratio": 4.9779330589692205e-06
-          }
-        },
-        {
-          "name": "cantilever_analytical",
-          "status": "NOT_RUN",
-          "evidence": {}
-        },
-        {
-          "name": "stress_singularity_review",
-          "status": "WARN"
-        },
-        {
-          "name": "safety_factor",
-          "status": "NOT_RUN"
-        },
-        {
-          "name": "image_export",
-          "status": "PASS"
-        },
-        {
-          "name": "visual_review",
-          "status": "NOT_RUN"
-        }
-      ],
-      "hashes": {
-        "generated_script_sha256": "fd877ad5386d1518d46c7721d425d7114e63b09d0096c367d21d8fa2cbe312b8",
-        "input_sha256": "af9d6111c31ee448916d0c29e0361a9307265bf1f45c3333bd71d3a199fb56db",
-        "normalized_spec_sha256": "f74659711f694fb89088f47aea154ae512514281881ffbb37b69f5bde5f531be",
-        "source_spec_sha256": "e22f71fd028879c79ec4aacbbaf929d2d29019b8f984b5071bd79c3e7753e1a0"
-      }
-    },
-    {
-      "id": "gravity",
-      "synthetic": false,
-      "execution_mode": "mechanical_batch",
-      "solver_status": "SOLVED",
-      "verification_status": "WARN",
-      "started_at": "2026-09-06T07:44:03+00:00",
-      "ended_at": "2026-09-06T07:44:38+00:00",
-      "node_count": 1077,
-      "element_count": 160,
-      "results": {
-        "equivalent_stress": {
-          "canonical_maximum": 230504.48286073306,
-          "canonical_unit": "pascal",
-          "reported_maximum": 0.23050448286073305,
-          "reported_unit": "MPa",
-          "location": "Nodal",
-          "value_count": 1077
-        },
-        "fixed_reaction": {
-          "canonical_maximum": 9.532106368281777,
-          "canonical_unit": "newton",
-          "reported_maximum": 9.532106368281777,
-          "reported_unit": "N",
-          "canonical_sum_vector": [
-            -2.7474023056583974e-11,
-            3.003303161719373e-11,
-            12.317152400047146
-          ],
-          "canonical_sum_vector_unit": "newton",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "tip_z": {
-          "canonical_maximum": -5.928453733579306e-07,
-          "canonical_unit": "meter",
-          "reported_maximum": -0.0005928453733579307,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            6.552858638196081e-19,
-            -1.566282066956406e-16,
-            -2.1934595804105587e-05
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "total_deformation": {
-          "canonical_maximum": 5.977269296090719e-07,
-          "canonical_unit": "meter",
-          "reported_maximum": 0.0005977269296090719,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            1.4601995019032595e-17,
-            -2.0942055189978735e-15,
-            -0.0002633775535482692
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 1077
-        }
-      },
-      "checks": [
-        {
-          "name": "schema_complete",
-          "status": "PASS"
-        },
-        {
-          "name": "analysis_supported",
-          "status": "PASS"
-        },
-        {
-          "name": "body_materials",
-          "status": "PASS"
-        },
-        {
-          "name": "supports_present",
-          "status": "PASS"
-        },
-        {
-          "name": "loads_present",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_size",
-          "status": "PASS"
-        },
-        {
-          "name": "input_file",
-          "status": "PASS"
-        },
-        {
-          "name": "open_questions",
-          "status": "PASS"
-        },
-        {
-          "name": "material_authoring",
-          "status": "PASS"
-        },
-        {
-          "name": "scope_resolution",
-          "status": "PASS"
-        },
-        {
-          "name": "mechanical_messages",
-          "status": "PASS"
-        },
-        {
-          "name": "result_file",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_counts",
-          "status": "PASS"
-        },
-        {
-          "name": "requested_results",
-          "status": "PASS"
-        },
-        {
-          "name": "reaction_balance",
-          "status": "NOT_RUN",
-          "evidence": {}
-        },
-        {
-          "name": "small_deformation",
-          "status": "PASS",
-          "evidence": {
-            "ratio": 2.9886346480453594e-06
-          }
-        },
-        {
-          "name": "cantilever_analytical",
-          "status": "NOT_RUN",
-          "evidence": {}
-        },
-        {
-          "name": "stress_singularity_review",
-          "status": "WARN"
-        },
-        {
-          "name": "safety_factor",
-          "status": "NOT_RUN"
-        },
-        {
-          "name": "image_export",
-          "status": "PASS"
-        },
-        {
-          "name": "visual_review",
-          "status": "NOT_RUN"
-        }
-      ],
-      "hashes": {
-        "generated_script_sha256": "3e0da764b02d2bbef6d47a19fdec89e7ad74aced3a8229311730c292fa2e836c",
-        "input_sha256": "af9d6111c31ee448916d0c29e0361a9307265bf1f45c3333bd71d3a199fb56db",
-        "normalized_spec_sha256": "ec3545c4b73fd304a282bea85abb5f2d92a2e381b9f2069dd517b50058867bd0",
-        "source_spec_sha256": "0f7c8586d76aea6f240a3e536d0af3897552082ee1b967f0327ec9df18c4a23f"
-      }
-    },
-    {
-      "id": "template_mechdat",
-      "synthetic": false,
-      "execution_mode": "mechanical_batch",
-      "solver_status": "SOLVED",
-      "verification_status": "WARN",
-      "started_at": "2026-09-06T07:44:44+00:00",
-      "ended_at": "2026-09-06T07:45:16+00:00",
-      "node_count": 1077,
-      "element_count": 160,
-      "results": {
-        "equivalent_stress": {
-          "canonical_maximum": 38090217.31630064,
-          "canonical_unit": "pascal",
-          "reported_maximum": 38.09021731630064,
-          "reported_unit": "MPa",
-          "location": "Nodal",
-          "value_count": 1077
-        },
-        "fixed_reaction": {
-          "canonical_maximum": 1564.2596703544452,
-          "canonical_unit": "newton",
-          "reported_maximum": 1564.2596703544452,
-          "reported_unit": "N",
-          "canonical_sum_vector": [
-            -5.125230018165894e-09,
-            5.758963084190327e-09,
-            1000.0000000088805
-          ],
-          "canonical_sum_vector_unit": "newton",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "tip_z": {
-          "canonical_maximum": -0.00012758302548211527,
-          "canonical_unit": "meter",
-          "reported_maximum": -0.12758302548211525,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            1.1873030228252979e-16,
-            -2.6562143726061104e-14,
-            -0.004718044319728119
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 37
-        },
-        "total_deformation": {
-          "canonical_maximum": 0.0001289506357807832,
-          "canonical_unit": "meter",
-          "reported_maximum": 0.1289506357807832,
-          "reported_unit": "mm",
-          "canonical_sum_vector": [
-            2.705722972205097e-15,
-            -3.673973751771089e-13,
-            -0.05245442346845259
-          ],
-          "canonical_sum_vector_unit": "meter",
-          "location": "Nodal",
-          "value_count": 1077
-        }
-      },
-      "checks": [
-        {
-          "name": "schema_complete",
-          "status": "PASS"
-        },
-        {
-          "name": "analysis_supported",
-          "status": "PASS"
-        },
-        {
-          "name": "body_materials",
-          "status": "PASS"
-        },
-        {
-          "name": "supports_present",
-          "status": "PASS"
-        },
-        {
-          "name": "loads_present",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_size",
-          "status": "PASS"
-        },
-        {
-          "name": "input_file",
-          "status": "PASS"
-        },
-        {
-          "name": "open_questions",
-          "status": "PASS"
-        },
-        {
-          "name": "material_authoring",
-          "status": "PASS"
-        },
-        {
-          "name": "scope_resolution",
-          "status": "PASS"
-        },
-        {
-          "name": "mechanical_messages",
-          "status": "PASS"
-        },
-        {
-          "name": "result_file",
-          "status": "PASS"
-        },
-        {
-          "name": "mesh_counts",
-          "status": "PASS"
-        },
-        {
-          "name": "requested_results",
-          "status": "PASS"
-        },
-        {
-          "name": "reaction_balance",
-          "status": "PASS",
-          "evidence": {
-            "relative_residual": 1.1759996441626767e-11,
-            "relative_tolerance": 0.05,
-            "applied_force_N": [
-              0.0,
-              0.0,
-              -1000.0
+            "reaction": [
+              -999.9999999972475,
+              -1500.0000000097639,
+              3977.9675132851507
             ],
-            "reaction_force_N": [
-              -5.125230018165894e-09,
-              5.758963084190327e-09,
-              1000.0000000088805
-            ]
+            "unit": "N",
+            "residual": [
+              2.7524720280780457e-09,
+              -9.763880370883271e-09,
+              0.009183305222904892
+            ],
+            "relative_residual": 2.102695542724242e-06,
+            "relative_tolerance": 0.005
           }
         },
         {
-          "name": "small_deformation",
+          "name": "moment_balance",
           "status": "PASS",
           "evidence": {
-            "ratio": 0.000644753178903916
+            "applied": [
+              -372.69053107014,
+              854.2245224233637,
+              360.0
+            ],
+            "reaction": [
+              372.69052545437364,
+              -854.2249418201534,
+              -360.00000000166654
+            ],
+            "unit": "N*m",
+            "residual": [
+              -5.615766383471055e-06,
+              -0.0004193967896526374,
+              -1.6665353541611694e-09
+            ],
+            "relative_residual": 4.1981285678105796e-07,
+            "relative_tolerance": 0.01
           }
         },
         {
-          "name": "cantilever_analytical",
+          "name": "fixed_support_displacement",
           "status": "PASS",
           "evidence": {
-            "actual_m": -0.00012758302548211527,
-            "expected_m": 0.00012499999999996094,
-            "relative_error": 0.020664203857241034,
-            "relative_tolerance": 0.15
+            "maximum_m": 0.0,
+            "absolute_tolerance_m": 1e-12
           }
         },
         {
-          "name": "stress_singularity_review",
-          "status": "WARN"
-        },
-        {
-          "name": "safety_factor",
-          "status": "NOT_RUN"
-        },
-        {
-          "name": "image_export",
+          "name": "independent_displacement_readback",
           "status": "PASS"
         },
         {
-          "name": "visual_review",
-          "status": "NOT_RUN"
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "global_stress_peak_review",
+          "status": "WARN"
+        },
+        {
+          "name": "png_exports",
+          "status": "PASS"
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS"
         }
-      ],
-      "hashes": {
-        "generated_script_sha256": "335638d3e3f14c1fe88fa2131a7989ffb375ebc878c462f5c0a1f7390a2ac09a",
-        "input_sha256": "e807c4e3d74382b70aaa5d7bd8a1dc6c877be9fb4a953792a40a5e8e0f8a9694",
-        "normalized_spec_sha256": "73200420d53e62fa6344c9d603874a0b96b686524aed169bb7f74be93b502a1a",
-        "source_spec_sha256": "fca2ffc65db84ab53ccb407a8ec84b427d875b7689a713aae57ba351a86b57a6"
-      }
+      ]
     },
     {
-      "id": "template_mechdb",
+      "id": "mixed_8mm",
       "synthetic": false,
       "execution_mode": "mechanical_batch",
       "solver_status": "SOLVED",
       "verification_status": "WARN",
-      "started_at": "2026-09-06T07:45:27+00:00",
-      "ended_at": "2026-09-06T07:45:58+00:00",
-      "node_count": 1077,
-      "element_count": 160,
+      "started_at": "2026-09-07T00:03:12+00:00",
+      "ended_at": "2026-09-07T00:03:50+00:00",
+      "node_count": 11680,
+      "element_count": 6241,
       "results": {
         "equivalent_stress": {
-          "canonical_maximum": 38090217.31630064,
+          "canonical_maximum": 9008832.688937543,
           "canonical_unit": "pascal",
-          "reported_maximum": 38.09021731630064,
+          "reported_maximum": 9.008832688937543,
           "reported_unit": "MPa",
           "location": "Nodal",
-          "value_count": 1077
+          "value_count": 11680
         },
-        "fixed_reaction": {
-          "canonical_maximum": 1564.2596703544452,
+        "front_y": {
+          "canonical_maximum": 5.062097300606839e-06,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.0050620973006068395,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.0002680293154187033,
+            0.0007063466997872285,
+            -0.0025594596047401642
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 171
+        },
+        "mounting_reaction": {
+          "canonical_maximum": 182.39124674637185,
           "canonical_unit": "newton",
-          "reported_maximum": 1564.2596703544452,
+          "reported_maximum": 182.39124674637185,
           "reported_unit": "N",
           "canonical_sum_vector": [
-            -5.125230018165894e-09,
-            5.758963084190327e-09,
-            1000.0000000088805
+            -999.9999999987162,
+            -1499.9999999967338,
+            3977.962336610393
           ],
           "canonical_sum_vector_unit": "newton",
           "location": "Nodal",
-          "value_count": 37
+          "value_count": 887
         },
-        "tip_z": {
-          "canonical_maximum": -0.00012758302548211527,
+        "pad_stress": {
+          "canonical_maximum": 2281302.077632897,
+          "canonical_unit": "pascal",
+          "reported_maximum": 2.281302077632897,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 159
+        },
+        "pad_z": {
+          "canonical_maximum": -1.331486506961417e-05,
           "canonical_unit": "meter",
-          "reported_maximum": -0.12758302548211525,
+          "reported_maximum": -0.013314865069614169,
           "reported_unit": "mm",
           "canonical_sum_vector": [
-            1.1873030228252979e-16,
-            -2.6562143726061104e-14,
-            -0.004718044319728119
+            0.00041399805872649584,
+            0.0004607986640266874,
+            -0.001462145853690088
           ],
           "canonical_sum_vector_unit": "meter",
           "location": "Nodal",
-          "value_count": 37
+          "value_count": 159
         },
         "total_deformation": {
-          "canonical_maximum": 0.0001289506357807832,
+          "canonical_maximum": 1.9221772514427642e-05,
           "canonical_unit": "meter",
-          "reported_maximum": 0.1289506357807832,
+          "reported_maximum": 0.01922177251442764,
           "reported_unit": "mm",
           "canonical_sum_vector": [
-            2.705722972205097e-15,
-            -3.673973751771089e-13,
-            -0.05245442346845259
+            0.004728619464055852,
+            0.011068255875348734,
+            -0.03837241062467151
           ],
           "canonical_sum_vector_unit": "meter",
           "location": "Nodal",
-          "value_count": 1077
+          "value_count": 11680
         }
       },
       "checks": [
@@ -848,38 +502,18 @@
         },
         {
           "name": "reaction_balance",
-          "status": "PASS",
-          "evidence": {
-            "relative_residual": 1.1759996441626767e-11,
-            "relative_tolerance": 0.05,
-            "applied_force_N": [
-              0.0,
-              0.0,
-              -1000.0
-            ],
-            "reaction_force_N": [
-              -5.125230018165894e-09,
-              5.758963084190327e-09,
-              1000.0000000088805
-            ]
-          }
+          "status": "NOT_RUN"
         },
         {
           "name": "small_deformation",
           "status": "PASS",
           "evidence": {
-            "ratio": 0.000644753178903916
+            "ratio": 8.009071881011518e-05
           }
         },
         {
           "name": "cantilever_analytical",
-          "status": "PASS",
-          "evidence": {
-            "actual_m": -0.00012758302548211527,
-            "expected_m": 0.00012499999999996094,
-            "relative_error": 0.020664203857241034,
-            "relative_tolerance": 0.15
-          }
+          "status": "NOT_RUN"
         },
         {
           "name": "stress_singularity_review",
@@ -899,18 +533,1108 @@
         }
       ],
       "hashes": {
-        "generated_script_sha256": "c5993890d604759cce7f44275f9cccc747e481f804288887094cade9760bb7f1",
-        "input_sha256": "c36db44651f9ceb5918a49d7e79036ce48c6be6f22ee04616f6977400ddeef7d",
-        "normalized_spec_sha256": "8d6be3f08542acecddd747aeb4fe71520488bdaa5c10d43e386c4c9135bd3737",
-        "source_spec_sha256": "897cad30fb232c77b4abc19e9a7d41bbd14714979aae6ef7ea4d441958d5cfa5"
-      }
+        "generated_script_sha256": "f98c95808293226591b019e8320859cd3f8f87ed50f91385ec1c19aae86e9493",
+        "input_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14",
+        "normalized_spec_sha256": "a746aa9bd8b60c82a33489b46faa5908e9aeda8f9b33c5dbf696e78e1b11cafb",
+        "source_spec_sha256": "93addf0604d958bc2df3ed8da7f061dbada9481857f06418453a1af52519603b"
+      },
+      "mesh_mm": 8,
+      "force_and_pressure_factor": 1.0,
+      "metrics": {
+        "node_count": 11680,
+        "element_count": 6241,
+        "maximum_total_displacement_m": 1.9221772514427642e-05,
+        "pad_mean_uz_m": -9.195885872264705e-06,
+        "pad_mean_von_mises_Pa": 1258867.542499648,
+        "pad_p95_von_mises_Pa": 1974349.9911494858,
+        "pad_node_count": 159
+      },
+      "engineering_checks": [
+        {
+          "name": "real_solve",
+          "status": "PASS"
+        },
+        {
+          "name": "compiler_verification",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_element_types",
+          "status": "PASS"
+        },
+        {
+          "name": "selected_face_geometry",
+          "status": "PASS"
+        },
+        {
+          "name": "rst_preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "quadratic_solid_mesh",
+          "status": "PASS"
+        },
+        {
+          "name": "physical_scopes",
+          "status": "PASS"
+        },
+        {
+          "name": "force_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              1000.0,
+              1500.0,
+              -3977.958329979928
+            ],
+            "reaction": [
+              -999.9999999987136,
+              -1499.9999999967338,
+              3977.9623366103883
+            ],
+            "unit": "N",
+            "residual": [
+              1.2863665688200854e-09,
+              3.2662228477420285e-09,
+              0.004006630460480665
+            ],
+            "relative_residual": 9.173956223932444e-07,
+            "relative_tolerance": 0.005
+          }
+        },
+        {
+          "name": "moment_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              -372.69053107014,
+              854.2245224233637,
+              360.0
+            ],
+            "reaction": [
+              372.6905272124982,
+              -854.224756001977,
+              -359.99999999848313
+            ],
+            "unit": "N*m",
+            "residual": [
+              -3.857641843296733e-06,
+              -0.00023357861323347606,
+              1.5168666323006619e-09
+            ],
+            "relative_residual": 2.3382126155097098e-07,
+            "relative_tolerance": 0.01
+          }
+        },
+        {
+          "name": "fixed_support_displacement",
+          "status": "PASS",
+          "evidence": {
+            "maximum_m": 0.0,
+            "absolute_tolerance_m": 1e-12
+          }
+        },
+        {
+          "name": "independent_displacement_readback",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "global_stress_peak_review",
+          "status": "WARN"
+        },
+        {
+          "name": "png_exports",
+          "status": "PASS"
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "id": "mixed_5mm",
+      "synthetic": false,
+      "execution_mode": "mechanical_batch",
+      "solver_status": "SOLVED",
+      "verification_status": "WARN",
+      "started_at": "2026-09-07T00:03:54+00:00",
+      "ended_at": "2026-09-07T00:04:31+00:00",
+      "node_count": 27980,
+      "element_count": 15508,
+      "results": {
+        "equivalent_stress": {
+          "canonical_maximum": 9040418.398478584,
+          "canonical_unit": "pascal",
+          "reported_maximum": 9.040418398478584,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 27980
+        },
+        "front_y": {
+          "canonical_maximum": 5.086454479560322e-06,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.005086454479560322,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.0004681213471320184,
+            0.0012331570835879403,
+            -0.004482400684215557
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 297
+        },
+        "mounting_reaction": {
+          "canonical_maximum": 94.25915585594748,
+          "canonical_unit": "newton",
+          "reported_maximum": 94.25915585594748,
+          "reported_unit": "N",
+          "canonical_sum_vector": [
+            -999.9999983515036,
+            -1500.0000018118633,
+            3977.9670171685343
+          ],
+          "canonical_sum_vector_unit": "newton",
+          "location": "Nodal",
+          "value_count": 1845
+        },
+        "pad_stress": {
+          "canonical_maximum": 2214300.546187678,
+          "canonical_unit": "pascal",
+          "reported_maximum": 2.214300546187678,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "pad_z": {
+          "canonical_maximum": -1.3381323911871332e-05,
+          "canonical_unit": "meter",
+          "reported_maximum": -0.013381323911871332,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.000791851235522917,
+            0.0008783984599811012,
+            -0.0027899436383159023
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "total_deformation": {
+          "canonical_maximum": 1.934861694584464e-05,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.01934861694584464,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.009850693685080658,
+            0.025112189983586948,
+            -0.08949539118777448
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 27980
+        }
+      },
+      "checks": [
+        {
+          "name": "schema_complete",
+          "status": "PASS"
+        },
+        {
+          "name": "analysis_supported",
+          "status": "PASS"
+        },
+        {
+          "name": "body_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "supports_present",
+          "status": "PASS"
+        },
+        {
+          "name": "loads_present",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_size",
+          "status": "PASS"
+        },
+        {
+          "name": "input_file",
+          "status": "PASS"
+        },
+        {
+          "name": "open_questions",
+          "status": "PASS"
+        },
+        {
+          "name": "material_authoring",
+          "status": "PASS"
+        },
+        {
+          "name": "scope_resolution",
+          "status": "PASS"
+        },
+        {
+          "name": "mechanical_messages",
+          "status": "PASS"
+        },
+        {
+          "name": "result_file",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "requested_results",
+          "status": "PASS"
+        },
+        {
+          "name": "reaction_balance",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "small_deformation",
+          "status": "PASS",
+          "evidence": {
+            "ratio": 8.061923727435267e-05
+          }
+        },
+        {
+          "name": "cantilever_analytical",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "stress_singularity_review",
+          "status": "WARN"
+        },
+        {
+          "name": "safety_factor",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "image_export",
+          "status": "PASS"
+        },
+        {
+          "name": "visual_review",
+          "status": "NOT_RUN"
+        }
+      ],
+      "hashes": {
+        "generated_script_sha256": "099a5b70a670055007913b9a1b99f6256568b20306f64bf9cde770c66f007670",
+        "input_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14",
+        "normalized_spec_sha256": "38b7b50529529ea8e9fc6d8c3fd9e608a37ea298635057dfa78691a85b8e4e0b",
+        "source_spec_sha256": "e90ffcdce361902af174c424d52aa196b632b4973494dc6365abb4014026dec2"
+      },
+      "mesh_mm": 5,
+      "force_and_pressure_factor": 1.0,
+      "metrics": {
+        "node_count": 27980,
+        "element_count": 15508,
+        "maximum_total_displacement_m": 1.934861694584464e-05,
+        "pad_mean_uz_m": -9.268915741913302e-06,
+        "pad_mean_von_mises_Pa": 1291824.5382152316,
+        "pad_p95_von_mises_Pa": 2027258.6660595436,
+        "pad_node_count": 301
+      },
+      "engineering_checks": [
+        {
+          "name": "real_solve",
+          "status": "PASS"
+        },
+        {
+          "name": "compiler_verification",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_element_types",
+          "status": "PASS"
+        },
+        {
+          "name": "selected_face_geometry",
+          "status": "PASS"
+        },
+        {
+          "name": "rst_preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "quadratic_solid_mesh",
+          "status": "PASS"
+        },
+        {
+          "name": "physical_scopes",
+          "status": "PASS"
+        },
+        {
+          "name": "force_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              1000.0,
+              1500.0,
+              -3977.958329979928
+            ],
+            "reaction": [
+              -999.999998351503,
+              -1500.0000018118653,
+              3977.967017168531
+            ],
+            "unit": "N",
+            "residual": [
+              1.6484970046803937e-06,
+              -1.8118653315468691e-06,
+              0.008687188603289542
+            ],
+            "relative_residual": 1.989100115670271e-06,
+            "relative_tolerance": 0.005
+          }
+        },
+        {
+          "name": "moment_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              -372.69053107014,
+              854.2245224233637,
+              360.0
+            ],
+            "reaction": [
+              372.69056155448624,
+              -854.2246609371666,
+              -360.0000001213835
+            ],
+            "unit": "N*m",
+            "residual": [
+              3.0484346211778757e-05,
+              -0.00013851380288087967,
+              -1.213834934787883e-07
+            ],
+            "relative_residual": 1.419566897163396e-07,
+            "relative_tolerance": 0.01
+          }
+        },
+        {
+          "name": "fixed_support_displacement",
+          "status": "PASS",
+          "evidence": {
+            "maximum_m": 0.0,
+            "absolute_tolerance_m": 1e-12
+          }
+        },
+        {
+          "name": "independent_displacement_readback",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "global_stress_peak_review",
+          "status": "WARN"
+        },
+        {
+          "name": "png_exports",
+          "status": "PASS"
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "id": "gravity_5mm",
+      "synthetic": false,
+      "execution_mode": "mechanical_batch",
+      "solver_status": "SOLVED",
+      "verification_status": "WARN",
+      "started_at": "2026-09-07T00:04:35+00:00",
+      "ended_at": "2026-09-07T00:05:13+00:00",
+      "node_count": 27980,
+      "element_count": 15508,
+      "results": {
+        "equivalent_stress": {
+          "canonical_maximum": 84056.1246132885,
+          "canonical_unit": "pascal",
+          "reported_maximum": 0.0840561246132885,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 27980
+        },
+        "front_y": {
+          "canonical_maximum": -2.534866187164715e-09,
+          "canonical_unit": "meter",
+          "reported_maximum": -2.534866187164715e-06,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            3.949322419874228e-06,
+            -3.0243842531608655e-07,
+            -4.5988362352009205e-05
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 297
+        },
+        "mounting_reaction": {
+          "canonical_maximum": 1.185518063844401,
+          "canonical_unit": "newton",
+          "reported_maximum": 1.185518063844401,
+          "reported_unit": "N",
+          "canonical_sum_vector": [
+            3.738244956988379e-08,
+            3.9277144655604224e-08,
+            117.96701422767546
+          ],
+          "canonical_sum_vector_unit": "newton",
+          "location": "Nodal",
+          "value_count": 1845
+        },
+        "pad_stress": {
+          "canonical_maximum": 13280.231418477337,
+          "canonical_unit": "pascal",
+          "reported_maximum": 0.013280231418477336,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "pad_z": {
+          "canonical_maximum": -1.1708506265020223e-07,
+          "canonical_unit": "meter",
+          "reported_maximum": -0.00011708506265020223,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            8.200999805850023e-06,
+            -5.016874085855544e-07,
+            -2.6206634678500042e-05
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "total_deformation": {
+          "canonical_maximum": 1.5994449946116897e-07,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.00015994449946116898,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            8.926782457823125e-05,
+            -1.3728877964610782e-05,
+            -0.0010483298029882022
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 27980
+        }
+      },
+      "checks": [
+        {
+          "name": "schema_complete",
+          "status": "PASS"
+        },
+        {
+          "name": "analysis_supported",
+          "status": "PASS"
+        },
+        {
+          "name": "body_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "supports_present",
+          "status": "PASS"
+        },
+        {
+          "name": "loads_present",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_size",
+          "status": "PASS"
+        },
+        {
+          "name": "input_file",
+          "status": "PASS"
+        },
+        {
+          "name": "open_questions",
+          "status": "PASS"
+        },
+        {
+          "name": "material_authoring",
+          "status": "PASS"
+        },
+        {
+          "name": "scope_resolution",
+          "status": "PASS"
+        },
+        {
+          "name": "mechanical_messages",
+          "status": "PASS"
+        },
+        {
+          "name": "result_file",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "requested_results",
+          "status": "PASS"
+        },
+        {
+          "name": "reaction_balance",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "small_deformation",
+          "status": "PASS",
+          "evidence": {
+            "ratio": 6.664354144215374e-07
+          }
+        },
+        {
+          "name": "cantilever_analytical",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "stress_singularity_review",
+          "status": "WARN"
+        },
+        {
+          "name": "safety_factor",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "image_export",
+          "status": "PASS"
+        },
+        {
+          "name": "visual_review",
+          "status": "NOT_RUN"
+        }
+      ],
+      "hashes": {
+        "generated_script_sha256": "a469e46b7a61f033800a527633db1d90fe9b3e89357f8828dacf5836206ed9b3",
+        "input_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14",
+        "normalized_spec_sha256": "5bbed1f0f86746a4d8fd90d238a05c80badcfce13c667967452a539438ea2a71",
+        "source_spec_sha256": "5c8b7e84a86fc0b968f87a7d0d1c7ccce774b4e491cd40683fe730049c1d7afa"
+      },
+      "mesh_mm": 5,
+      "force_and_pressure_factor": 0.0,
+      "metrics": {
+        "node_count": 27980,
+        "element_count": 15508,
+        "maximum_total_displacement_m": 1.5994449946116897e-07,
+        "pad_mean_uz_m": -8.706523149003335e-08,
+        "pad_mean_von_mises_Pa": 8140.214059800971,
+        "pad_p95_von_mises_Pa": 12683.692931708936,
+        "pad_node_count": 301
+      },
+      "engineering_checks": [
+        {
+          "name": "real_solve",
+          "status": "PASS"
+        },
+        {
+          "name": "compiler_verification",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_element_types",
+          "status": "PASS"
+        },
+        {
+          "name": "selected_face_geometry",
+          "status": "PASS"
+        },
+        {
+          "name": "rst_preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "quadratic_solid_mesh",
+          "status": "PASS"
+        },
+        {
+          "name": "physical_scopes",
+          "status": "PASS"
+        },
+        {
+          "name": "force_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              0.0,
+              0.0,
+              -117.95832997992804
+            ],
+            "reaction": [
+              3.738262018733733e-08,
+              3.9277147040754135e-08,
+              117.96701422767545
+            ],
+            "unit": "N",
+            "residual": [
+              3.738262018733733e-08,
+              3.9277147040754135e-08,
+              0.008684247747410723
+            ],
+            "relative_residual": 7.362131821515046e-05,
+            "relative_tolerance": 0.005
+          }
+        },
+        {
+          "name": "moment_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              -0.09053107014000097,
+              9.82452242336377,
+              0.0
+            ],
+            "reaction": [
+              0.09056153631713047,
+              -9.824661385481882,
+              3.2267242790203136e-09
+            ],
+            "unit": "N*m",
+            "residual": [
+              3.0466177129498395e-05,
+              -0.00013896211811115222,
+              3.2267242790203136e-09
+            ],
+            "relative_residual": 1.4479746954716887e-05,
+            "relative_tolerance": 0.01
+          }
+        },
+        {
+          "name": "fixed_support_displacement",
+          "status": "PASS",
+          "evidence": {
+            "maximum_m": 0.0,
+            "absolute_tolerance_m": 1e-12
+          }
+        },
+        {
+          "name": "independent_displacement_readback",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "global_stress_peak_review",
+          "status": "WARN"
+        },
+        {
+          "name": "png_exports",
+          "status": "PASS"
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "id": "double_mechanical_5mm",
+      "synthetic": false,
+      "execution_mode": "mechanical_batch",
+      "solver_status": "SOLVED",
+      "verification_status": "WARN",
+      "started_at": "2026-09-07T00:05:17+00:00",
+      "ended_at": "2026-09-07T00:05:55+00:00",
+      "node_count": 27980,
+      "element_count": 15508,
+      "results": {
+        "equivalent_stress": {
+          "canonical_maximum": 18016176.112672552,
+          "canonical_unit": "pascal",
+          "reported_maximum": 18.01617611267255,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 27980
+        },
+        "front_y": {
+          "canonical_maximum": 1.0172647651261854e-05,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.010172647651261853,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.0009322933718459028,
+            0.0024666166055908752,
+            -0.008918813006063878
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 297
+        },
+        "mounting_reaction": {
+          "canonical_maximum": 187.34657631107342,
+          "canonical_unit": "newton",
+          "reported_maximum": 187.34657631107342,
+          "reported_unit": "N",
+          "canonical_sum_vector": [
+            -1999.999996653179,
+            -3000.0000035894977,
+            7837.96702007432
+          ],
+          "canonical_sum_vector_unit": "newton",
+          "location": "Nodal",
+          "value_count": 1845
+        },
+        "pad_stress": {
+          "canonical_maximum": 4418988.4799334705,
+          "canonical_unit": "pascal",
+          "reported_maximum": 4.41898847993347,
+          "reported_unit": "MPa",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "pad_z": {
+          "canonical_maximum": -2.6649328135167365e-05,
+          "canonical_unit": "meter",
+          "reported_maximum": -0.026649328135167367,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.0015755014712342582,
+            0.0017572986073705933,
+            -0.005553680641939642
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 301
+        },
+        "total_deformation": {
+          "canonical_maximum": 3.854587244511744e-05,
+          "canonical_unit": "meter",
+          "reported_maximum": 0.038545872445117445,
+          "reported_unit": "mm",
+          "canonical_sum_vector": [
+            0.019612119545620033,
+            0.05023810884619595,
+            -0.17794245257245037
+          ],
+          "canonical_sum_vector_unit": "meter",
+          "location": "Nodal",
+          "value_count": 27980
+        }
+      },
+      "checks": [
+        {
+          "name": "schema_complete",
+          "status": "PASS"
+        },
+        {
+          "name": "analysis_supported",
+          "status": "PASS"
+        },
+        {
+          "name": "body_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "supports_present",
+          "status": "PASS"
+        },
+        {
+          "name": "loads_present",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_size",
+          "status": "PASS"
+        },
+        {
+          "name": "input_file",
+          "status": "PASS"
+        },
+        {
+          "name": "open_questions",
+          "status": "PASS"
+        },
+        {
+          "name": "material_authoring",
+          "status": "PASS"
+        },
+        {
+          "name": "scope_resolution",
+          "status": "PASS"
+        },
+        {
+          "name": "mechanical_messages",
+          "status": "PASS"
+        },
+        {
+          "name": "result_file",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "requested_results",
+          "status": "PASS"
+        },
+        {
+          "name": "reaction_balance",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "small_deformation",
+          "status": "PASS",
+          "evidence": {
+            "ratio": 0.00016060780185465603
+          }
+        },
+        {
+          "name": "cantilever_analytical",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "stress_singularity_review",
+          "status": "WARN"
+        },
+        {
+          "name": "safety_factor",
+          "status": "NOT_RUN"
+        },
+        {
+          "name": "image_export",
+          "status": "PASS"
+        },
+        {
+          "name": "visual_review",
+          "status": "NOT_RUN"
+        }
+      ],
+      "hashes": {
+        "generated_script_sha256": "46340aa07c27cbdde8794b994d5804af10f4267bc4acab2b5bd2b679b7288ae3",
+        "input_sha256": "e537d747d037ef853ed0d31276b8c13fff3ad8ffc76b63ed08ac51bdbd607e14",
+        "normalized_spec_sha256": "f23e212b661edf4ccb7f771b737aa75c3c16f237e03fdceb7cb9aeb724cae583",
+        "source_spec_sha256": "f4968ff0a36a83fcba84039a2b1f60373527b64d1ad5734369ae2806ef46874e"
+      },
+      "mesh_mm": 5,
+      "force_and_pressure_factor": 2.0,
+      "metrics": {
+        "node_count": 27980,
+        "element_count": 15508,
+        "maximum_total_displacement_m": 3.854587244511744e-05,
+        "pad_mean_uz_m": -1.845076625229117e-05,
+        "pad_mean_von_mises_Pa": 2577990.233848086,
+        "pad_p95_von_mises_Pa": 4045802.2278943155,
+        "pad_node_count": 301
+      },
+      "engineering_checks": [
+        {
+          "name": "real_solve",
+          "status": "PASS"
+        },
+        {
+          "name": "compiler_verification",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_materials",
+          "status": "PASS"
+        },
+        {
+          "name": "solver_input_element_types",
+          "status": "PASS"
+        },
+        {
+          "name": "selected_face_geometry",
+          "status": "PASS"
+        },
+        {
+          "name": "rst_preserved",
+          "status": "PASS"
+        },
+        {
+          "name": "quadratic_solid_mesh",
+          "status": "PASS"
+        },
+        {
+          "name": "physical_scopes",
+          "status": "PASS"
+        },
+        {
+          "name": "force_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              2000.0,
+              3000.0,
+              -7837.958329979928
+            ],
+            "reaction": [
+              -1999.9999966531902,
+              -3000.0000035895036,
+              7837.967020074321
+            ],
+            "unit": "N",
+            "residual": [
+              3.346809762660996e-06,
+              -3.5895036489819176e-06,
+              0.008690094393386971
+            ],
+            "relative_residual": 1.007256498212662e-06,
+            "relative_tolerance": 0.005
+          }
+        },
+        {
+          "name": "moment_balance",
+          "status": "PASS",
+          "evidence": {
+            "applied": [
+              -745.2905310701401,
+              1698.6245224233637,
+              720.0
+            ],
+            "reaction": [
+              745.2905615683611,
+              -1698.6246604845842,
+              -720.0000002388515
+            ],
+            "unit": "N*m",
+            "residual": [
+              3.0498221008201654e-05,
+              -0.00013806122046844393,
+              -2.388514985796064e-07
+            ],
+            "relative_residual": 7.105841809544248e-08,
+            "relative_tolerance": 0.01
+          }
+        },
+        {
+          "name": "fixed_support_displacement",
+          "status": "PASS",
+          "evidence": {
+            "maximum_m": 0.0,
+            "absolute_tolerance_m": 1e-12
+          }
+        },
+        {
+          "name": "independent_displacement_readback",
+          "status": "PASS"
+        },
+        {
+          "name": "mesh_counts",
+          "status": "PASS"
+        },
+        {
+          "name": "global_stress_peak_review",
+          "status": "WARN"
+        },
+        {
+          "name": "png_exports",
+          "status": "PASS"
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS"
+        }
+      ]
     }
   ],
+  "convergence": {
+    "status": "PASS",
+    "series": {
+      "maximum_total_displacement_m": {
+        "values": [
+          1.9119824642490454e-05,
+          1.9221772514427642e-05,
+          1.934861694584464e-05
+        ],
+        "relative_changes": [
+          0.005303770599754377,
+          0.00655573634911612
+        ],
+        "relative_tolerance": 0.05
+      },
+      "pad_mean_uz_m": {
+        "values": [
+          -9.202438323345101e-06,
+          -9.195885872264705e-06,
+          -9.268915741913302e-06
+        ],
+        "relative_changes": [
+          0.0007125415834224656,
+          0.007879008902666077
+        ],
+        "relative_tolerance": 0.05
+      },
+      "pad_mean_von_mises_Pa": {
+        "values": [
+          1274670.0431593256,
+          1258867.542499648,
+          1291824.5382152316
+        ],
+        "relative_changes": [
+          0.012552949477353043,
+          0.025511975303640418
+        ],
+        "relative_tolerance": 0.1
+      },
+      "pad_p95_von_mises_Pa": {
+        "values": [
+          1927632.0570469024,
+          1974349.9911494858,
+          2027258.6660595436
+        ],
+        "relative_changes": [
+          0.02366243792235834,
+          0.0260986305279426
+        ],
+        "relative_tolerance": 0.1
+      }
+    },
+    "stress_weighting": "equal nodal weights; not area-weighted"
+  },
+  "linearity": {
+    "status": "PASS",
+    "relationship": "u2 = 2*u1 - ug",
+    "relative_tolerance": 1e-06,
+    "absolute_tolerance_m": 1e-12,
+    "compared_nodes": 27980,
+    "failing_nodes": 0,
+    "relative_l2_error": 1.8077489947314165e-11,
+    "maximum_absolute_error_m": 1.5610786581310183e-15,
+    "maximum_coordinate_difference_m": 0.0
+  },
   "limits": {
-    "initial_local_grpc": "FAIL",
-    "remote_transport_authentication": "NOT_RUN",
-    "mesh_convergence": "NOT_RUN",
+    "stress_singularity_review": "WARN",
+    "mesh_convergence": "PASS",
+    "gravity_corrected_linearity": "PASS",
     "safety_factor": "NOT_RUN",
-    "automatic_visual_review": "NOT_RUN"
+    "automatic_visual_review": "NOT_RUN",
+    "remote_transport_authentication": "NOT_RUN"
   }
 }

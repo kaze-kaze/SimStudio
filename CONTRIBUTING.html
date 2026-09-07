@@ -10,7 +10,7 @@
 </head>
 <body class="report-page">
   <a class="skip-link" href="#report">Skip to content</a>
-  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/CONTRIBUTING.md">View source ↗</a></nav></header>
+  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/gusseted-bracket/demo/index.html">Equipment bracket demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/CONTRIBUTING.md">View source ↗</a></nav></header>
   <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
 <ul>
 <li><a href="#contributing">Contributing</a></li>
@@ -27,10 +27,13 @@ python -m pip install -e &quot;.[dev]&quot;
 ruff check .
 pytest -q
 </code></pre>
-<p>To regenerate the neutral cantilever STEP fixture:</p>
+<p>To regenerate the primary equipment bracket STEP fixture and its CAD properties:</p>
 <pre><code class="language-bash">python -m pip install -e &quot;.[cad-fixture]&quot;
-python examples/cantilever/generate_geometry.py
+python examples/gusseted-bracket/generate_geometry.py
 </code></pre>
+<p>The tested Windows CAD generator uses build123d 0.9.1; see the bracket README for the local font
+compatibility note. The rectangular beam remains an internal analytical fixture under
+<code>tests/fixtures/cantilever/</code>. Keep those regression contracts independent of the primary example.</p>
 <p>Do not commit ANSYS projects, result files, logs containing private paths, license data, or vendor
 material databases. Real integration tests must use <code>@pytest.mark.ansys_integration</code> and require an
 explicit <code>ANSYS_AVAILABLE=1</code> opt-in.</p>

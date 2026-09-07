@@ -10,10 +10,11 @@
 </head>
 <body class="report-page">
   <a class="skip-link" href="#report">Skip to content</a>
-  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/cantilever/demo/index.html">Cantilever demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/CHANGELOG.md">View source ↗</a></nav></header>
+  <header class="site-header"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">S</span>SimStudio</a><nav aria-label="Navigation"><a href="./examples/gusseted-bracket/demo/index.html">Equipment bracket demo</a><a href="https://github.com/kaze-kaze/SimStudio/blob/main/CHANGELOG.md">View source ↗</a></nav></header>
   <div class="report-layout"><aside class="report-toc"><p class="eyebrow">ON THIS PAGE</p><div class="toc">
 <ul>
 <li><a href="#changelog">Changelog</a><ul>
+<li><a href="#unreleased">Unreleased</a></li>
 <li><a href="#010-alpha-2026-09-06">0.1.0 — Alpha — 2026-09-06</a><ul>
 <li><a href="#compiler-and-explicit-execution">Compiler and explicit execution</a></li>
 <li><a href="#compatibility-fixes-driven-by-real-runs">Compatibility fixes driven by real runs</a></li>
@@ -26,6 +27,18 @@
 </ul>
 </div>
 </aside><main class="report-body" id="report"><p class="eyebrow">SIMSTUDIO / DOCUMENTATION</p><article><h1 id="changelog">Changelog</h1>
+<h2 id="unreleased">Unreleased</h2>
+<ul>
+<li>Replace the primary cantilever example, README/site presentation, cover, public evidence, and
+  CI dry-run input with the gusseted equipment bracket. Keep the beam as an internal analytical
+  and compatibility regression fixture under <code>tests/fixtures/cantilever/</code>.</li>
+<li>Add a five-solve, three-mesh real bracket study with mixed pressure, force and gravity loads,
+  CAD-based force/moment balance, and whole-field gravity-corrected linearity checks.</li>
+<li>Isolate independent DPF checks in a worker so native Python-path changes cannot contaminate
+  later solver launches; verify PNG structure and complete pixel decoding.</li>
+<li>Preserve the recorded numerical values, engineering WARN state, source hashes, and explicit
+  execution boundary while switching the current public example. Full solver records stay local.</li>
+</ul>
 <h2 id="010-alpha-2026-09-06">0.1.0 — Alpha — 2026-09-06</h2>
 <p>This entry describes the Alpha source-release candidate and its recorded local acceptance.
 It does not assert that a public tag, package upload, hosted CI run or site deployment has completed.</p>
@@ -76,9 +89,9 @@ It does not assert that a public tag, package upload, hosted CI run or site depl
 <li>The historical offline baseline is <strong>175 passed, 11 skipped in 11.03 seconds</strong>. This historical
   baseline does not represent a new licensed solve or a successful hosted CI matrix.</li>
 </ul>
-<p>See the <a href="docs/reports/mechanical-test-2026-09-06.html">English test report</a>,
-<a href="docs/reports/mechanical-test-2026-09-06.zh-CN.html">Simplified Chinese test report</a> and
-<a href="docs/reports/evidence/2026-09-06/summary.json">public JSON summary</a> for methods, recorded data and limitations.</p>
+<p>See the <a href="https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/mechanical-test-2026-09-06.md">English test report</a>,
+<a href="https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/mechanical-test-2026-09-06.zh-CN.md">Simplified Chinese test report</a> and
+<a href="https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/evidence/2026-09-06/summary.json">public JSON summary</a> for methods, recorded data and limitations.</p>
 <h3 id="public-presentation-and-release-packaging">Public presentation and release packaging</h3>
 <ul>
 <li>English and Simplified Chinese project READMEs, a project cover, and static-site sources with

@@ -7,7 +7,7 @@ The following are future directions only. They are not implemented or silently a
 - modal analysis
 - nonlinear static structural analysis
 - Fluent CFD
-- parameter sweeps and mesh-convergence studies
+- general parameter sweeps and adaptive mesh-convergence workflows beyond the fixed bracket study
 - PyWorkbench multi-system workflows
 - a local security-hardened MCP server
 - multi-node job queues
