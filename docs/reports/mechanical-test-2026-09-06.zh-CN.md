@@ -1,97 +1,181 @@
-# Mechanical 测试报告 — 2026-09-06
+# Mechanical 工程验收报告：双肋设备托架 — 2026-09-06
 
-## 结论
+日期按本机 America/Chicago（UTC−05:00）记录。
 
-记录中的本机 Windows `mechanical_batch` 验收套件共 **9 项用例通过，对应 5 次真实求解**，失败、错误和跳过均为 0。JUnit 记录的开始时间为 `2026-09-06T02:42:49.859730-05:00`，总耗时为 194.345 秒。五次求解均有 `synthetic=false`、`SOLVED` 运行清单和 `POSTPROCESSED` 数值结果。**五个运行的工程校核总状态均保持 WARN。**
+本报告的稳定路径现用于双肋托架主算例。正文整理自上一轮已完成的托架验证，
+本次展示替换未新增求解。旧悬臂梁仅保留为 `tests/fixtures/cantilever` 内部解析回归夹具；
+早期悬臂梁、模板同步与 gRPC 诊断结果属于历史记录，不计入本报告的五次求解。
 
-首轮真实 PyMechanical gRPC 尝试失败；batch 通过未建立 gRPC 已恢复的证据。远程执行保持 `NOT_RUN`。本报告结论限定于记录中的线性静力编译工作流及其具体校核条件。
+[English report](mechanical-test-2026-09-06.md) ·
+[交互实例](../../examples/gusseted-bracket/demo/index.html) ·
+[公开摘要](evidence/2026-09-06/summary.json) ·
+[工况详情](evidence/2026-09-06/cases.json) ·
+[来源与哈希](evidence/2026-09-06/provenance.json)
 
-默认套件的**历史基线为 175 passed、11 skipped，耗时 11.03 秒**。[公开 JSON 摘要](evidence/2026-09-06/summary.json)提供本报告记录的数据；历史基准不作为新一轮求解结果。
+## 结果
 
-## 环境和方法
+已记录的 **5 项真实集成测试全部通过，对应 5 次串行 Mechanical 求解，耗时 208.16 秒**。
+运行均为 `SOLVED`、`synthetic: false`。三档网格的位移和承载台应力统计量变化满足
+预设容差；力、力矩平衡以及扣除自重后的全节点位移线性校核全部通过。
 
-记录环境为 ANSYS Student Mechanical 2026 R1、Windows 11 AMD64、CPython 3.13.2、PyMechanical 0.13.2、PyDPF 0.16.1 和 DPF server 11.0。Student 产品身份依据本地归档的验收证据；运行时版本和结果已与最终 JSON、JUnit 核对。
+上一轮验证另完成一次 8 mm 名义试算，以及首次连续测试中成功的一个 12 mm 算例，合计
+**7 次已完成的真实求解**。首轮后续四个算例在 Python 启动阶段失败，不计为真实求解。
+重开工程导出图片没有调用求解。上一轮完整离线回归记录为 **252 passed、20 skipped**；
+当时的 `ruff check .` 通过。这些是历史基线，不代表本次替换后重新执行的测试。
+跳过项目保持未执行，不计入通过。
 
-基准采用 200 × 20 × 40 mm 钢梁，杨氏模量为 200 GPa，X-min 端面固定，X-max 端面施加沿 Z 方向的 −1000 N 力。五个运行均有 1077 个节点、160 个单元，网格全局尺寸为 10 mm，单元阶次为 `program_controlled`。
+工程校核总状态保持 **WARN**：全局应力峰值仍需局部应力解释，未计算安全系数。
+本报告的通过条件针对所定义的回归算例。
 
-验收串行执行编译、显式本机 batch 求解、独立 DPF 提取、校核和报告生成。模板夹具有意改变坐标系、力分量、结果范围和方向、反力绑定；保存输出后，由新进程读取并检查对象设置。输入保全结论依据历史测试断言。
+## 算例与工况
 
-## 9 项验收用例
+源文件位于 [examples/gusseted-bracket](../../examples/gusseted-bracket/README.md)，包括
+[simulation.yaml](../../examples/gusseted-bracket/simulation.yaml)、
+[建模说明](../../examples/gusseted-bracket/simulation_brief.md)、
+[几何生成脚本](../../examples/gusseted-bracket/generate_geometry.py)和
+[CAD 属性](../../examples/gusseted-bracket/geometry-properties.json)。
+这是自主定义的工程回归模型，尺寸和载荷为明确的测试输入。
 
-| JUnit 用例 | 运行及覆盖内容 | 状态 | 耗时（秒） |
-| --- | --- | --- | ---: |
-| `test_real_cantilever` | R1，悬臂梁数值验收 | PASS | 35.465 |
-| `test_real_image_export[mesh.png]` | 复用 R1，网格 PNG | PASS | 0.001 |
-| `test_real_image_export[total-deformation.png]` | 复用 R1，总位移 PNG | PASS | 0.001 |
-| `test_real_image_export[equivalent-stress.png]` | 复用 R1，等效应力 PNG | PASS | 0.001 |
-| `test_real_raw_rst_inspect_and_report` | 复用 R1，原始 RST 提取和报告再生成 | PASS | 3.269 |
-| `test_real_pressure` | R2，面压力独立基准 | PASS | 34.591 |
-| `test_real_gravity` | R3，重力独立基准 | PASS | 35.379 |
-| `test_real_template_synchronization[.mechdat]` | R4，模板同步和保存后读回 | PASS | 42.889 |
-| `test_real_template_synchronization[.mechdb]` | R5，模板同步和保存后读回 | PASS | 42.706 |
+- 单一连通实体，34 个 CAD 面，外形 240 × 160 × 188 mm。
+- 背板厚 16 mm，托板厚 20 mm，两条加强肋厚 12 mm；8 个直径 14 mm 的安装孔。
+- 背板与托板内圆角 R10，肋板轮廓圆角 R6；偏心承载台为 70 × 60 × 8 mm。
+- 背面 X-min 全固定，表示理想刚性安装界面。
+- 前端面三向力为 [1000, 1500, −500] N，合力作用点 [240, 0, 170] mm。
+- 承载台压力 0.8 MPa，面积 4200 mm²，合力沿 −Z 为 3360 N，作用点 [165, 35, 188] mm。
+- 自重沿 −Z，重力加速度 9.80665 m/s²。
+- CAD 体积 1,532,280.529125 mm³；质心 [83.288077, 0.767483, 134.178550] mm。
+  按密度 7850 kg/m³，参考质量 12.028402 kg，参考重量 117.958330 N。
 
-表中耗时直接取自 JUnit，不能作为纯求解器耗时。三项图片检查和原始 RST 检查复用 R1 产物，因此没有增加求解次数。PNG 判据要求对应导出记录唯一且为 PASS、文件超过 33 字节、PNG 签名和 IHDR 头合法、宽高均大于 0。这三项独立检查只覆盖 R1，其他运行的图片导出状态来自 JSON。
+本机为 ANSYS Student Mechanical 2026 R1，采用显式 `mechanical_batch`。
+Python 3.13.2、PyMechanical 0.13.2、PyDPF 0.16.1；独立读取本机 DPF Server 11.0 的结果。
+求解输入 `ds.dat` 实际确认 E = 200 GPa、泊松比 0.3、密度 7850 kg/m³ 和 SOLID187。
+面加载所需 SURF154 不作为不支持的物理类型误拒绝；DPF 另核对实体单元为二次拓扑。
 
-原始 RST 独立提取与基线的位移、应力、节点反力模最大值按规范化单位比较，容差为 `rel=1e-8, abs=1e-12`；反力合量向量容差为 `rel=1e-8, abs=1e-6 N`。历史断言确认报告再生成保持数值摘要及 RST 哈希。
+## 五次求解的数值结果
 
-两种模板的保存后读回均确认：力、方向位移和反力坐标系 ID 为 0，力为 `[0,0,-1000] N`，方向为 `ZAxis`，结果采用 `Component` 范围 `TTA_SCOPE_LOAD_FACE`，反力通过 `BoundaryCondition` 绑定至 `fixed_support`。
+| 工况 | 网格尺寸 mm | 节点数 | 单元数 | 最大总位移 mm | 最大等效应力 MPa |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 三向力 + 偏心压力 + 自重 | 12 | 7,452 | 3,890 | 0.019119825 | 8.987440 |
+| 三向力 + 偏心压力 + 自重 | 8 | 11,680 | 6,241 | 0.019221773 | 9.008833 |
+| 三向力 + 偏心压力 + 自重 | 5 | 27,980 | 15,508 | 0.019348617 | 9.040418 |
+| 仅自重 | 5 | 27,980 | 15,508 | 0.000159944 | 0.084056 |
+| 两倍三向力和压力 + 原自重 | 5 | 27,980 | 15,508 | 0.038545872 | 18.016176 |
 
-## 数值结果和容差
+5 mm 混合工况中，承载台最大绝对 Z 位移为 −0.013381324 mm，节点平均 Z 位移为
+−0.009268916 mm，前端面最大绝对 Y 位移为 +0.005086454 mm。
+方向位移极值保留符号，不等于面平均值。全局应力峰值仅报告，未用作强度通过条件。
 
-下表为舍入后的展示值。方向位移从载荷端面 37 个节点中选取分量绝对值最大的节点，并保留符号，不是端面平均位移。应力为 `stress_eqv_as_mechanical` 节点平均输出的最大值。
+## 独立工程校核
 
-| 运行 | 端面方向位移（mm） | 最大总位移（mm） | 等效应力最大值（MPa） | 单节点反力模最大值（N） |
-| --- | ---: | ---: | ---: | ---: |
-| R1，力载荷 | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
-| R2，压力 | X: −0.000995021458 | 0.000995586612 | 1.19715891066 | 59.1860091398 |
-| R3，重力 | Z: −0.000592845373 | 0.000597726930 | 0.230504482861 | 9.53210636828 |
-| R4，.mechdat | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
-| R5，.mechdb | Z: −0.127583025482 | 0.128950635781 | 38.0902173163 | 1564.25967035445 |
+### 力与力矩平衡：PASS
 
-**支承反力合量由固定支承范围内的 37 个节点反力逐分量求和。** 记录中的主要分量为：R1/R4/R5 的 Z 分量 `1000.0000000088805 N`，R2 的 X 分量 `799.999999999942 N`，R3 的 Z 分量 `12.317152400047146 N`；其他分量接近零。R1 的 `1564.2596703544452 N` 是节点 936 的单节点反力模最大值，不能用作支承反力合量。平衡检查使用 `canonical_sum_vector`，而非 `reported_maximum`。
+以 CAD 面积、质心及体积计算压力合力与自重；先核验 Mechanical 实际选中面的位置、
+面积和法向，再按节点 ID 对齐 DPF 坐标与反力，计算 `ΣR` 和 `Σ(r × R)`。
+力矩原点为全局坐标原点，单位为 N·m。
 
-- **力载荷：** 判据为 `||R + [0,0,-1000]||₂ / 1000 ≤ 0.05`，记录的相对残差为 `1.1759996441626767e-11`。Euler–Bernoulli 参考位移幅值约为 0.125 mm，误差定义为 `abs(abs(actual)-expected)/expected`，记录值为 `0.020664203857241034`，即约 2.0664%，低于 15% 容差。R4/R5 具有相同结果。
-- **压力：** `pA = 1 MPa × 800 mm² = 800 N`。支反力向量与 `[800,0,0] N` 的距离须不超过 40 N；轴向位移以 −0.001 mm 为参考，采用 5% 相对容差。
-- **重力：** `ρVg = 7850 × (0.2 × 0.02 × 0.04) × 9.80665 = 12.3171524 N`。支反力向量误差须不超过该重量的 5%。位移要求以 meter 表示、数值有限且为负；测试未设置重力挠度解析误差判据。
-- **小变形：** 最大总位移除以 200 mm，力载荷、压力和重力的比值分别约为 0.000644753179、0.00000497793306、0.00000298863465，均小于 0.02，判为 PASS；区间 [0.02, 0.1) 为 WARN，达到或超过 0.1 为 FAIL。
+5 mm 混合工况：
 
-压力和重力的独立基准断言通过，但通用 `reaction_balance` 和 `cantilever_analytical` 仍为 `NOT_RUN`。两项独立反力检查没有单独归档残差标量，本报告不补造其读值。
+| 量 | X | Y | Z |
+| --- | ---: | ---: | ---: |
+| 外载荷合力 N | 1000.000000 | 1500.000000 | −3977.958330 |
+| 支反力合量 N | −999.999998 | −1500.000002 | 3977.967017 |
+| 外载荷合力矩 N·m | −372.690531 | 854.224522 | 360.000000 |
+| 支承合力矩 N·m | 372.690562 | −854.224661 | −360.000000 |
 
-## 失败驱动的修复
+该工况力相对残差为 1.9891 × 10⁻⁶，力矩相对残差为 1.4196 × 10⁻⁷。
+全部五次求解的最大相对残差分别为 **0.007362%（力）**、**0.001448%（力矩）**，
+均小于预设的 0.5% 和 1% 容差。残差按合残差向量范数除以对应外载荷向量范数计算。
+固定支承节点位移检查、非空网格、结果单位与有限值检查均通过。
 
-Python 3.11 安装因 PyMechanical 0.13.2 要求 Python ≥ 3.12 而失败。恢复的输出确认退出码为 1，但内容带有截断，不能称为完整原文。首轮真实 gRPC 用例在 604.240 秒后失败，CLI 退出码为 4；包括 grpcio 1.71.0 在内的连接探针未解决问题。精确根因仍未闭合。batch 由显式选择启用，没有自动回退。
+### 网格变化检查：PASS
 
-早期 batch 失败暴露了静力分析枚举、内置材料属性库存和结果范围 API 的兼容问题。实际导入实体名称与输入声明不符的问题通过修正输入解决。DPF 从读取不存在的等效应力属性改为使用 `stress_eqv_as_mechanical`；期间还发生过 batch 模块暂时缺失导致的导入故障，独立检查因此中断。
+两次相邻加密均按 `abs(fine - coarse) / abs(fine)` 比较。
 
-首次完整套件为 7 项通过、2 项模板失败。后续依次修复 IronPython Unicode 转换、只读范围属性赋值，以及更改 `Location` 前未清除已求值结果的问题。之后的空文本 Error 定位到模板夹具中未完整定义的附加坐标系；补全定义后，模板保存后读回通过，错误检查门槛得以保留。历史失败中曾出现原生进程退出码为 0、脚本仍失败的情况，因此成功判断必须同时检查结构化状态。
+| 指标 | 12 → 8 mm | 8 → 5 mm | 容差 |
+| --- | ---: | ---: | ---: |
+| 最大总位移 | 0.5304% | 0.6556% | 5% |
+| 承载台平均 Z 位移 | 0.0713% | 0.7879% | 5% |
+| 承载台平均等效应力 | 1.2553% | 2.5512% | 10% |
+| 承载台等效应力第 95 百分位 | 2.3662% | 2.6099% | 10% |
 
-## 保留的 WARN 和 NOT_RUN
+5 mm 承载台平均应力为 1.291825 MPa，第 95 百分位为 2.027259 MPa。
+这些统计量对承载台节点等权计算，未作面积加权；本次通过表示这组网格和指标满足
+所设变化阈值，未建立全场误差上界或固定边缘峰值的通用收敛保证。
 
-五个运行均保持 `stress_singularity_review: WARN`，固定端、载荷处和尖角附近的应力峰值仍需判断。v1 规范未提供用于安全系数计算的屈服强度，故 `safety_factor: NOT_RUN`；`visual_review` 也保持 `NOT_RUN`。无规格的原始 RST 检查中，工程校核和规格恢复为 `NOT_RUN`。
+### 扣除自重后的全场线性：PASS
 
-batch doctor 的 license、port、pymechanical、transport 预检保持 `NOT_RUN`。远程认证、传输及上传下载、真实 gRPC 超时和取消、网格收敛、显式单元阶次覆盖及其他 Mechanical 版本均未验证。历史默认套件的 11 项跳过包括 9 项需显式启用的真实用例，以及 2 项被 `WinError 1314` 阻止的原生符号链接检查；后两项仍为 `NOT_RUN`。
+设 P 为三向力和压力，G 为自重，验证 `u(2P+G) = 2u(P+G) − u(G)`。
+三个 5 mm 结果具有相同的 27,980 个节点 ID，坐标差为 0。
+逐节点比较容差为 `1e-12 m + 1e-6 × ||预测位移||`，失败节点数为 0；
+全场相对 L2 误差 **1.8077 × 10⁻¹¹**，最差节点绝对误差 1.5611 × 10⁻¹⁵ m。
+自重保持不变，因此未用包含自重的最大位移直接作两倍比较。
 
-## 复现步骤
+## 连续执行问题与修复
 
-从仓库根目录按 [Windows 测试说明](../windows-testing.md) 执行：
+首次串行测试的第一个算例完成后，测试进程内的 DPF 初始化使后续 Python 3.13 子进程
+读取到 ANSYS 自带 Python 3.10 的标准库，报出 `AssertionError: SRE module mismatch`。
+该轮报告为 5 项测试失败，原始目录与日志全部保留。
 
-1. 创建 Python 3.13 环境，安装 `.[dev,ansys]`，另行准备 Mechanical。
-2. 按文档流程复制现有[悬臂梁规格](../../examples/cantilever/simulation.yaml)，保持几何路径可解析，并显式选择 `mechanical_batch`。
-3. 执行 `doctor`、`validate` 和默认 dry-run，要求返回 `DRY_RUN`，并在真实执行前检查生成输入。
-4. 如需显式真实求解，执行文档中的 `run --execute`、`inspect` 和 `report`。复现全部 9 项用例时，使用文档中的串行 pytest 命令，设置 `ANSYS_AVAILABLE=1` 和 `ANSYS_TEST_BACKEND=mechanical_batch`，结束后恢复这两个环境变量。输出目录和 pytest 临时目录均选择新目录。
+修复仅作用于新增测试：独立数值校核在单独 Python worker 中执行，保留独立 DPF 日志。
+实际用既有 RST 确认 worker 前后父进程环境完全一致，随后在新目录完整重跑五次求解并通过。
+未放宽数值容差，未更改生产编译器或默认 dry-run 行为。
 
-## 公开证据与图片
+几何生成使用 build123d 0.9.1；0.11.1 在本机导入系统字体时失败。ANSYS 与 CAD 依赖范围未更改。
+STEP 的 Git 属性禁用换行转换，避免几何属性记录的 SHA256 在不同平台检出后失配。
 
-公开 JSON 文件仅作为本正式测试报告的数据附件：[汇总](evidence/2026-09-06/summary.json)、[用例明细](evidence/2026-09-06/cases.json)、[来源信息](evidence/2026-09-06/provenance.json)。公开副本按字段白名单整理，保留精确数值、检查状态与来源哈希，排除机器私有路径和许可证诊断。原始 JUnit 和本机执行日志只保存在已忽略的本地归档中。使用 `python tools/export_benchmark_evidence.py` 可独立检查公开文件。
+## 图片与模型边界
 
-## 后续验证重点
+五个算例的原生网格、总位移、等效应力 PNG 均通过导出记录及 PNG 文件校验。
+代码复核还发现，仅检查 PNG 文件头会误接受截断文件；已在开发依赖中加入 Pillow，
+增加文件结构校验和完整像素解码，并补充正常图像、仅有文件头、缺少结尾块三个回归用例。
+修改后对五次求解的全部 15 张原图重新完成解码校验并通过，未为图片检查重复求解。
+补充证据为 `png-decode-verification.json`，三个离线回归用例均通过。
+另从已保存的 5 mm 工程导出 Z 向上及底部视图；导出前后工程文件 SHA256 相同。
+已查看几何、底部、网格、位移和应力图：双肋和孔洞保留，网格连续，最大位移出现在
+自由端区域，应力热点位于肋与托板过渡附近。图片检查不替代数值校核。
 
-扩大兼容范围前，应在支持的执行环境中复现 gRPC 握手问题，并增加第二个 Mechanical 版本的真实验收。将应力峰值用于设计判断前，应增加网格加密序列，复核固定端和载荷区域的应力集中。压力、重力的通用合力核验，以及显式单元阶次设置能否跨版本一致工作，仍是需要证据回答的问题。
+背面全固定代表刚性安装界面。安装孔只是保留的几何特征，未求解螺栓预紧、接触、滑移
+或安装板柔度；肋、板和承载台按连续实体传力，未分辨焊缝细节。CLI 的
+`stress_singularity_review` 继续为 WARN，`safety_factor` 和自动 `visual_review`
+继续为 NOT_RUN。上述图片查看记录在 CLI 自动校核之外，保存在 `visual-review.json`，附有实际查看图片的 SHA256。
 
-[悬臂梁案例演示](../../examples/cantilever/demo/index.html)。以下为 Student 原始导出图：
+## 复现与原始记录
 
-- [网格](../../examples/cantilever/demo/assets/mesh.png) — Images used courtesy of ANSYS, Inc.
-- [总位移](../../examples/cantilever/demo/assets/total-deformation.png) — Images used courtesy of ANSYS, Inc.
-- [等效应力](../../examples/cantilever/demo/assets/equivalent-stress.png) — Images used courtesy of ANSYS, Inc.
+主集成测试入口为 [test_engineering_bracket.py](../../tests/integration/test_engineering_bracket.py)。
+按[算例 README](../../examples/gusseted-bracket/README.md)执行；真实测试需要
+`ANSYS_AVAILABLE=1` 和显式 `ANSYS_TEST_BACKEND=mechanical_batch`，保持串行并使用新输出目录。
 
-导出记录证明产物可用，视觉工程审查仍待完成。后续采集的界面截图不能替代求解原图。部分早期运行清单停留在 `COMPILED`；空日志、截断输出和被重复使用的中间目录限制了历史重建。本报告不推断缺失的耗时、哈希或故障细节。
+本机原始证据目录：
+
+- `build/bracket-study-20260906-02/engineering-bracket0/`：最终五次求解、`study-summary.json`、逐节点证据、每次校核、Mechanical 工程与 RST。
+- `build/bracket-study-20260906-01/engineering-bracket0/`：首轮失败证据。
+- `build/engineering-bracket-20260906-01/`：名义试算、dry-run、doctor、两轮 JUnit 和终端日志、离线回归、补充图片。
+
+这些运行目录保留在已忽略的本机记录中，不作为公开软件包内容。公开 JSON 通过字段
+白名单提取数值、状态和来源哈希，不附带私人绝对路径、许可证日志、工程文件或 RST。
+
+## 5 mm 原始展示图
+
+以下图片均来自已保存的 `mixed_5mm` 工程的 `fine-views` 导出，未重新求解。
+首页、封面与实例使用同一工况；图片逐文件按 SHA256 核对后发布，未裁剪或改色。
+
+![双肋托架 5 mm 网格](../../examples/gusseted-bracket/demo/assets/mesh.png)
+
+![双肋托架 5 mm 总位移](../../examples/gusseted-bracket/demo/assets/total-deformation.png)
+
+![双肋托架 5 mm 等效应力](../../examples/gusseted-bracket/demo/assets/equivalent-stress.png)
+
+Images used courtesy of ANSYS, Inc. [几何视图](../../examples/gusseted-bracket/demo/assets/geometry.png)与
+[底部视图](../../examples/gusseted-bracket/demo/assets/underside.png)用于查看实体与双肋、孔洞特征，
+不包含新的模拟结果。
+
+## WARN 与 NOT_RUN
+
+- 五次运行的 `stress_singularity_review: WARN` 保留，全局应力峰值未用作强度验收条件。
+- `safety_factor: NOT_RUN`：输入未给定屈服强度；`visual_review: NOT_RUN` 是自动检查状态。
+  上述人工图片查看及其哈希记录独立保存，不会将自动状态改写为 PASS。
+- 混合压力／重力工况的 CLI `reaction_balance: NOT_RUN`；测试中的独立力与力矩验收为 PASS。
+  未启用的 `cantilever_analytical` 也保持 NOT_RUN。
+- 其他 Mechanical 版本与远程执行未验证。早期本机 gRPC 握手失败，未在此次托架研究中重测。
+- 网格变化验收只适用于列出的两次加密和四项统计量，未建立全场误差上界，
+  不包含固定边缘峰值的通用收敛或设计批准。

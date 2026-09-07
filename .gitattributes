@@ -3,6 +3,8 @@
 
 # These published artifacts are verified byte-for-byte on every platform.
 /docs/reports/evidence/** -text whitespace=cr-at-eol
-/examples/cantilever/demo/evidence.js -text whitespace=cr-at-eol
+/examples/gusseted-bracket/demo/evidence.js -text whitespace=cr-at-eol
+# CAD properties bind to the exact neutral input bytes on every platform.
+/examples/gusseted-bracket/gusseted-bracket.step -text
 *.png binary
 /docs/assets/*.svg text eol=lf

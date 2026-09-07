@@ -12,7 +12,7 @@ import yaml
 from ansys_skill.errors import ExitCode, MechanicalExecutionError
 
 ROOT = Path(__file__).resolve().parents[2]
-EXAMPLE = ROOT / "examples" / "cantilever" / "simulation.yaml"
+EXAMPLE = ROOT / "examples" / "gusseted-bracket" / "simulation.yaml"
 
 
 def _run(*arguments: str) -> subprocess.CompletedProcess[str]:

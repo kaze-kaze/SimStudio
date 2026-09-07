@@ -25,14 +25,15 @@ REPORT = "docs/reports/mechanical-test-2026-09-06"
 DOCUMENTS = (
     REPORT + ".md", REPORT + ".zh-CN.md", "docs/windows-testing.md",
     "CONTRIBUTING.md", "SECURITY.md", "ROADMAP.md", "CHANGELOG.md",
-    "examples/cantilever/README.md", "examples/cantilever/demo/README.md",
+    "examples/gusseted-bracket/README.md", "examples/gusseted-bracket/demo/README.md",
 )
 ASSETS = (
     "docs/site/site.css", "docs/site/icon.svg", "docs/assets/overview.png",
-    "LICENSE", "NOTICE", "examples/cantilever/simulation.yaml",
-    "examples/cantilever/cantilever.step", "examples/cantilever/expected.json",
-    *("examples/cantilever/demo/" + name for name in (
+    "LICENSE", "NOTICE", "examples/gusseted-bracket/simulation.yaml",
+    "examples/gusseted-bracket/gusseted-bracket.step", "examples/gusseted-bracket/geometry-properties.json",
+    *("examples/gusseted-bracket/demo/" + name for name in (
         "index.html", "style.css", "demo.js", "evidence.js",
+        "assets/geometry.png", "assets/underside.png",
         "assets/mesh.png", "assets/total-deformation.png", "assets/equivalent-stress.png",
     )),
     *("docs/reports/evidence/2026-09-06/" + name for name in (
@@ -99,7 +100,7 @@ def render_document(relative: str, root: Path) -> str:
         source_url=REPO + quote(relative, safe="/"),
         skip_label="跳转到正文" if chinese else "Skip to content",
         contents_label="本页目录" if chinese else "ON THIS PAGE",
-        demo_label="悬臂梁实例" if chinese else "Cantilever demo",
+        demo_label="托架实例" if chinese else "Equipment bracket demo",
         source_label="查看原文" if chinese else "View source",
         home_label="项目首页" if chinese else "Project home",
         category="TEST REPORT" if relative.startswith(REPORT + ".") else "DOCUMENTATION",
@@ -156,9 +157,9 @@ def build(root: Path, output: Path) -> dict:
         shutil.copyfile(source(root, relative), target)
     homepage = source(root, "docs/site/index.html").read_text(encoding="utf-8")
     (output / "index.html").write_text(homepage, encoding="utf-8", newline="\n")
-    demo = output / "examples/cantilever/demo/index.html"
+    demo = output / "examples/gusseted-bracket/demo/index.html"
     demo.write_text(rewrite_links(demo.read_text(encoding="utf-8"),
-                                  "examples/cantilever/demo/index.html", root),
+                                  "examples/gusseted-bracket/demo/index.html", root),
                     encoding="utf-8", newline="\n")
     for relative in DOCUMENTS:
         (output / PAGES[relative]).write_text(render_document(relative, root),

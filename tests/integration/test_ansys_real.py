@@ -16,7 +16,9 @@ from ansys_skill.cli import _find_result_file
 from ansys_skill.manifest import sha256_file
 
 ROOT = Path(__file__).resolve().parents[2]
-EXAMPLE = ROOT / "examples" / "cantilever" / "simulation.yaml"
+# Retain isolated load, analytical, template, image, and raw-RST behavior regressions.
+# The public engineering example is covered by test_engineering_bracket.py.
+EXAMPLE = ROOT / "tests" / "fixtures" / "cantilever" / "simulation.yaml"
 REAL_BACKENDS = ("pymechanical_remote", "mechanical_batch")
 EXECUTION_TIMEOUT_SECONDS = 300
 

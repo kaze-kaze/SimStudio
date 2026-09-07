@@ -29,10 +29,10 @@ jobs:
         run: ruff check .
       - name: Offline tests
         run: pytest -q -m "not ansys_integration"
-      - name: Compile example
-        run: ansys-sim compile examples/cantilever/simulation.yaml --out build/ci-cantilever --json
-      - name: Dry-run example
-        run: ansys-sim run examples/cantilever/simulation.yaml --out build/ci-dry-run --json
+      - name: Compile engineering example
+        run: ansys-sim compile examples/gusseted-bracket/simulation.yaml --out build/ci-gusseted-bracket --json
+      - name: Dry-run engineering example
+        run: ansys-sim run examples/gusseted-bracket/simulation.yaml --out build/ci-dry-run --json
       - name: Verify public benchmark evidence
         run: python tools/export_benchmark_evidence.py
       - name: Build and validate public site

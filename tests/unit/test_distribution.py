@@ -16,6 +16,19 @@ TOOL = runpy.run_path(str(ROOT / "tools/check_distribution.py"))
 CORE = {
     "README.zh-CN.md", "docs/assets/overview.png", "docs/site/index.html",
     "docs/site/site.css", "docs/site/report.html", "tools/build_site.py",
+    *("examples/gusseted-bracket/" + name for name in (
+        "README.md", "simulation.yaml", "simulation_brief.md", "gusseted-bracket.step",
+        "geometry-properties.json", "generate_geometry.py", "export_views.py",
+    )),
+    *("examples/gusseted-bracket/demo/" + name for name in (
+        "index.html", "style.css", "demo.js", "evidence.js", "README.md",
+        "assets/geometry.png", "assets/underside.png", "assets/mesh.png",
+        "assets/total-deformation.png", "assets/equivalent-stress.png",
+    )),
+    *("tests/fixtures/cantilever/" + name for name in (
+        "README.md", "simulation.yaml", "simulation_brief.md", "cantilever.step",
+        "expected.json", "generate_geometry.py",
+    )),
 }
 OPTIONAL = {
     "docs/site/site.js", "docs/site/README.md", "tools/check_site.py",
@@ -53,7 +66,7 @@ def test_source_contract_accepts_core_without_optional_files(tmp_path, kind):
 
 
 @pytest.mark.parametrize("missing", sorted(CORE))
-def test_source_contract_rejects_missing_presentation_sources(tmp_path, missing):
+def test_source_contract_rejects_missing_required_sources(tmp_path, missing):
     path = archive(tmp_path, TOOL["REQUIRED"] - {missing})
     with pytest.raises(ValueError) as error:
         TOOL["inspect"](path)

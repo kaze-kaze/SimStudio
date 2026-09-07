@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Replace the primary cantilever example, README/site presentation, cover, public evidence, and
+  CI dry-run input with the gusseted equipment bracket. Keep the beam as an internal analytical
+  and compatibility regression fixture under `tests/fixtures/cantilever/`.
+- Add a five-solve, three-mesh real bracket study with mixed pressure, force and gravity loads,
+  CAD-based force/moment balance, and whole-field gravity-corrected linearity checks.
+- Isolate independent DPF checks in a worker so native Python-path changes cannot contaminate
+  later solver launches; verify PNG structure and complete pixel decoding.
+- Preserve the recorded numerical values, engineering WARN state, source hashes, and explicit
+  execution boundary while switching the current public example. Full solver records stay local.
+
 ## 0.1.0 — Alpha — 2026-09-06
 
 This entry describes the Alpha source-release candidate and its recorded local acceptance.
@@ -52,9 +64,9 @@ It does not assert that a public tag, package upload, hosted CI run or site depl
 - The historical offline baseline is **175 passed, 11 skipped in 11.03 seconds**. This historical
   baseline does not represent a new licensed solve or a successful hosted CI matrix.
 
-See the [English test report](docs/reports/mechanical-test-2026-09-06.md),
-[Simplified Chinese test report](docs/reports/mechanical-test-2026-09-06.zh-CN.md) and
-[public JSON summary](docs/reports/evidence/2026-09-06/summary.json) for methods, recorded data and limitations.
+See the [English test report](https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/mechanical-test-2026-09-06.md),
+[Simplified Chinese test report](https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/mechanical-test-2026-09-06.zh-CN.md) and
+[public JSON summary](https://github.com/kaze-kaze/SimStudio/blob/1138c3dda8bdd5a08357ea4c763f89b76010d2da/docs/reports/evidence/2026-09-06/summary.json) for methods, recorded data and limitations.
 
 ### Public presentation and release packaging
 

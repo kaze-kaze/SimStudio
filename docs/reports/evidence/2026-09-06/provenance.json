@@ -3,114 +3,142 @@
   "recorded_on": "2026-09-06",
   "sources": [
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/results-summary.json",
-      "sha256": "316ce87ce5895919fee44baa50dd45bfb5ed05181423314e554e262e62547000"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/study-summary.json",
+      "sha256": "3571bcac1a04973ebd861eb107e7e155368dfa34f2d124ac0116a7327b5edeb2"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/verification.json",
-      "sha256": "6f61a0bb0e99bb4b1596c446a2d7eaa26150c4d138db66e59ecc366ffb826173"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_12mm/run/results-summary.json",
+      "sha256": "a45dd755bfc783ad5e29f58977245084af953b0abcc81a76ad4c68916cea0fd3"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/run-manifest.json",
-      "sha256": "b99d6743bea398704c88e7da1aa1bb96610ea1d6bca74a7c8c30b68792d2b7b3"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_12mm/run/verification.json",
+      "sha256": "c3f4fbca37016caea8e467f97cc8a0ec1f0ad7a29f95b60339ed95fc51e92245"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/results-summary.json",
-      "sha256": "d61b18d0ff1001cb9d7d24c2298fc0e62c423ee47dc2754bcb3c14769622f3ca"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_12mm/run/run-manifest.json",
+      "sha256": "385f08e5765fc73bb6cebb057a6a17ceba3d2ba071a397cd57ffe9856e45cb7f"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/verification.json",
-      "sha256": "08d425b17efae50d96de7bbb30ae3a3e889fcd94bcb0ded622aa889881cd7779"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_8mm/run/results-summary.json",
+      "sha256": "ad477bcce447979e1a9a3c2faa69ab34382364eaa9e279fbbd019db4dc7e4780"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_pressure0/run/run-manifest.json",
-      "sha256": "7736b57f6b86a531cc21d1bf06af57eaccd1ca09020cb2d29da393878468fea1"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_8mm/run/verification.json",
+      "sha256": "0f16536e1ff385513a3b67880acdfeeec358ea684416e454d073a2541663771c"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/results-summary.json",
-      "sha256": "0e580fd9101d67665d4f8231c6051ea9131e4f9ca5bddc825cb6c5eaccaa9c89"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_8mm/run/run-manifest.json",
+      "sha256": "554648341270320559211e24a8edf1be690c13925c6d4a99027271eff852967a"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/verification.json",
-      "sha256": "0f7ab5928ff44b3ee13506c5c5f3a8210bd029ffc9ed7a9397ea010ec09ea63d"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_5mm/run/results-summary.json",
+      "sha256": "8c389efc685328e25e0dca1181f6c901531ee87295af99a6a8b415c82513e878"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_gravity0/run/run-manifest.json",
-      "sha256": "75be781b70c2c9060bd2c30b829e77e56dbdfa44533173cd91d1aed47d8a35a5"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_5mm/run/verification.json",
+      "sha256": "5eaa66838cdbd0a7b52f742431a64e460c30395697e69220f7edd550bbc59e4a"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/results-summary.json",
-      "sha256": "6fdaa7d258e95f07e40b301b735e88dc5614c6ead7c612671e6178004e1d9301"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/mixed_5mm/run/run-manifest.json",
+      "sha256": "c9a0bdd706f17866f43a80fd5f741bc82b34fd6329c4551b8638cf62dc775300"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/verification.json",
-      "sha256": "a5db2f498fea4abb1ed0aed8b94535b092997e59950733c52de80b268999526a"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/gravity_5mm/run/results-summary.json",
+      "sha256": "9ff4c6e0b106cd4d588ff1a241fa623aa56412da62a2a4ef9bfa8b1361d62503"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza0/run/run-manifest.json",
-      "sha256": "832449c5e1f87476741ea3150f31fc40e85b5cac1d037673fb962b4b52cdeaf4"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/gravity_5mm/run/verification.json",
+      "sha256": "d7d579ce3bcb262ad8ff4181225b7885bc7d294d71761bcd95fb8c7d8bca956d"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/results-summary.json",
-      "sha256": "771eaf6f05ef57b7b2e8da08c8351ec696ead5900dae48fd8834507bf4441e26"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/gravity_5mm/run/run-manifest.json",
+      "sha256": "e1b3c874908cea661f41022449f14cbaacb266b325820ba713c9322ca4ce342e"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/verification.json",
-      "sha256": "e54aae4228a2caf8f405b38f2d21791a7e09bbdc7092b4aaee0780d30638d7f6"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/double_mechanical_5mm/run/results-summary.json",
+      "sha256": "3c9d80761c104104e6296a7c590bc98d419128ce104724c18c9541f68ff519ae"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/test_real_template_synchroniza1/run/run-manifest.json",
-      "sha256": "d09f5d6afbc754774b80eee63eca8fbfccdda9f918db57adcf72bfad63d3cac1"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/double_mechanical_5mm/run/verification.json",
+      "sha256": "7af3203afb1ef830f59d7c0963604d2479356d3585c754b465fe255231468a11"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906.xml",
-      "sha256": "c9babe97ebb4e7bc738d84651fccf3e1a99e6bf5060b0a09bf37699b5e3c51b6"
+      "source_artifact": "bracket-study-20260906-02/engineering-bracket0/double_mechanical_5mm/run/run-manifest.json",
+      "sha256": "31b30f7a454e7fb898ecdac8dfc247890f6969dc19cd091b37bf005f0e123cd7"
     },
     {
-      "source_artifact": "offline-final.log",
-      "sha256": "ca38bf37528255e0b039dbf2abcae11e28136a7f09b6021ae64cbfc057872836"
+      "source_artifact": "engineering-bracket-20260906-01/engineering-02-junit.xml",
+      "sha256": "e7308500bf80d05e9ded7670a9e37a1b86a5f55320f023b25168aafb7e2c322f"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/mesh.png",
-      "sha256": "13c204c184054d0c55d942d0e949c2d38960a1ecdc3f9bc9fa2092241b7891c6"
+      "source_artifact": "engineering-bracket-20260906-01/offline-final-pytest.stdout.log",
+      "sha256": "2d76c12536267a99157e75aee0919543b25614ab8320a515dd75636235a5246f"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/total-deformation.png",
-      "sha256": "4258faad890ad942258e0933eea0fd57fc9dce57f2fde3e08e43482682afb704"
+      "source_artifact": "engineering-bracket-20260906-01/png-decode-verification.json",
+      "sha256": "5318e59d811e9e95ff5805dca32ed1b0fb8194ffb79fe69ffa9f7a80b88b7ebd"
     },
     {
-      "source_artifact": "windows-acceptance-final-20260906/real-cantilever0/run/equivalent-stress.png",
-      "sha256": "3d89bcfab7c8dcb1c44a4e0040362c9284a9a6d3e5f71acb57dc811a47f47c37"
+      "source_artifact": "engineering-bracket-20260906-01/fine-view-export-process.json",
+      "sha256": "1431d6a3f3b69cfb3a2f472af4a88183529c557d7aa3c6c9a3f6165b2fe6ba23"
+    },
+    {
+      "source_artifact": "engineering-bracket-20260906-01/fine-views/geometry.png",
+      "sha256": "a0e108bb5df4257a6331ad7af56b9cbffc8d518c86b456c2641ca060318548bd"
+    },
+    {
+      "source_artifact": "engineering-bracket-20260906-01/fine-views/underside.png",
+      "sha256": "1158634d762fbc4ba157825f35eda9cd5675615051467428bf861b14f7ad5905"
+    },
+    {
+      "source_artifact": "engineering-bracket-20260906-01/fine-views/mesh.png",
+      "sha256": "f097a83f6d2cb5ca08e09802f0eb352822f31dfd40c15f2eef03ea2b582a1564"
+    },
+    {
+      "source_artifact": "engineering-bracket-20260906-01/fine-views/total-deformation.png",
+      "sha256": "e5a6b6e6f29ecc34e1a4525ac338d0a302d622d45386b7dfddee2af9ea64c07b"
+    },
+    {
+      "source_artifact": "engineering-bracket-20260906-01/fine-views/equivalent-stress.png",
+      "sha256": "247342426140fa6443b783fecbaa40d5fd9beb85bc52eca3add2e303254e7218"
     }
   ],
   "transformation": "tools/export_benchmark_evidence.py",
-  "policy": "Field allowlist; remove hostname, absolute paths, free-form logs and process/license details. Preserve numbers and check states.",
-  "images": "Three unmodified PNG files from the repository-authored cantilever benchmark. Images used courtesy of ANSYS, Inc.",
+  "policy": "Field allowlist; exclude host paths, logs and licensing details. Preserve measured numbers and check states.",
+  "images": "Five unmodified PNG exports from the unchanged fine-mesh bracket project. Images used courtesy of ANSYS, Inc.",
   "published_files": [
     {
       "path": "docs/reports/evidence/2026-09-06/summary.json",
-      "sha256": "78428b89fcc87941c608b04cc3767c502bc9b2f141a7a3456d6e4eadbc4475b7"
+      "sha256": "a1d0fc7f70b391948977beec41019314a5587ed858a5ea94f7703fd89f0c1f9b"
     },
     {
       "path": "docs/reports/evidence/2026-09-06/cases.json",
-      "sha256": "0cddf3fefec9f2ccd0fa891b42e5697212d1dbcf9df3ced77adec934152f76ab"
+      "sha256": "65f465fc1faac256b504f698fd7bc1f9a46b2d42122f4eb33dd8a12b114c186b"
     },
     {
-      "path": "examples/cantilever/demo/assets/mesh.png",
-      "sha256": "13c204c184054d0c55d942d0e949c2d38960a1ecdc3f9bc9fa2092241b7891c6"
+      "path": "examples/gusseted-bracket/demo/assets/geometry.png",
+      "sha256": "a0e108bb5df4257a6331ad7af56b9cbffc8d518c86b456c2641ca060318548bd"
     },
     {
-      "path": "examples/cantilever/demo/assets/total-deformation.png",
-      "sha256": "4258faad890ad942258e0933eea0fd57fc9dce57f2fde3e08e43482682afb704"
+      "path": "examples/gusseted-bracket/demo/assets/underside.png",
+      "sha256": "1158634d762fbc4ba157825f35eda9cd5675615051467428bf861b14f7ad5905"
     },
     {
-      "path": "examples/cantilever/demo/assets/equivalent-stress.png",
-      "sha256": "3d89bcfab7c8dcb1c44a4e0040362c9284a9a6d3e5f71acb57dc811a47f47c37"
+      "path": "examples/gusseted-bracket/demo/assets/mesh.png",
+      "sha256": "f097a83f6d2cb5ca08e09802f0eb352822f31dfd40c15f2eef03ea2b582a1564"
     },
     {
-      "path": "examples/cantilever/demo/evidence.js",
-      "sha256": "2159fa592121d1cb9b03c5a345d31a955ca156e9c628bb9c3eb4043ab9cc9ba8"
+      "path": "examples/gusseted-bracket/demo/assets/total-deformation.png",
+      "sha256": "e5a6b6e6f29ecc34e1a4525ac338d0a302d622d45386b7dfddee2af9ea64c07b"
+    },
+    {
+      "path": "examples/gusseted-bracket/demo/assets/equivalent-stress.png",
+      "sha256": "247342426140fa6443b783fecbaa40d5fd9beb85bc52eca3add2e303254e7218"
+    },
+    {
+      "path": "examples/gusseted-bracket/demo/evidence.js",
+      "sha256": "c63181df7b042974a4c5bc6046c203fbcdfa776ae165fc4ccf2df6c253626464"
     }
   ],
-  "source_archives": "Original full records are retained locally and are not redistributed."
+  "source_archives": "Full solve records remain local and are not redistributed."
 }

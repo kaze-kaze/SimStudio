@@ -2,8 +2,9 @@
 
 ## Objective
 
-Build a simple, reviewable benchmark for the v1 `from_geometry` workflow. Compare the finite-element
-tip Z displacement against Euler-Bernoulli beam theory.
+Retain an analytical reference for the v1 `from_geometry` regression tests. Compare the finite-element
+tip Z displacement against Euler-Bernoulli beam theory, with isolated pressure and gravity variants
+used by the integration suite. The public engineering example is the gusseted equipment bracket.
 
 ## Inputs
 

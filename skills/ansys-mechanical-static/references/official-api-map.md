@@ -135,7 +135,7 @@ The compiler/runtime uses these documented entry points:
 | force | `analysis.AddForce()`, `LoadDefineBy.Components`, component `DiscreteValues` | official example/stubs | documented/example; live batch tested (2026 R1) |
 | pressure | `analysis.AddPressure()`, `Magnitude.Output.DiscreteValues` | scripting stubs | package stubs inspected; live batch tested (2026 R1) |
 | gravity | `analysis.AddEarthGravity()`, `Direction` with `GravityOrientationType`, global coordinates | scripting stubs | package stubs inspected; live batch tested (2026 R1) |
-| mesh | `Model.Mesh.ElementSize`, `Model.Mesh.ElementOrder`, `Model.Mesh.GenerateMesh()` | official 2026 R1 example/stubs | size and generation live tested; explicit element-order override remains NOT_RUN |
+| mesh | `Model.Mesh.ElementSize`, `Model.Mesh.ElementOrder`, `Model.Mesh.GenerateMesh()` | official 2026 R1 example/stubs | size, generation, and explicit quadratic order live batch tested on the gusseted bracket (2026 R1); linear override remains NOT_RUN |
 | results | `Solution.AddTotalDeformation()`, `AddDirectionalDeformation()`, `AddEquivalentStress()`, `AddForceReaction()` | scripting stubs | package stubs inspected; live batch tested (2026 R1) |
 | solve | `analysis.Solve(True)` | official example/stubs | documented/example; live batch tested (2026 R1) |
 | save | `ExtAPI.DataModel.Project.SaveAs(path, True)` | v261 Project signature | documented/package-inspected; live batch tested (2026 R1) |
@@ -185,6 +185,18 @@ centroids with their geometry length unit, areas with the derived area unit, and
 geometry-unit selector tolerances. Runtime failures are explicit unsupported errors; no topology-order
 or raw-ID fallback is allowed.
 
+The additional single-solid `GussetedBracket|Solid` STEP fixture was also imported and solved on
+the same 2026 R1 host. Its unique X-min backing, X-max front, and Z-max eccentric pad use the existing
+selector unchanged. The fixture retains eight cylindrical holes, rounded ribs, and a wall/shelf fillet.
+See `examples/gusseted-bracket/` for its source and independently defined study.
+
+The example's optional saved-project view exporter uses `MechanicalCameraWrapper.UpVector`,
+`ViewVector`, and `SetFit(None)`, plus `Graphics.ViewOptions.ShowMesh` and the existing
+`ExportImage` path. These entries were checked against the installed v261 stubs under
+`Ansys/ACT/Common/Graphics` and `Ansys/Mechanical/Graphics`, then exercised in a task-owned
+batch process. The exporter neither calls Solve nor saves the source project; before/after project
+hashes matched. This is a fixture-specific presentation script, not a new compiler camera policy.
+
 ## PyDPF
 
 Package-verified constructors:
@@ -223,6 +235,20 @@ are also tested without the original specification. Pressure/gravity resultant c
 
 The workflow uses the official client-managed local server selected by `dpf.Model`, with no separate
 remote DPF configuration. Remote DPF authentication and transport are outside this live evidence.
+
+The bracket integration fixture additionally reads `mesh.nodes.coordinates_field`, resolves
+nodal scopes with `model.metadata.named_selection`, and calls the displacement and reaction-force
+operators with `bool_rotate_to_global=True`. It aligns fields by node ID before calculating
+`sum(r cross R)` and load superposition; `element_types.descriptor` verifies quadratic solid
+topology, with saved `ds.dat` confirming SOLID187 and actual material values. These calls were
+exercised against this fixture's real RST with DPF Server 11.0. They are test-specific checks;
+the general CLI pressure/gravity balance policy remains unchanged.
+
+The fixture performs this independent extraction in a child Python process. A first serial study
+revealed that in-process DPF initialization polluted the parent environment with bundled Python
+3.10 paths, causing the next Python 3.13 CLI to report `SRE module mismatch`. Keeping DPF inside
+the worker preserves the launcher environment and isolates its native runtime. This does not change
+the supported package/version range or imply acceptance of a remote DPF server.
 
 ## Codex Skill/plugin contract
 

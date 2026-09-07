@@ -11,7 +11,7 @@ import yaml
 from ansys_skill.compiler.mechanical import render_script
 
 ROOT = Path(__file__).resolve().parents[1]
-CANTILEVER = ROOT / "examples" / "cantilever"
+CANTILEVER = ROOT / "tests" / "fixtures" / "cantilever"
 
 
 @pytest.fixture
@@ -29,6 +29,7 @@ def create_symlink():
 
 @pytest.fixture
 def valid_document() -> dict[str, object]:
+    """Keep the analytical beam contract for focused schema and behavior regressions."""
     return yaml.safe_load((CANTILEVER / "simulation.yaml").read_text(encoding="utf-8"))
 
 

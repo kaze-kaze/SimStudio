@@ -1,9 +1,12 @@
 # Windows acceptance testing
 
-Local batch execution was tested on ANSYS Student Mechanical 2026 R1 on 2026-09-06. This
-installation's gRPC connection failed during handshake. Use the explicit batch workflow below for
-the recorded execution path, and read the [formal test report](reports/mechanical-test-2026-09-06.md).
-Other installations, service packs, CAD importers, and licenses require their own acceptance.
+The primary acceptance example is the [twin-rib equipment bracket](../examples/gusseted-bracket/README.md).
+The September 6, 2026 study recorded **5 passed integration tests across 5 serial real solves
+in 208.16 seconds** on ANSYS Student Mechanical 2026 R1 using explicit `mechanical_batch`.
+Read the [formal test report](reports/mechanical-test-2026-09-06.md). The preceding offline
+baseline was **252 passed, 20 skipped**; it is not a new result from this presentation replacement.
+An earlier local gRPC handshake failed and was not retested by the bracket study. Other
+installations, service packs, CAD importers, licenses, and versions require their own acceptance.
 
 The public [JSON summary](reports/evidence/2026-09-06/summary.json),
 [case details](reports/evidence/2026-09-06/cases.json), and
@@ -36,27 +39,18 @@ The two real symbolic-link checks report `NOT_RUN` when Windows denies link crea
 `WinError 1314`. Their original rejection assertions still run on a host with that privilege.
 Other symbolic-link errors are not hidden.
 
-## Prepare an explicit batch specification
+## Validate and dry-run the bracket
 
-Create a run-specific copy of the benchmark with `execution.backend: mechanical_batch`.
-Absolute geometry paths keep the copy independent of its new directory; existing copies are not overwritten.
+The committed STEP and CAD properties are ready to use. The specification already selects local
+`execution.backend: mechanical_batch` and a nominal **8 mm quadratic mesh**. CAD dependencies
+are required only when regenerating geometry. If copying the specification to another directory,
+update `inputs.geometry_file` to the original STEP's absolute path.
 
 ```powershell
-@'
-from pathlib import Path
-import yaml
-source = Path("examples/cantilever/simulation.yaml").resolve()
-document = yaml.safe_load(source.read_text(encoding="utf-8"))
-document["inputs"]["geometry_file"] = str((source.parent / document["inputs"]["geometry_file"]).resolve())
-document["execution"]["backend"] = "mechanical_batch"
-target = Path("build/windows-inputs/simulation.yaml")
-target.parent.mkdir(parents=True, exist_ok=True)
-with target.open("x", encoding="utf-8") as stream:
-    yaml.safe_dump(document, stream, sort_keys=False)
-'@ | ./.venv/Scripts/python.exe -
 ./.venv/Scripts/python.exe -m ansys_skill.cli doctor --json
-./.venv/Scripts/python.exe -m ansys_skill.cli validate build/windows-inputs/simulation.yaml --json
-./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-dry-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli validate examples/gusseted-bracket/simulation.yaml --json
+./.venv/Scripts/python.exe -m ansys_skill.cli compile examples/gusseted-bracket/simulation.yaml --out build/bracket-compile-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run examples/gusseted-bracket/simulation.yaml --out build/bracket-dry-01 --json
 ```
 
 The last command must return `DRY_RUN` and start no Mechanical process. Review the normalized
@@ -70,31 +64,32 @@ This command starts Mechanical and can consume its installed license. Use it onl
 requested real solve after reviewing the specification:
 
 ```powershell
-./.venv/Scripts/python.exe -m ansys_skill.cli run build/windows-inputs/simulation.yaml --out build/windows-real-01 --execute --json
-./.venv/Scripts/python.exe -m ansys_skill.cli inspect build/windows-real-01 --json
-./.venv/Scripts/python.exe -m ansys_skill.cli report build/windows-real-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli run examples/gusseted-bracket/simulation.yaml --out build/bracket-real-01 --execute --json
+./.venv/Scripts/python.exe -m ansys_skill.cli inspect build/bracket-real-01 --json
+./.venv/Scripts/python.exe -m ansys_skill.cli report build/bracket-real-01 --json
 ```
 
 Batch starts and exits a task-owned local Windows process, captures stdout/stderr, and uses no gRPC
 connection. It rejects a remote host, a configured port, `start_instance: no`, certificates, or
 settings that request keeping the instance alive. Batch is never an automatic fallback from gRPC.
 
-Require `synthetic: false` and inspect `verification.json`, not just the executable exit code or
-`SOLVED` label. The cantilever requires `PASS` for requested results, reaction balance,
-small deformation, and the analytical comparison. Its benchmark is:
+The command above solves the nominal **8 mm** combined-load case. It does not reproduce the
+complete study or the **5 mm** cover image; use the next section for all five solves.
 
-- tip Z displacement about `-0.125 mm`, with 15% relative analytical tolerance;
-- applied force `-1000 N` along Z;
-- support reaction about `+1000 N` along Z, within 5% relative force-balance tolerance.
-
-Stress-singularity review remains `WARN`. Safety factor and automatic visual review remain
-`NOT_RUN`. Image export is reported separately; opening an RST or exporting an image is not design approval.
+Require `synthetic: false` and inspect `verification.json`, not just the exit code or `SOLVED`.
+CLI requested-results and small-deformation checks must pass. Mixed-load CLI `reaction_balance`
+and disabled `cantilever_analytical` remain `NOT_RUN`; the study supplies separate independent
+force and moment checks. Stress-singularity review remains `WARN`. Safety factor and automatic
+visual review remain `NOT_RUN`; the recorded manual image review is separate.
 
 ## Automated real acceptance
 
-The suite performs five serial solves: the cantilever, pressure, gravity, and two template formats.
-It also checks all three PNGs, raw-RST inspection, report regeneration, input hashes, and saved
-Mechanical object settings. Enable real tests explicitly and restore both environment variables:
+The primary study runs three combined-load cases on **12 / 8 / 5 mm quadratic meshes**, then
+gravity-only and doubled force/pressure cases on the 5 mm mesh. Gravity stays constant. It checks
+force and moment balance from CAD properties, material values and element types from solver input,
+selected face geometry, fixed support, input hashes, native PNGs, and full-field linearity.
+
+Run only the bracket entry serially, with explicit opt-in and a fresh output directory:
 
 ```powershell
 $previousAnsysAvailable = $env:ANSYS_AVAILABLE
@@ -102,7 +97,7 @@ $previousTestBackend = $env:ANSYS_TEST_BACKEND
 try {
     $env:ANSYS_AVAILABLE = "1"
     $env:ANSYS_TEST_BACKEND = "mechanical_batch"
-    ./.venv/Scripts/python.exe -m pytest -q -m ansys_integration --basetemp build/windows-integration-01 --junitxml=build/windows-integration-01.xml
+    ./.venv/Scripts/python.exe -m pytest -q tests/integration/test_engineering_bracket.py --basetemp build/bracket-study-01 --junitxml=build/bracket-study-01.xml
 }
 finally {
     $env:ANSYS_AVAILABLE = $previousAnsysAvailable
@@ -112,20 +107,45 @@ finally {
 
 Choose a fresh `--basetemp` directory: pytest owns and may clear it. Never use existing results
 or user files as the base directory. Keep these tests serial; parallel pytest workers are rejected
-before starting Mechanical. With no explicit `ANSYS_TEST_BACKEND`, the test backend remains
-`pymechanical_remote`; `fake` is rejected. Use gRPC only on an independently verified host.
+before starting Mechanical. The bracket study requires an explicit real backend and rejects
+`fake`. Use gRPC only on an independently verified host. Ordinary offline `pytest -q` skips real
+integrations and starts no solver.
 
-## Template and failure evidence
+## Engineering acceptance and retained outputs
 
-The automated template cases create isolated `.mechdat` and `.mechdb` fixtures from the solved
-benchmark. A fully defined rotated coordinate system, wrong load components, wrong result axis/scope,
-and an alternate reaction support are deliberately configured. After compilation and solving, a fresh
-Mechanical process reads the saved output and verifies global coordinates, the requested components,
-Z direction, load-face scope, and fixed-support reaction binding. Source and snapshot hashes must agree.
+| Case | Mesh | Loads |
+| --- | --- | --- |
+| `mixed_12mm` | 12 mm | Three-component force + eccentric pressure + self-weight |
+| `mixed_8mm` | 8 mm | Same combined loads |
+| `mixed_5mm` | 5 mm | Same combined loads; primary presentation case |
+| `gravity_5mm` | 5 mm | Self-weight only |
+| `double_mechanical_5mm` | 5 mm | Twice force and pressure; unchanged self-weight |
 
-Saved results must be cleared before their locations can be updated. Generated solver data is cleared
-only in the isolated working copy. Unknown active loads, contacts, command/Python objects, and
-unverified material properties remain rejected.
+Force and moment relative tolerances are **0.5% and 1%**. Both 12 → 8 and 8 → 5 mm changes
+must meet **5%** for maximum total and pad mean Z displacement, and **10%** for pad mean and
+95th-percentile equivalent stress. Pad statistics weight nodes equally, not by area.
+
+Full-field linearity compares `u(2P+G) = 2u(P+G) - u(G)` at matching node IDs and coordinates
+with per-node tolerance `1e-12 m + 1e-6 × ||predicted displacement||`. Do not simply double maxima
+containing gravity. Global stress peaks remain review quantities, excluded from strength acceptance.
+
+Each run retains `engineering-checks.json`, ordinary CLI reports, RST, a saved Mechanical project,
+and solver logs. The study root contains `study-summary.json`. The development extra includes
+Pillow for complete PNG structure verification and pixel decoding of the three native images
+per case. Retain separate manual-review evidence without changing automatic `visual_review`.
+
+## DPF isolation and historical diagnostics
+
+Independent DPF extraction runs in its own Python process. In the first bracket-study attempt,
+in-process DPF initialization changed the parent Python environment to the product's bundled
+Python 3.10 paths. The next Python 3.13 CLI failed with `AssertionError: SRE module mismatch`.
+The worker isolates those changes and retains separate `dpf-stdout.log` and `dpf-stderr.log`
+files; solve logs are kept separately. A single successful solve did not expose this sequencing bug.
+
+The former public cantilever demonstration is replaced by the bracket. Its beam model remains
+only as the internal analytical regression fixture `tests/fixtures/cantilever`. Earlier real
+cantilever and `.mechdat` / `.mechdb` template-synchronization acceptance are historical records,
+not extra cases in this five-test bracket study.
 
 Retain failed run directories. Diagnostics include `environment.json`, `run-manifest.json`,
 `mechanical-artifacts.json`, the batch stdout/stderr logs, `face-selection-report.json`, and

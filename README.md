@@ -11,13 +11,13 @@
   <p>
     <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a><br>
     <a href="https://kaze-kaze.github.io/SimStudio/">Website</a> ·
-    <a href="https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/">Explore the example</a> ·
+    <a href="https://kaze-kaze.github.io/SimStudio/examples/gusseted-bracket/demo/">Explore the example</a> ·
     <a href="https://kaze-kaze.github.io/SimStudio/docs/reports/mechanical-test-2026-09-06.html">Test report</a> ·
     <a href="#quick-start">Quick start</a>
   </p>
 </div>
 
-[![SimStudio — recorded ANSYS Mechanical cantilever results](docs/assets/overview.png)](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/)
+[![SimStudio — recorded ANSYS Mechanical twin-rib bracket results](docs/assets/overview.png)](https://kaze-kaze.github.io/SimStudio/examples/gusseted-bracket/demo/)
 
 Images used courtesy of ANSYS, Inc. Cover assembled from recorded results; engineering verification remains **WARN**.
 
@@ -27,47 +27,48 @@ Images used courtesy of ANSYS, Inc. Cover assembled from recorded results; engin
 - **Start offline.** Validate, compile, and dry-run without ANSYS or a license. Real execution requires `--execute`.
 - **Keep the evidence.** Inspect saved results through PyDPF and distinguish `PASS`, `WARN`, `FAIL`, and `NOT_RUN`.
 
-## A real example, with its limits
+## A real engineering example, with its limits
 
-A **200 × 20 × 40 mm** steel cantilever, fixed at X-min, carries **−1000 N along Z** at X-max. The input uses exact `Structural Steel`, a **10 mm** global mesh size, and `program_controlled` element order. The analytical reference uses **E = 200 GPa**.
+A **240 × 160 × 188 mm** steel equipment bracket combines **two rounded ribs, eight mounting holes, and an eccentric bearing pad**. Its rear face is fully fixed. The front face carries **[1000, 1500, −500] N**, the pad carries **0.8 MPa** pressure over **4200 mm²**, and **12.0284 kg** of steel contributes self-weight. The input selects exact `Structural Steel` and explicit **quadratic** elements.
 
-The **September 6, 2026** test report records **9 passed cases across 5 real solves** on Windows 11 with ANSYS Student Mechanical 2026 R1, CPython 3.13.2, PyMechanical 0.13.2, and PyDPF 0.16.1. The explicitly selected backend was `mechanical_batch`. All five runs are non-synthetic; **all five retain overall engineering status `WARN`**.
+The **September 6, 2026** study records **5 passed integration tests across 5 real solves in 208.16 seconds** on Windows 11 with ANSYS Student Mechanical 2026 R1, CPython 3.13.2, PyMechanical 0.13.2, and PyDPF 0.16.1. It uses explicit `mechanical_batch`, three combined-load meshes (**12, 8, and 5 mm**), then gravity-only and doubled force/pressure cases on the fine mesh. All five runs are `SOLVED` and `synthetic: false`; **overall engineering status remains `WARN`**.
 
-| Force cantilever — recorded quantity | Result |
+| Fine combined-load case — recorded quantity | Result |
 | --- | ---: |
-| Mesh | 1,077 nodes · 160 elements |
-| Tip Z displacement | −0.127583 mm |
-| Euler–Bernoulli reference magnitude | 0.125 mm |
-| Analytical deviation / allowed tolerance | 2.0664% / 15% |
-| Maximum total displacement | 0.128951 mm |
-| Maximum nodal-averaged equivalent stress | 38.0902 MPa |
-| Support reaction Z, summed over support nodes | +1000.000000009 N |
+| Mesh | 5 mm · 27,980 nodes · 15,508 elements |
+| Maximum total displacement | 0.019348617 mm |
+| Maximum nodal-averaged equivalent stress | 9.040418 MPa |
+| Bearing-pad mean Z displacement | −0.009268916 mm |
+| Bearing-pad mean / 95th-percentile equivalent stress | 1.291825 / 2.027259 MPa |
+| Support reaction Z, summed over support nodes | +3977.967017 N |
+| Maximum displacement change, 8 → 5 mm | 0.6556% / 5% tolerance |
+| Gravity-corrected full-field relative L2 error | 1.8077 × 10⁻¹¹ |
 
-Tip Z is the largest absolute Z component among 37 load-face nodes, with its sign retained. The support reaction is a vector sum, not the maximum single-node reaction. Peak stress still requires an engineering review of stress concentrations and mesh convergence.
+Independent **force and moment balance, both mesh-refinement steps, and full-field linearity passed**. Pad statistics give each node equal weight; they are not area-weighted. The support reaction is a componentwise sum. Global peak stress is reported for review, not used for strength acceptance. The rear clamp idealizes a rigid mounting interface; bolt preload, contact, slip, weld details, and mounting compliance are not modeled.
 
 <details>
-<summary><strong>View the original mesh and result plots</strong></summary>
+<summary><strong>View the recorded 5 mm mesh and result plots</strong></summary>
 
 ### Mesh
-![Recorded cantilever mesh](examples/cantilever/demo/assets/mesh.png)
+![Recorded twin-rib bracket mesh](examples/gusseted-bracket/demo/assets/mesh.png)
 
-Images used courtesy of ANSYS, Inc. Recorded mesh: 1,077 nodes and 160 elements.
+Images used courtesy of ANSYS, Inc. Recorded fine mesh: 27,980 nodes and 15,508 elements.
 
 ### Total deformation
-![Recorded cantilever total deformation](examples/cantilever/demo/assets/total-deformation.png)
+![Recorded twin-rib bracket total deformation](examples/gusseted-bracket/demo/assets/total-deformation.png)
 
-Images used courtesy of ANSYS, Inc. Plot units: m; maximum approximately 0.128951 mm.
+Images used courtesy of ANSYS, Inc. Maximum total displacement: 0.019348617 mm.
 
 ### Equivalent stress
-![Recorded cantilever equivalent stress](examples/cantilever/demo/assets/equivalent-stress.png)
+![Recorded twin-rib bracket equivalent stress](examples/gusseted-bracket/demo/assets/equivalent-stress.png)
 
-Images used courtesy of ANSYS, Inc. Plot units: Pa; maximum approximately 38.0902 MPa. Engineering status: `WARN`.
+Images used courtesy of ANSYS, Inc. Maximum nodal-averaged equivalent stress: 9.040418 MPa. Engineering status: `WARN`.
 
 </details>
 
-The nine cases cover force, pressure, gravity, `.mechdat` / `.mechdb` template synchronization, three PNG exports, and raw-RST inspection with report regeneration. The [static example](https://kaze-kaze.github.io/SimStudio/examples/cantilever/demo/) displays saved evidence without running a solver. Read the [full report](docs/reports/mechanical-test-2026-09-06.md) for tolerances, failures, and provenance; inspect the [input specification](examples/cantilever/simulation.yaml) and [public JSON summary](docs/reports/evidence/2026-09-06/summary.json) to trace the numbers.
+The [static example](https://kaze-kaze.github.io/SimStudio/examples/gusseted-bracket/demo/) shows all five cases, three mesh sizes, and unmodified exports from the **5 mm combined-load case** without running a solver. Read the [full report](docs/reports/mechanical-test-2026-09-06.md) for tolerances, failures, and provenance; inspect the [input specification](examples/gusseted-bracket/simulation.yaml) and [public JSON summary](docs/reports/evidence/2026-09-06/summary.json) to trace the numbers. The committed specification uses **8 mm** as its nominal mesh; the study creates explicit 12 / 8 / 5 mm variants.
 
-The public JSON files are data attachments to the formal test report. Original JUnit and local execution logs are retained only in the ignored local archive.
+The public JSON files are data attachments to the formal test report. Original JUnit, solver projects, RST files, and local logs remain in the ignored local archive. The **252 passed, 20 skipped** offline baseline belongs to the preceding bracket validation round; it is not a new test result from this documentation replacement. The former cantilever remains only as an internal analytical regression fixture under `tests/fixtures/cantilever`.
 
 ## How it works
 
@@ -98,13 +99,13 @@ python -m pip install -e .
 
 For Windows setup without changing PowerShell's activation policy, use the direct executable commands in [Windows testing](docs/windows-testing.md).
 
-### 2. Try the cantilever offline
+### 2. Try the bracket offline
 
 ```bash
 ansys-sim doctor --json
-ansys-sim validate examples/cantilever/simulation.yaml --json
-ansys-sim compile examples/cantilever/simulation.yaml --out build/cantilever-compile --json
-ansys-sim run examples/cantilever/simulation.yaml --out build/cantilever-dry-run --json
+ansys-sim validate examples/gusseted-bracket/simulation.yaml --json
+ansys-sim compile examples/gusseted-bracket/simulation.yaml --out build/bracket-compile --json
+ansys-sim run examples/gusseted-bracket/simulation.yaml --out build/bracket-dry-run --json
 ```
 
 The final command returns `DRY_RUN` and starts no Mechanical process. `doctor` can report unavailable solver components on an offline machine. Use a **new or empty output directory** for every compile/run.
@@ -119,15 +120,15 @@ On a separately provisioned and licensed host:
 python -m pip install -e ".[ansys]"
 ```
 
-Follow [Windows testing](docs/windows-testing.md) to create `build/windows-inputs/simulation.yaml`, preserve the geometry path, and explicitly set `execution.backend: mechanical_batch`. Validate and dry-run that copy before solving:
+The included bracket specification already selects `execution.backend: mechanical_batch`. After validating and dry-running it on the prepared Windows host:
 
 ```bash
-ansys-sim run build/windows-inputs/simulation.yaml --out build/windows-real-01 --execute --json
-ansys-sim inspect build/windows-real-01 --json
-ansys-sim report build/windows-real-01 --json
+ansys-sim run examples/gusseted-bracket/simulation.yaml --out build/bracket-real-01 --execute --json
+ansys-sim inspect build/bracket-real-01 --json
+ansys-sim report build/bracket-real-01 --json
 ```
 
-The original example selects `pymechanical_remote`. Its first recorded gRPC attempt failed during handshake; batch success does not verify gRPC. Batch is an explicit local Windows choice, never an automatic fallback. Installing the clients does not install Mechanical or provide a license. See [execution details](skills/ansys-mechanical-static/references/mechanical-execution.md) for other configurations and their requirements.
+This runs the nominal **8 mm** case. Follow [Windows testing](docs/windows-testing.md) for the serial **five-solve study**, including the 5 mm case used in the cover. Batch is an explicit local Windows choice, never an automatic fallback. An earlier local gRPC handshake failed and was not retested by the bracket study. Installing the clients does not install Mechanical or provide a license. See [execution details](skills/ansys-mechanical-static/references/mechanical-execution.md) for other configurations and their requirements.
 
 ## Everyday operations
 
@@ -155,7 +156,7 @@ codex plugin list --json
 
 Start a new Codex task to refresh Skill discovery. For the included fixture, try:
 
-> Prepare a dry-run for examples/cantilever/simulation.yaml. Review the units, fixed support, −1000 N Z load, mesh, and analytical comparison. Show the generated plan and unresolved checks.
+> Prepare a dry-run for examples/gusseted-bracket/simulation.yaml. Review the units, rear-face clamp, multiaxial force, eccentric pressure, self-weight, and quadratic mesh. Explain the five-solve acceptance criteria. Show the generated plan and unresolved checks.
 
 ## Scope and verification boundaries
 
@@ -165,12 +166,14 @@ Fluent/CFX, nonlinear or transient physics, contact inference, arbitrary assembl
 
 | State | Meaning and recorded limits |
 | --- | --- |
-| `PASS` | A check ran and met its stated condition. The recorded suite passed 9 cases; this is not design approval. |
+| `PASS` | A check ran and met its stated condition. The recorded bracket suite passed 5 cases; this is not design approval. |
 | `WARN` | Engineering review is required. All five runs retain `stress_singularity_review: WARN`. |
-| `FAIL` | A required condition failed. The initial gRPC attempt failed and remains unresolved. |
+| `FAIL` | A required condition failed. The earlier local gRPC attempt failed; the bracket study does not retest it. |
 | `NOT_RUN` | A check was unavailable or not exercised. Missing evidence is never treated as a pass. |
 
-Safety factor (no specified yield strength), visual engineering review, remote execution, and raw-RST engineering validation/specification recovery remain `NOT_RUN`. Pressure/gravity passed independent benchmark assertions, while their generic `reaction_balance` and `cantilever_analytical` checks remain `NOT_RUN`. Mesh convergence, explicit element-order variants, and other Mechanical versions remain unverified. Image-export checks establish usable files, not completed visual engineering review.
+The bracket CLI retains `reaction_balance: NOT_RUN` for mixed pressure/gravity loads and `cantilever_analytical: NOT_RUN` because that comparison is disabled. Separate study checks establish CAD-based force and moment balance. `stress_singularity_review` remains `WARN`; safety factor (no specified yield strength) and automatic `visual_review` remain `NOT_RUN`. The recorded manual image review is separate from the automatic check. Other Mechanical versions, remote execution, and general stress-peak convergence remain unverified.
+
+Both mesh-refinement steps meet 5% displacement and 10% pad stress-statistic tolerances. Linearity uses `u(2P+G) = 2u(P+G) − u(G)` with unchanged gravity and aligned node IDs and coordinates. These criteria apply to this fixture and do not establish a full-field error bound.
 
 SimStudio supports engineering review; it does not provide certification, design approval, or final engineering sign-off. See the [validation policy](skills/ansys-mechanical-static/references/validation-policy.md) and [recorded limitations](docs/reports/mechanical-test-2026-09-06.md#warn-and-not_run).
 

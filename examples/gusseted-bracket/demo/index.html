@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SimStudio 双肋设备托架实例：5 次真实 Mechanical 求解、3 档二次网格、组合载荷与独立工程校核。">
+  <title>双肋设备托架实例 · SimStudio</title>
+  <link rel="icon" href="../../../docs/site/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="evidence.js"></script>
+  <script defer src="demo.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#results">跳转到结果</a>
+  <header class="site-header">
+    <a class="brand" href="../../../README.md"><span class="brand-mark" aria-hidden="true">S</span> SimStudio <span class="brand-sub">/ text-to-ansys</span></a>
+    <a class="quiet-link" href="../../../docs/reports/mechanical-test-2026-09-06.zh-CN.md">完整测试报告 ↗</a>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="title">
+      <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span> ENGINEERING STUDY · 已保存的真实求解</div>
+      <h1 id="title">双肋托架，<br>从组合载荷到工程校核。</h1>
+      <p class="hero-copy">圆角加强肋、安装孔、偏心承载台。三向力、压力与自重共同作用，<br class="desktop-break">通过三档网格和五次串行求解，核验平衡、网格变化与线性响应。</p>
+      <div class="hero-meta"><span>ANSYS Student 2026 R1</span><span>线性静力 · 小变形</span><span>2026 年 9 月 6 日 · 208.16 秒</span></div>
+    </section>
+    <section class="input-strip" aria-label="模型输入">
+      <div><span>外形 / 结构</span><strong id="dimensions-value">240 × 160 × 188 mm</strong><small>两条加强肋 · 8 个安装孔</small></div>
+      <div><span>材料 / 约束</span><strong>Structural Steel · 背面全固定</strong><small>质量 <span id="mass-value">12.0284</span> kg · 理想刚性安装</small></div>
+      <div><span>前端三向力 / 偏心压力</span><strong id="force-value">[1000, 1500, −500] N</strong><small>0.8 MPa × 4200 mm² · 自重沿 −Z</small></div>
+      <div><span>研究网格 / 主视图</span><strong>12 / 8 / 5 mm · 二次单元</strong><small>主视图固定为 5 mm 组合工况</small></div>
+    </section>
+    <p id="data-warning" class="noscript" hidden role="status"></p>
+    <section id="results" class="results-layout" aria-labelledby="result-title">
+      <div class="visual-card">
+        <div class="card-top"><div><span class="section-number">01 / mixed_5mm · 组合工况</span><h2 id="result-title">5 mm 网格的原始结果。</h2></div><span class="tag">原始 PNG</span></div>
+        <div class="tabs" role="group" aria-label="切换 5 mm 组合工况图片">
+          <button type="button" data-view="mesh" aria-pressed="false">网格</button>
+          <button type="button" data-view="deformation" aria-pressed="true">总变形</button>
+          <button type="button" data-view="stress" aria-pressed="false">等效应力</button>
+        </div>
+        <figure>
+          <a id="image-link" href="assets/total-deformation.png" target="_blank" rel="noopener" aria-label="查看 5 mm 组合工况原始图"><img id="result-image" src="assets/total-deformation.png" width="1600" height="1000" alt="双肋设备托架 5 mm 组合工况总变形原始云图"></a>
+          <figcaption><span id="view-caption" aria-live="polite">5 mm 组合工况的已保存 Mechanical 导出。点击图片查看完整原图与图例。</span><small>Images used courtesy of ANSYS, Inc.</small></figcaption>
+        </figure>
+      </div>
+      <aside class="numbers" aria-labelledby="numbers-title">
+        <span class="section-number">02 / mixed_5mm · 数值结果</span><h2 id="numbers-title">数值有来源，<br>通过有条件。</h2>
+        <div class="metric"><span>最大总位移</span><strong id="deformation-value">—</strong><small>全部节点的位移向量模最大值</small></div>
+        <div class="metric"><span>最大等效应力</span><strong id="stress-value">—</strong><small>节点平均峰值 · 局部应力审查 WARN</small></div>
+        <div class="metric"><span>支承反力 Z 合量</span><strong id="reaction-value">—</strong><small>固定面节点反力逐分量求和</small></div>
+        <div class="mesh-meta"><span><b id="node-count">—</b> 节点</span><span><b id="element-count">—</b> 单元</span></div>
+        <a class="text-link" href="../../../docs/reports/evidence/2026-09-06/summary.json">完整数值与检查状态 →</a>
+      </aside>
+    </section>
+    <section class="verdict" aria-label="验证结论和边界">
+      <div><span id="numeric-status" class="status-not-run">数值验收 —</span><p>五个工况的独立力／力矩平衡、两次网格加密变化和全节点线性校核。</p></div>
+      <div><span class="status-warn">工程校核 WARN</span><p>全局峰值未作为强度验收条件；安全系数与自动视觉审查为 NOT_RUN。</p></div>
+    </section>
+    <section class="study-section" aria-labelledby="study-title">
+      <div class="section-heading"><span class="section-number">03 / 五次真实求解</span><h2 id="study-title">同一模型，三档网格与三种载荷组合。</h2><p>下表读取公开证据。上方图片始终属于标记的 5 mm 组合工况；没有为其他工况合成云图。</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="五次真实求解数值表，可横向滚动">
+        <table><caption><span id="case-count">5</span> 次串行求解 · P 为三向力与压力，G 为自重</caption><thead><tr><th scope="col">工况</th><th scope="col">网格 mm</th><th scope="col">节点</th><th scope="col">单元</th><th scope="col">最大位移 mm</th><th scope="col">最大等效应力 MPa</th><th scope="col">力 / 力矩校核</th></tr></thead><tbody id="case-rows"><tr><td colspan="7">正在读取已保存证据；精确结果也可在完整报告中查看。</td></tr></tbody></table>
+      </div>
+      <p class="table-note">全局应力峰值仅报告，不参与强度通过判定。全部 5 次运行的工程总状态保留 WARN。</p>
+    </section>
+    <section class="study-section" aria-labelledby="convergence-title">
+      <div class="section-heading"><span class="section-number">04 / 网格变化与线性响应</span><h2 id="convergence-title">每一步加密都按同一容差比较。</h2><p>变化率为 abs(fine − coarse) / abs(fine)。承载台节点等权统计，未作面积加权。</p></div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="三档网格数值与相邻变化，可横向滚动">
+        <table><caption>组合工况的网格变化 · <span id="convergence-status">—</span></caption><thead><tr><th scope="col">指标</th><th scope="col">12 mm</th><th scope="col">8 mm</th><th scope="col">5 mm</th><th scope="col">12 → 8</th><th scope="col">8 → 5</th><th scope="col">容差</th></tr></thead><tbody id="convergence-rows"><tr><td colspan="7">正在读取网格变化证据。</td></tr></tbody></table>
+      </div>
+      <div class="linearity-card"><div><span class="section-number">扣除自重后的全场线性</span><h3>u(2P+G) = 2u(P+G) − u(G)</h3><p>三个 5 mm 结果按节点 ID 与坐标对齐后逐节点比较。自重不倍增，包含自重的位移最大值也不直接作两倍比较。</p></div><dl><div><dt>状态</dt><dd id="linearity-status">—</dd></div><div><dt>全场相对 L2 误差</dt><dd id="linearity-error">—</dd></div><div><dt>比较节点 / 失败节点</dt><dd id="linearity-nodes">—</dd></div></dl></div>
+      <p class="table-note">逐节点容差：1e-12 m + 1e-6 × ||预测位移||。上述网格变化阈值不构成全场误差上界或固定边缘峰值的通用收敛保证。</p>
+      <details class="check-details"><summary>查看 5 mm 组合工况的原始检查状态</summary><p>CLI 的通用 reaction_balance 保持 NOT_RUN；测试的独立 force_balance、moment_balance 另行记录。人工图片查看独立于自动 visual_review。</p><div class="checks-grid"><section><h3>CLI 检查</h3><dl id="cli-checks"></dl></section><section><h3>独立工程检查</h3><dl id="engineering-checks"></dl></section></div></details>
+    </section>
+    <details class="geometry-details"><summary>查看几何与底部双肋</summary><p>同一已保存 5 mm 工程的补充导出，重开工程时未求解、未保存，工程文件前后 SHA256 相同。</p><div class="geometry-grid"><figure><a href="assets/geometry.png" target="_blank" rel="noopener"><img loading="lazy" src="assets/geometry.png" width="1600" height="1000" alt="双肋设备托架几何视图，含偏心承载台与安装孔"></a><figcaption>几何视图 · Images used courtesy of ANSYS, Inc.</figcaption></figure><figure><a href="assets/underside.png" target="_blank" rel="noopener"><img loading="lazy" src="assets/underside.png" width="1600" height="1000" alt="设备托架底部视图，展示两条圆角加强肋和孔洞"></a><figcaption>底部视图 · Images used courtesy of ANSYS, Inc.</figcaption></figure></div></details>
+    <section class="workflow" aria-labelledby="workflow-title">
+      <div class="section-heading"><span class="section-number">05 / 自己复现</span><h2 id="workflow-title">先检查输入，再决定是否求解。</h2><p>页面展示已保存的真实结果，图片切换不运行求解器，也不生成新的仿真数值。</p></div>
+      <div class="steps">
+        <article><span class="step-id">01</span><h3>读取明确的规格</h3><p>单一连续实体，背面全固定。螺栓预紧、接触、安装板柔度与焊缝细节未建模。</p><a href="../simulation.yaml" download>下载完整规格 ↓</a><a href="../gusseted-bracket.step" download>下载 STEP 模型 ↓</a><a href="../simulation_brief.md">建模假设与验收条件 →</a></article>
+        <article><span class="step-id">02</span><h3>离线编译与 dry-run</h3><p>仓库规格采用 8 mm 名义网格。生成脚本与计划不需要 ANSYS。</p><pre><code>ansys-sim run examples/gusseted-bracket/simulation.yaml --out build/bracket-demo-dry-run --json</code></pre></article>
+        <article><span class="step-id">03</span><h3>串行复现五次求解</h3><p>采用显式 mechanical_batch，真实集成入口为 test_engineering_bracket.py；需安装 Mechanical、许可证和 ANSYS_AVAILABLE=1。</p><a href="../../../docs/windows-testing.md">Windows 复现指南 →</a><a href="../README.md">工况与完整命令 →</a></article>
+      </div>
+    </section>
+    <section class="evidence-note"><h2>记录与验证边界</h2><p>本实例使用 2026 年 9 月 6 日已完成的 5 次求解；208.16 秒为整组集成测试耗时。252 passed、20 skipped 是上一轮离线回归记录，不是本次展示替换后新执行的测试。其他 Mechanical 版本和远程执行尚未验证，早期本机 gRPC 握手失败未在该研究中重测。</p><a href="../../../docs/reports/evidence/2026-09-06/provenance.json">查看证据来源与文件哈希 →</a><a href="../../../docs/reports/mechanical-test-2026-09-06.md" lang="en">Read the English test report ↗</a></section>
+    <noscript><p class="noscript">当前浏览器未启用 JavaScript。总变形原图仍可查看；另见<a href="assets/mesh.png">网格</a>、<a href="assets/equivalent-stress.png">等效应力</a>和<a href="../../../docs/reports/mechanical-test-2026-09-06.zh-CN.md">五次求解的完整报告</a>。</p></noscript>
+  </main>
+  <footer><span>SimStudio · text-to-ansys · Alpha</span><span>独立开源项目 · 与 ANSYS 无隶属或背书关系</span><a href="../../../NOTICE">Notices</a></footer>
+</body>
+</html>

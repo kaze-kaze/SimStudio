@@ -34,7 +34,7 @@ def site_source(tmp_path):
         write(root, relative, "# Public guide\n\n## Load cases\n\nFixture documentation.\n")
     write(root, "docs/site/report.html", (ROOT / "docs/site/report.html").read_bytes())
     write(root, "docs/site/index.html", '<h1 id="home">Home</h1>')
-    write(root, "examples/cantilever/demo/index.html", '<a href="README.md#load-cases">Guide</a>')
+    write(root, "examples/gusseted-bracket/demo/index.html", '<a href="README.md#load-cases">Guide</a>')
     return root
 
 
@@ -51,8 +51,9 @@ def test_build_publishes_only_allowlisted_sources_and_generated_pages(
     private = {
         "docs/site/extra.html", "docs/assets/extra.png", "docs/reports/unreviewed.md",
         "docs/reports/evidence/2026-09-06/private.zip",
-        "examples/cantilever/demo/assets/private.mechdb",
-        "examples/cantilever/demo/job.rst", "test-records/private.json",
+        "examples/gusseted-bracket/demo/assets/private.mechdb",
+        "examples/gusseted-bracket/demo/job.rst", "test-records/private.json",
+        "tests/fixtures/cantilever/simulation.yaml",
         "build/solver/ds.dat", "private.tar.gz", ".env",
     }
     for relative in private:
@@ -66,7 +67,9 @@ def test_build_publishes_only_allowlisted_sources_and_generated_pages(
     assert published == expected | {".nojekyll", "site-manifest.json"}
     assert not published & private
     assert all(b"PRIVATE: never publish" not in p.read_bytes() for p in output.rglob("*") if p.is_file())
-    for relative in (*TOOL["DOCUMENTS"], "examples/cantilever/simulation.yaml", "docs/assets/overview.png"):
+    for relative in (
+        *TOOL["DOCUMENTS"], "examples/gusseted-bracket/simulation.yaml", "docs/assets/overview.png",
+    ):
         assert (output / relative).read_bytes() == (site_source / relative).read_bytes()
     assert result["status"] == "PASS"
     assert result["html_pages"] == len(TOOL["DOCUMENTS"]) + 2
@@ -79,7 +82,7 @@ def test_build_publishes_only_allowlisted_sources_and_generated_pages(
 
 
 def test_nested_markdown_links_and_anchors_survive_project_deployment(site_source, tmp_path):
-    relative = "examples/cantilever/demo/README.md"
+    relative = "examples/gusseted-bracket/demo/README.md"
     write(site_source, relative, """# Demo guide
 
 ## Load cases
@@ -92,7 +95,7 @@ def test_nested_markdown_links_and_anchors_survive_project_deployment(site_sourc
 """)
     output = tmp_path / "public"
     TOOL["build"](site_source, output)
-    page = output / "examples/cantilever/demo/README.html"
+    page = output / "examples/gusseted-bracket/demo/README.html"
     parsed = parse_page(page)
     assert "load-cases" in parsed.ids
     assert {
@@ -100,7 +103,7 @@ def test_nested_markdown_links_and_anchors_survive_project_deployment(site_sourc
         "../../../docs/windows-testing.html?view=full&lang=en#load-cases",
         "../simulation.yaml", "../../../docs/assets/overview.png",
     } <= set(parsed.links)
-    base = "https://example.test/SimStudio/examples/cantilever/demo/README.html"
+    base = "https://example.test/SimStudio/examples/gusseted-bracket/demo/README.html"
     assert "https://example.test/SimStudio/docs/windows-testing.html?view=full&lang=en#load-cases" in {
         urljoin(base, link) for link in parsed.links
     }

@@ -10,18 +10,28 @@ import zipfile
 from pathlib import Path, PurePosixPath
 
 PUBLIC_ROOT = "docs/reports/evidence/2026-09-06/"
-DEMO = "examples/cantilever/demo/"
+EXAMPLE = "examples/gusseted-bracket/"
+DEMO = EXAMPLE + "demo/"
 REQUIRED = {
     "LICENSE", "NOTICE", "README.md", "README.zh-CN.md", "CHANGELOG.md",
-    "examples/cantilever/cantilever.step",
     "docs/site/index.html", "docs/site/site.css", "docs/site/report.html",
     "docs/assets/overview.png", "tools/build_site.py",
-    "examples/cantilever/simulation.yaml", "tools/export_benchmark_evidence.py",
+    "tools/export_benchmark_evidence.py",
     "tools/check_distribution.py", "docs/reports/mechanical-test-2026-09-06.md",
     "docs/reports/mechanical-test-2026-09-06.zh-CN.md",
+    *(EXAMPLE + name for name in (
+        "README.md", "simulation.yaml", "simulation_brief.md", "gusseted-bracket.step",
+        "geometry-properties.json", "generate_geometry.py", "export_views.py",
+    )),
+    *("tests/fixtures/cantilever/" + name for name in (
+        "README.md", "simulation.yaml", "simulation_brief.md", "cantilever.step",
+        "expected.json", "generate_geometry.py",
+    )),
     *(PUBLIC_ROOT + name for name in ("summary.json", "cases.json", "provenance.json")),
     *(DEMO + name for name in ("index.html", "style.css", "demo.js", "evidence.js", "README.md")),
-    *(DEMO + "assets/" + name for name in ("mesh.png", "total-deformation.png", "equivalent-stress.png")),
+    *(DEMO + "assets/" + name for name in (
+        "geometry.png", "underside.png", "mesh.png", "total-deformation.png", "equivalent-stress.png",
+    )),
 }
 PRIVATE_DIRECTORIES = {
     "test-records", "build", "solver", ".venv", "__pycache__", ".git",

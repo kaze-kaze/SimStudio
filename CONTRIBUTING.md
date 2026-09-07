@@ -13,12 +13,16 @@ ruff check .
 pytest -q
 ```
 
-To regenerate the neutral cantilever STEP fixture:
+To regenerate the primary equipment bracket STEP fixture and its CAD properties:
 
 ```bash
 python -m pip install -e ".[cad-fixture]"
-python examples/cantilever/generate_geometry.py
+python examples/gusseted-bracket/generate_geometry.py
 ```
+
+The tested Windows CAD generator uses build123d 0.9.1; see the bracket README for the local font
+compatibility note. The rectangular beam remains an internal analytical fixture under
+`tests/fixtures/cantilever/`. Keep those regression contracts independent of the primary example.
 
 Do not commit ANSYS projects, result files, logs containing private paths, license data, or vendor
 material databases. Real integration tests must use `@pytest.mark.ansys_integration` and require an

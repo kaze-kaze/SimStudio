@@ -9,9 +9,10 @@ licensing diagnostic, or proprietary documentation is distributed in this reposi
 supply a separately licensed compatible ANSYS installation when they choose real execution.
 
 The public benchmark evidence under `docs/reports/evidence/2026-09-06/` contains selected numerical
-results, check states, and test records from this project's own neutral cantilever fixture. Three
-unmodified Mechanical output images are included under `examples/cantilever/demo/assets/`:
-`mesh.png`, `total-deformation.png`, and `equivalent-stress.png`.
+results, check states, and test records from this project's own neutral gusseted equipment bracket.
+Five unmodified Mechanical images exported from its unchanged solved project are included under
+`examples/gusseted-bracket/demo/assets/`: `geometry.png`, `underside.png`, `mesh.png`,
+`total-deformation.png`, and `equivalent-stress.png`.
 
 Images used courtesy of ANSYS, Inc.
 
@@ -30,6 +31,6 @@ Optional integrations:
 
 - PyMechanical (`ansys-mechanical-core`) — MIT license
 - PyDPF-Core (`ansys-dpf-core`) — MIT license
-- build123d, used only to regenerate the neutral cantilever CAD fixture — Apache-2.0 license
+- build123d, used only to regenerate the neutral CAD fixtures — Apache-2.0 license
 
 Dependency licenses and notices remain the responsibility of their respective copyright holders.

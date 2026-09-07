@@ -1,0 +1,125 @@
+schema_version: "1.0"
+project:
+  name: eccentric-gusseted-equipment-bracket
+  description: Single-solid equipment bracket with rounded ribs, mounting holes, eccentric pressure, multiaxial force, and self-weight.
+mode: from_geometry
+inputs:
+  geometry_file: ./gusseted-bracket.step
+units:
+  length: mm
+  force: N
+  stress: MPa
+  mass: kg
+  time: s
+coordinate_systems:
+  - name: Global Coordinate System
+    kind: global
+bodies:
+  - name: GussetedBracket|Solid
+    material: structural_steel
+materials:
+  - name: structural_steel
+    source: engineering_data
+    engineering_data_name: Structural Steel
+scopes:
+  - id: mounting_face
+    kind: axis_extreme_face
+    body: GussetedBracket|Solid
+    axis: x
+    extreme: min
+    tolerance: 0.001 mm
+  - id: front_face
+    kind: axis_extreme_face
+    body: GussetedBracket|Solid
+    axis: x
+    extreme: max
+    tolerance: 0.001 mm
+  - id: bearing_pad
+    kind: axis_extreme_face
+    body: GussetedBracket|Solid
+    axis: z
+    extreme: max
+    tolerance: 0.001 mm
+analysis:
+  type: linear_static_structural
+  deformation: small
+mesh:
+  global_element_size: 8 mm
+  element_order: quadratic
+supports:
+  - id: mounting_support
+    type: fixed_support
+    scope: mounting_face
+loads:
+  - id: equipment_force
+    type: force
+    scope: front_face
+    components:
+      x: 1000 N
+      y: 1500 N
+      z: -500 N
+  - id: bearing_pressure
+    type: pressure
+    scope: bearing_pad
+    magnitude: 0.8 MPa
+  - id: self_weight
+    type: gravity
+    magnitude: 9.80665 m/s^2
+    direction: [0, 0, -1]
+requested_results:
+  - id: total_deformation
+    type: total_deformation
+  - id: pad_z
+    type: directional_deformation
+    scope: bearing_pad
+    direction: z
+  - id: front_y
+    type: directional_deformation
+    scope: front_face
+    direction: y
+  - id: equivalent_stress
+    type: equivalent_von_mises_stress
+  - id: pad_stress
+    type: equivalent_von_mises_stress
+    scope: bearing_pad
+  - id: mounting_reaction
+    type: reaction_force
+    support: mounting_support
+  - id: solver_messages
+    type: solver_messages
+  - id: node_count
+    type: node_count
+  - id: element_count
+    type: element_count
+validation:
+  reaction_balance_relative_tolerance: 0.005
+  small_deformation_warn_ratio: 0.01
+  small_deformation_fail_ratio: 0.05
+  characteristic_length: 240 mm
+  cantilever:
+    enabled: false
+assumptions:
+  - text: This is an authored regression fixture, not a supplied production design. Dimensions and loads are explicit engineering test inputs.
+    source: engineering_default
+  - text: The entire rear face is clamped to an ideal rigid backing. Mounting holes are geometric features; bolt preload, bearing compliance, friction, and separation are not modeled.
+    source: engineering_default
+  - text: Plates, rounded ribs, and bearing pad form one continuous isotropic steel solid with perfect load transfer; weld details are not resolved.
+    source: engineering_default
+  - text: Positive pressure acts inward on the horizontal pad. Its 4200 mm^2 area gives a 3360 N downward resultant at [165,35,188] mm.
+    source: program
+  - text: Structural Steel uses the installed Engineering Data properties. Independent weight checks require density 7850 kg/m^3 and compare against the Mechanical material inventory.
+    source: program
+  - text: Engineering acceptance is evaluated separately by the mesh and load study. Global stress peaks at fixed edges and load transitions are reported without a strength approval.
+    source: engineering_default
+open_questions: []
+output:
+  export_images: true
+  save_project: true
+execution:
+  backend: mechanical_batch
+  host: 127.0.0.1
+  allow_remote: false
+  transport_mode: insecure
+  start_instance: auto
+  timeout_seconds: 600
+  cleanup_owned_instance: true
