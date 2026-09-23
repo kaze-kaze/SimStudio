@@ -11,7 +11,7 @@ The source design is the September 23, 2026 implementation proposal approved in 
 | Versioned study specification, units, dependencies and budgets | Schema, parameter validation and budget tests | Offline verified |
 | Controlled parametric single-solid bracket and stable faces | Boundary CAD tests and generated baseline STEP | Offline verified; Mechanical import NOT_RUN |
 | Deterministic sampling and independent grouped test data | LHS reproducibility, invalid-corner handling and leakage regression tests | Offline verified |
-| Serial execution, restart, retries, locks and stale-result detection | Real Python child/timeout tests, fault injection and ownership recovery tests | Offline verified; Windows interruption acceptance NOT_RUN |
+| Serial execution, restart, retries, locks and stale-result detection | Real Python child/timeout tests, nested-process refusal, fault injection and ownership recovery tests on CI | Offline verified; Mechanical interruption acceptance NOT_RUN |
 | Portable task/results bundles | Round trip, inventory hashes, path containment, duplicate-name and archive-limit tests | Offline verified |
 | Physical checks, mesh study and per-target eligibility | Material, faces, RST binding, reaction, stress-review and per-target tests | Offline verified; new solver evidence NOT_RUN |
 | Versioned datasets, exclusions and provenance | Dataset integrity, per-target eligibility and relocation tests | Offline verified |
@@ -19,8 +19,8 @@ The source design is the September 23, 2026 implementation proposal approved in 
 | Budgeted optimization, active samples and candidate confirmation | Proposal identity, retry allowance, frozen partitions and verification tests | Offline verified; real candidates NOT_RUN |
 | Independent accuracy and equal-budget comparison | Frozen model/test evidence, boundary/constraint error slices, confusion matrices and frozen comparison-ledger tests | Offline verified; real accuracy/cost comparison NOT_RUN |
 | HTML / Markdown report with filters and evidence links | Report contract tests and interactive browser review | Offline verified |
-| CLI, Skill, docs, example and distributions | Both Skill validators, sdist/wheel inventory and isolated installed CLI | Offline verified; Windows helper execution NOT_RUN |
-| Cross-platform CI and single-run compatibility | Ruff, 520 passed / 15 skipped locally; Linux/Windows jobs configured | Local verified; hosted CI NOT_RUN |
+| CLI, Skill, docs, example and distributions | Both Skill validators, sdist/wheel inventory, isolated installed CLI and PowerShell protocol tests | Offline verified; target-machine installation NOT_RUN |
+| Cross-platform CI and single-run compatibility | Ruff, 524 passed / 19 skipped locally; all six Linux/Windows CI jobs passed | Hosted offline verification passed; licensed integrations NOT_RUN |
 | Complete real engineering study | Real dataset, model, holdout, candidate RSTs and direct-search control | NOT_RUN |
 
 ## Working baseline
@@ -44,8 +44,10 @@ The source design is the September 23, 2026 implementation proposal approved in 
 
 ## Current verification record — September 23, 2026
 
-- Current source suite: 520 passed, 15 skipped in 12.32 seconds. Skips are real ANSYS
-  integration tests, not passes. The previous implementation commit `7bd2a45` recorded
+- Current source suite: 524 passed, 19 skipped in 9.94 seconds. The skips are 15 real ANSYS
+  integration tests and four PowerShell tests unavailable on this macOS host, not passes.
+  All four PowerShell protocol tests subsequently passed on hosted Windows CI.
+  The previous implementation commit `7bd2a45` recorded
   471 passed / 15 skipped before this audit hardening.
 - The current suite used a dedicated Python 3.13.12 environment with an absolute
   `PYTHONPATH` bound to this checkout. A shared environment changed during parallel work;
@@ -58,7 +60,8 @@ The source design is the September 23, 2026 implementation proposal approved in 
 - The fresh installed-wheel environment resolved build123d 0.13.0, NumPy 2.5.3, SciPy 1.18.1
   and scikit-learn 1.9.1. Its imported code fingerprint matched the source-tested revision.
 - Package inventory validation includes the new backend timer, generated-runtime timer and
-  report-section module in the wheel and complete study sources in the sdist.
+  report-section module, plus the shared Windows process probes, in the wheel and complete
+  study sources in the sdist.
 - The dry-run has zero solver calls. No generated synthetic or preview value became a training label.
 - Active-work accounting includes preparation, single-run execution, collection, training, search
   and evaluation. Waiting for a review is excluded; no backend phase duration is fabricated.
@@ -71,9 +74,32 @@ The source design is the September 23, 2026 implementation proposal approved in 
   constraint margins and separately identified observed versus independently verified designs.
 - Direct-search allowance is bound to the research design and attempt ledger. Recorded workflow
   conclusions are invalidated when their supporting ledger or small result artifacts change.
+- Both CLI and nested Mechanical owners record process-tree scope. Unverified child trees block
+  batch result acceptance, recovery, automatic retries and resumed execution. Process enumeration
+  failures remain blocking errors; an exited parent is not sufficient evidence of a stopped tree.
 - Windows read-only inspection through the user-authorized remote desktop found the existing
   repository at the same base revision and a working Mechanical environment check with Python
   3.13.2, PyMechanical 0.13.2 and PyDPF 0.16.1. This is not a new solve or license acceptance.
+
+## Hosted verification
+
+[CI run 35929797804](https://github.com/kaze-kaze/SimStudio/actions/runs/35929797804)
+passed all six jobs for runtime/test commit `1a38fcdb8f06c98d38cd7a6be68c9c3ec8cbf2ca`
+on September 23, 2026:
+
+- Base offline checks on Ubuntu and Windows with Python 3.11 and 3.13.
+- Study/CAD/numerical checks plus init, validation, planning, dry-run and report commands on
+  Ubuntu and Windows with Python 3.13. The Windows study job recorded 307 passed, including
+  all four PowerShell protocol cases; no test in that job was skipped.
+- The Windows Python 3.13 base job recorded 467 passed, 56 optional-dependency skips, and
+  15 deselected ANSYS integrations. Study dependencies and their tests run in the separate
+  study job. Release packaging now installs the study dependencies as well.
+
+The first CI run exposed two recovery fixtures that always wrote POSIX ownership records.
+Those fixtures now use the platform's actual contract while retaining their refusal assertions.
+The subsequent nested-process correction above was validated in the linked successful run.
+The changes remain in [draft PR #3](https://github.com/kaze-kaze/SimStudio/pull/3), without
+merging or publishing a new release. Hosted runners have no licensed Mechanical acceptance.
 
 ## Remaining acceptance
 
