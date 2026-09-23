@@ -48,6 +48,7 @@ def offline(monkeypatch, tmp_path):
         SubprocessError=subprocess.SubprocessError,
     )
     monkeypatch.setattr(batch, "subprocess", commands)
+    monkeypatch.setattr(batch, "windows_process_tree_alive", lambda _pid: False)
     return commands
 
 
@@ -107,6 +108,7 @@ def _runtime_payload(run_dir, *, status="SOLVED", relative=False):
 
 def _process(offline, produce, *, exit_code=0):
     process = Mock(pid=7312, returncode=None)
+    process.poll.side_effect = lambda: process.returncode
 
     def start(command, **kwargs):
         kwargs["stdout"].write(b"batch stdout\n")
@@ -167,6 +169,9 @@ def test_batch_runs_saved_script_and_collects_all_local_files(compiled_run, offl
     assert outcome.metadata["owned_instance"] is True
     assert outcome.metadata["mechanical_product_version"] == "2026 R1"
     assert outcome.metadata["process_id"] == process.pid
+    owner = json.loads((job.run_dir / "owned-process.json").read_text())
+    assert owner["process_tree"] == "windows-parent-tree"
+    assert owner["tree_verified"] is True
 
 
 @pytest.mark.parametrize("exit_code", [0, 7])
@@ -265,6 +270,29 @@ def test_batch_cleanup_does_not_target_an_already_exited_process(offline):
     process = Mock(pid=7312)
     process.poll.return_value = 0
     assert batch._terminate_owned_tree(process) is None
+    offline.run.assert_not_called()
+
+
+@pytest.mark.parametrize("probe_error", [False, True])
+def test_batch_refuses_solved_artifacts_when_child_tree_stop_is_unproven(
+    compiled_run, offline, monkeypatch, probe_error
+):
+    _process(offline, lambda root: _save_payload(root, _runtime_payload(root)))
+
+    def probe(_pid):
+        if probe_error:
+            raise SpecValidationError("Injected process-tree query failure")
+        return True
+
+    monkeypatch.setattr(batch, "windows_process_tree_alive", probe)
+    with pytest.raises(MechanicalExecutionError, match="process tree stopped") as error:
+        _execute(compiled_run)
+
+    owner = json.loads((compiled_run.run_dir / "owned-process.json").read_text())
+    assert owner["exit_code"] == 0
+    assert owner["ended_at"]
+    assert owner["tree_verified"] is False
+    assert error.value.details["cleanup_error"]
     offline.run.assert_not_called()
 
 

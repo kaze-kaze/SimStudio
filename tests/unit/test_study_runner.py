@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import sys
 import time
 from pathlib import Path
@@ -11,7 +12,7 @@ import pytest
 import yaml
 from ansys_skill.errors import SpecValidationError
 from ansys_skill.manifest import sha256_file
-from ansys_skill.study import project, runner
+from ansys_skill.study import project, runner, storage
 from ansys_skill.study.sampling import sample_record
 from ansys_skill.study.storage import atomic_json, read_json
 from ansys_skill.study.templates import init_study
@@ -98,6 +99,34 @@ def test_modified_result_is_not_reused(study_root, monkeypatch):
     with pytest.raises(SpecValidationError, match="changed"):
         runner.run_study(study_root, execute=True, resume=True)
     assert len(calls) == 3
+
+
+def test_failed_attempt_with_live_nested_tree_blocks_automatic_retry_and_resume(
+    study_root, monkeypatch
+):
+    calls = solver_protocol_stub(monkeypatch, failures=1)
+    original = runner._call_single_run
+
+    def live_child(specification, directory, execute, **kwargs):
+        result = original(specification, directory, execute, **kwargs)
+        atomic_json(directory / "owned-process.json", {
+            "host": socket.gethostname(), "pid": 910005, "ended_at": "fixture-ended",
+            "process_tree": "windows-parent-tree" if os.name == "nt" else "posix-session",
+            "process_group_id": 910005, "tree_verified": False,
+        })
+        return result
+
+    monkeypatch.setattr(runner, "_call_single_run", live_child)
+    monkeypatch.setattr(storage, "process_alive", lambda _pid: False)
+    monkeypatch.setattr(storage, "process_group_alive", lambda _pid: True)
+    monkeypatch.setattr(storage, "windows_process_tree_alive", lambda _pid: True)
+    for resume in (False, True):
+        with pytest.raises(SpecValidationError, match="owned process tree is still running"):
+            runner.run_study(study_root, execute=True, resume=resume)
+        assert len(calls) == 1
+        manifest = read_json(study_root / "study-manifest.json")
+        assert manifest["solver_calls"] == 1
+        assert manifest["samples"][0]["jobs"][0]["attempts"][0]["status"] == "FAILED"
 
 
 def test_run_phase_timings_are_preserved_in_the_attempt_ledger(study_root, monkeypatch):

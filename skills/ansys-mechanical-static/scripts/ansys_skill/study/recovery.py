@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import socket
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -13,7 +12,6 @@ from ansys_skill.study.project import load_project, save_project
 from ansys_skill.study.storage import (
     artifact_hashes,
     owned_process_alive,
-    process_alive,
     read_json,
     recover_lock,
     recovery_guard,
@@ -46,14 +44,11 @@ def _prove_attempt_stopped(root: Path, attempt: dict) -> Path:
 
     backend_owner = run_dir / "owned-process.json"
     if backend_owner.is_file():
+        if backend_owner.is_symlink():
+            raise SpecValidationError("Nested process ownership evidence cannot be a symbolic link")
         child = read_json(backend_owner)
-        if child.get("host") != socket.gethostname():
-            raise SpecValidationError("Cannot verify a solver process from another host")
-        pid = child.get("pid")
-        if not isinstance(pid, int) or pid <= 0:
-            raise SpecValidationError("Nested process ownership evidence has no valid PID; inspect it manually")
-        if process_alive(pid):
-            raise SpecValidationError("An owned solver child process is still running")
+        if owned_process_alive(child):
+            raise SpecValidationError("An owned solver child process tree is still running")
     return run_dir
 
 

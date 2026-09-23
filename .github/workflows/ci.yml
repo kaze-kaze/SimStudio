@@ -73,6 +73,7 @@ jobs:
           tests/unit/test_study_sampling.py tests/unit/test_study_specification.py
           tests/unit/test_study_workflow.py tests/unit/test_surrogate.py
           tests/unit/test_surrogate_reference.py tests/unit/test_structure.py
+          tests/unit/test_windows_study_helper.py
           tests/unit/test_distribution.py
       - name: Study init smoke test
         run: ansys-sim study init build/ci-study-inputs --json

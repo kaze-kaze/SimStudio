@@ -31,7 +31,9 @@ from ansys_skill.study.storage import (
     owned_process_alive,
     process_group_alive,
     read_json,
+    require_stopped_owners,
     study_lock,
+    study_process_owner_paths,
     verify_hashes,
 )
 
@@ -292,6 +294,10 @@ def _attempt(root, manifest, sample, job, *, execute, timeout_seconds, wall_time
     finally:
         finalization_error = None
         try:
+            if execute:
+                owners = [directory / "owned-process.json",
+                          directory / "run" / "owned-process.json"]
+                require_stopped_owners([path for path in owners if path.exists()])
             attempt["phase_timings"] = _run_phase_timings(directory / "run")
             if (directory / "run").is_dir():
                 attempt["hashes"] = artifact_hashes(directory / "run")
@@ -327,6 +333,7 @@ def run_study(root: Path, *, execute: bool = False, resume: bool = False,
         study, base, manifest = load_project(root, check_code=True)
         prior_elapsed = manifest["elapsed_seconds"]
         if execute:
+            require_stopped_owners(study_process_owner_paths(root))
             context = _execution_context(base)
             if manifest["execution_context"] not in (None, context):
                 raise SpecValidationError("Execution environment changed; cannot reuse this study")

@@ -119,3 +119,24 @@ def test_windows_liveness_uses_windows_query_without_os_kill(monkeypatch):
     monkeypatch.setattr(storage.os, "kill", lambda *_args: pytest.fail("os.kill is not a Windows liveness API"))
 
     assert storage.process_alive(910003) is False
+
+
+def test_recovery_checks_nested_solver_tree_after_both_parents_exited(
+    interrupted_study, monkeypatch
+):
+    root, _, attempt_dir = interrupted_study
+    parent = write_owner(attempt_dir, ended_at=utc_now())
+    parent["tree_verified"] = True
+    atomic_json(attempt_dir / "owned-process.json", parent)
+    child = {**parent, "pid": 910004, "process_group_id": 910004,
+             "tree_verified": False}
+    atomic_json(attempt_dir / "run" / "owned-process.json", child)
+    monkeypatch.setattr(storage, "process_alive", lambda _pid: False)
+    monkeypatch.setattr(storage, "process_group_alive", lambda pid: pid == 910004)
+    monkeypatch.setattr(storage, "windows_process_tree_alive", lambda pid: pid == 910004)
+
+    with pytest.raises(SpecValidationError, match="solver child process tree is still running"):
+        recovery.recover_study(root)
+
+    assert (root / ".study.lock").exists()
+    assert read_json(root / "study-manifest.json")["solver_calls"] == 1
