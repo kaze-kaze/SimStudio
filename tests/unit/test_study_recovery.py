@@ -1,6 +1,7 @@
 """Recovery protocol tests; fixtures are not Mechanical acceptance evidence."""
 from __future__ import annotations
 
+import os
 import socket
 from pathlib import Path
 
@@ -54,8 +55,8 @@ def write_owner(attempt_dir: Path, *, ended_at=None):
         "host": socket.gethostname(),
         "started_at": utc_now(),
         "ended_at": ended_at,
-        "process_tree": "posix-session",
-        "process_group_id": 910002,
+        "process_tree": "windows-parent-tree" if os.name == "nt" else "posix-session",
+        "process_group_id": None if os.name == "nt" else 910002,
         "tree_verified": False,
     }
     atomic_json(attempt_dir / "owned-process.json", owner)
@@ -77,13 +78,14 @@ def test_missing_owner_evidence_keeps_lock_and_explains_manual_recovery(
     assert not (root / ".study.recovery.lock").exists()
 
 
-def test_recovery_checks_owned_process_group_even_if_owner_says_ended(
+def test_recovery_checks_owned_process_tree_even_if_owner_says_ended(
     interrupted_study, monkeypatch
 ):
     root, _, attempt_dir = interrupted_study
     write_owner(attempt_dir, ended_at=utc_now())
     monkeypatch.setattr(storage, "process_alive", lambda _pid: False)
     monkeypatch.setattr(storage, "process_group_alive", lambda _pgid: True)
+    monkeypatch.setattr(storage, "windows_process_tree_alive", lambda _pid: True)
 
     with pytest.raises(SpecValidationError, match="owned process tree is still running"):
         recovery.recover_study(root)
@@ -98,6 +100,7 @@ def test_recovery_marks_only_proven_stopped_attempt_interrupted(interrupted_stud
     (attempt_dir / "run" / "partial.txt").write_text("protocol fixture")
     monkeypatch.setattr(storage, "process_alive", lambda _pid: False)
     monkeypatch.setattr(storage, "process_group_alive", lambda _pgid: False)
+    monkeypatch.setattr(storage, "windows_process_tree_alive", lambda _pid: False)
 
     result = recovery.recover_study(root)
 
