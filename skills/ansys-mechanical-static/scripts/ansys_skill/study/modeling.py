@@ -50,6 +50,9 @@ def latest_model(root: Path, manifest: dict, requested: Path | None = None) -> P
     if (manifest.get("holdout_evaluated")
             and directory.relative_to(root.resolve()).as_posix() != manifest["holdout_evaluated"]["model"]):
         raise SpecValidationError("The final holdout is frozen to its first evaluated model")
+    if (manifest.get("holdout_evaluated")
+            and model["model_id"] != manifest["holdout_evaluated"].get("model_id")):
+        raise SpecValidationError("The frozen model content changed after holdout commitment")
     return directory
 
 
@@ -90,6 +93,15 @@ def train_study(root: Path) -> dict:
             staging = Path(tempfile.mkdtemp(prefix=".training-", dir=directory.parent))
             try:
                 result = train_model(dataset, staging, options)
+                card_path = staging / "model-card.json"
+                card = read_json(card_path)
+                card.update({
+                    "dataset_id": dataset["dataset_id"],
+                    "engineering_context": dataset["engineering_context"],
+                    "execution_context": dataset["execution_context"],
+                    "code_fingerprint": manifest["code_fingerprint"],
+                })
+                atomic_json(card_path, card)
                 record = {"model_id": result["model_id"], "path": relative,
                           "dataset_id": dataset["dataset_id"], "created_at": utc_now(),
                           "training_seconds": time.monotonic() - started}
@@ -108,7 +120,7 @@ def train_study(root: Path) -> dict:
 
 
 def evaluate_study(root: Path, model_path: Path | None = None) -> dict:
-    from ansys_skill.surrogate import evaluate_model
+    from ansys_skill.surrogate import evaluate_model, load_model
 
     root = root.resolve()
     with study_lock(root):
@@ -127,10 +139,19 @@ def evaluate_study(root: Path, model_path: Path | None = None) -> dict:
             if not expected or expected != ready or len(rows) != len(expected):
                 return {"status": "NOT_RUN", "stage": "independent_test_readiness",
                         "missing_design_ids": sorted(expected - ready),
-                        "message": "Every frozen test design must qualify before inspecting final errors."}
+                    "message": "Every frozen test design must qualify before inspecting final errors."}
+            model_id = load_model(directory)["model_id"]
+            if previous and previous.get("model_id") != model_id:
+                raise SpecValidationError("The frozen model content changed after holdout commitment")
+            test_hash = canonical_hash([
+                {key: row.get(key) for key in ("design_id", "parameters", "targets", "source")}
+                for row in sorted(rows, key=lambda row: row["design_id"])])
+            if previous and previous.get("test_evidence_hash") != test_hash:
+                raise SpecValidationError("Final test labels or source evidence changed after holdout commitment")
             started = time.monotonic()
             # Record the commitment before publishing errors so interruption cannot unfreeze the holdout.
-            manifest["holdout_evaluated"] = {"model": relative,
+            manifest["holdout_evaluated"] = {"model": relative, "model_id": model_id,
+                                             "test_evidence_hash": test_hash,
                                              "dataset": manifest["datasets"][-1], "at": utc_now()}
             save_project(root, manifest)
             result = evaluate_model(directory, dataset)

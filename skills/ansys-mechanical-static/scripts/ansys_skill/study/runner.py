@@ -7,6 +7,7 @@ import contextlib
 import importlib.metadata
 import io
 import json
+import math
 import os
 import signal
 import socket
@@ -207,6 +208,34 @@ def _completed_attempt(root: Path, job: dict) -> dict | None:
     return attempt
 
 
+def _run_phase_timings(directory: Path) -> dict:
+    result = {}
+    for filename, names in (("mechanical-artifacts.json", ("mesh", "solve")),
+                            ("run-manifest.json", ("backend_total", "postprocessing", "report_generation"))):
+        path = directory / filename
+        document = read_json(path) if path.is_file() else {}
+        phases = document.get("phase_timings", {})
+        if not isinstance(phases, dict):
+            raise SpecValidationError("Run phase_timings must be an object")
+        for name in names:
+            value = phases.get(name)
+            if value is None:
+                result[name] = {"status": "NOT_RUN", "elapsed_seconds": None}
+                continue
+            if not isinstance(value, dict):
+                raise SpecValidationError(f"Invalid recorded run phase: {name}")
+            seconds = value.get("elapsed_seconds")
+            if (value.get("status") != "RECORDED" or isinstance(seconds, bool)
+                    or not isinstance(seconds, (int, float)) or not math.isfinite(seconds)
+                    or seconds < 0):
+                if value.get("status") == "NOT_RUN" and seconds is None:
+                    result[name] = {"status": "NOT_RUN", "elapsed_seconds": None}
+                    continue
+                raise SpecValidationError(f"Run phase {name} has no finite non-negative duration")
+            result[name] = dict(value)
+    return result
+
+
 def _attempt(root, manifest, sample, job, *, execute, timeout_seconds, wall_timeout_seconds=None):
     attempt_started = time.monotonic()
     ordinal = len(job["attempts"]) + 1 if execute else len(job.get("previews", [])) + 1
@@ -263,6 +292,7 @@ def _attempt(root, manifest, sample, job, *, execute, timeout_seconds, wall_time
     finally:
         finalization_error = None
         try:
+            attempt["phase_timings"] = _run_phase_timings(directory / "run")
             if (directory / "run").is_dir():
                 attempt["hashes"] = artifact_hashes(directory / "run")
             attempt["directory_hashes"] = artifact_hashes(directory)

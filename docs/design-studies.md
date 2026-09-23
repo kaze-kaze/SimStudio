@@ -64,7 +64,7 @@ The example specifies three unit-qualified geometry parameters, target limits wi
 
 The demonstration displacement limit is `0.025 mm` and the stress response limit is `10 MPa`. These were authored with reference to the recorded baseline response (about 0.01935 mm displacement and 9.04 MPa nodal-averaged equivalent stress). The 10 MPa value is a manually authored response constraint; it is not a material allowable, yield value, strength approval, or certification criterion. Neither limit makes the example suitable for production decisions.
 
-Samples have baseline, training, and frozen test partitions; later adaptive and candidate-verification samples are recorded separately. Data are eligible per target only when the required numerical and engineering evidence and configured mesh-convergence checks pass.
+The required mechanical-message, requested-result, small-deformation and reaction-balance checks cannot be removed from a target. Actual selected-face geometry is required even for a gravity-only case. Samples have baseline, training, and frozen test partitions; later adaptive and candidate-verification samples are recorded separately. Data are eligible per target only when the required numerical and engineering evidence and configured mesh-convergence checks pass.
 
 Equivalent-stress targets require a recorded, attributable singularity review. A review file maps the SHA-256 of each exact RST to `status: PASS`, a reviewer, a rationale, and non-empty evidence references. Missing review is `REVIEW_REQUIRED`; a review for a different RST hash does not apply. Review saved results as a set for the authorized study batch; no per-sample reauthorization is needed. Never infer a pass from an absent RST or a screenshot.
 
@@ -75,5 +75,11 @@ Finish training-set optimization, adaptive sampling, and every model refit befor
 Read [the specification and schema guide](design-studies.zh-CN.md) for field-level context, [Windows execution](windows-study.md) for task transfer and host setup, and [the example notes](../examples/bracket-study/README.md) for the supplied demonstration. The independent Codex Skill is [ansys-design-study](../skills/ansys-design-study/SKILL.md).
 
 ## Verification status
+
+Model JSON schema 1.1 binds the frozen test design IDs to the model. Evaluation rejects unplanned test rows and frozen designs in another split. It reports overall errors, design-space boundary errors, constraint-near errors and the full constraint confusion matrix. Empty slices are NOT_RUN with null metrics. Dataset and model-card artifacts retain materials, loads, supports, target definitions and execution context. Prediction accepts a JSON file of SI parameters; object key order is immaterial.
+
+The study commits the evaluated model by path and content ID. A direct-search comparison freezes the research designs and attempt ledger used to establish its allowance. Changed research evidence invalidates that control. Reports distinguish the best observed search design from the separately solver-confirmed recommendation and include constraint margins. A recorded workflow outcome is shown only while its ledger and result-artifact fingerprint match.
+
+New runs record Mechanical mesh/solve durations and CLI backend, postprocessing and report durations. Missing stages remain NOT_RUN. Parent and child timings overlap: mesh/solve belong to backend time; prediction and candidate CAD belong to search time. Do not sum overlapping durations.
 
 Offline unit tests and Linux/Windows Python 3.13 CI exercise the study and installation workflow without ANSYS. They do not establish solver accuracy. The controlled sample CAD, fonts and package compatibility, real RST quality reviews, model holdout accuracy, candidate solves, and equal-budget comparison still require recorded Windows acceptance against the intended Mechanical installation. Until then, report real-engineering results as `NOT_RUN`; do not claim a validated accuracy percentage, mass reduction, or speed improvement.

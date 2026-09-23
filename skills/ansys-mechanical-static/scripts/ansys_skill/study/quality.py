@@ -908,9 +908,7 @@ def evaluate_run(
     target_checks: dict[str, list[dict]] = {}
     accepted_targets: list[str] = []
     common_gates = [verification_meta[0], source_check, real_check, result_check,
-                    density_check, geometry_check]
-    if simulation is not None and any(load.type in {"force", "pressure"} for load in simulation.loads):
-        common_gates.append(face_check)
+                    density_check, geometry_check, face_check]
     review_statuses: dict[str, dict[str, str | None]] = {}
     for target_name, target in study.targets.items():
         item_checks = [dict(item) for item in common_gates]
@@ -1010,7 +1008,7 @@ def _mesh_target_valid(level: dict, target_name: str, target: Any) -> tuple[Chec
         by_name[item["name"]] = item
 
     common_names = ("verification_evidence", "source_configuration", "real_solve",
-                    "result_file", "material_density", "geometry_provenance")
+                    "result_file", "material_density", "geometry_provenance", "selected_face_geometry")
     for item in by_name.values():
         if item["status"] == CheckStatus.FAIL.value:
             return CheckStatus.FAIL, f"target check {item['name']!r} failed"

@@ -17,7 +17,7 @@ def _result(payload: dict, args) -> int:
     status = payload.get("status")
     if status in {"FAIL", "NOT_RUN", "BUDGET_EXHAUSTED", "REVIEW_REQUIRED", "INSUFFICIENT_DATA", "NEEDS_SOLVE"}:
         return ExitCode.VERIFICATION_FAILED
-    if status in {"PARTIAL", "INTERRUPTED"}:
+    if status in {"FAILED", "PARTIAL", "INTERRUPTED"}:
         return ExitCode.MECHANICAL_FAILED
     return ExitCode.SUCCESS
 
@@ -38,8 +38,13 @@ def command_study(args) -> int:
     elif command == "run":
         payload = run_study(root, execute=args.execute, resume=args.resume, limit=args.limit)
     elif command == "status":
+        from ansys_skill.study.workflow import recorded_workflow_result
+
         _, _, manifest = load_project(root)
         payload = status_payload(manifest)
+        verdict = recorded_workflow_result(root, manifest) or {}
+        payload["workflow_status"] = verdict.get("status", "NOT_RUN")
+        payload["engineering_validation"] = verdict.get("engineering_validation", "NOT_RUN")
     elif command == "recover":
         from ansys_skill.study.recovery import recover_study
         payload = recover_study(root)
@@ -143,5 +148,5 @@ def register_commands(subparsers) -> None:
         if name == "evaluate":
             parser.add_argument("--model")
         if name == "predict":
-            parser.add_argument("--parameters", required=True, help="JSON object of unit-qualified feature names with SI values")
+            parser.add_argument("--parameters", required=True, help="Path to a JSON file mapping every model feature name to its canonical SI value")
         parser.set_defaults(handler=command_surrogate)

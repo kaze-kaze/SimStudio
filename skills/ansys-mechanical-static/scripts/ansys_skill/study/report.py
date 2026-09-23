@@ -14,7 +14,14 @@ from ansys_skill.errors import SpecValidationError
 from ansys_skill.paths import PathSafetyError, safe_join
 from ansys_skill.study import project
 from ansys_skill.study.report_assets import REPORT_CSS, REPORT_JS
+from ansys_skill.study.report_sections import (
+    comparison_tables,
+    engineering_tables,
+    evaluation_tables,
+    render_tables,
+)
 from ansys_skill.study.storage import atomic_text
+from ansys_skill.study.workflow import recorded_workflow_result
 from ansys_skill.units import convert_canonical_value
 
 _IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
@@ -728,34 +735,42 @@ def _images_html(images: list[dict[str, str]]) -> str:
     return '<div class="image-strip">' + "".join(figures) + "</div>"
 
 
-def _comparison_html(comparison: Mapping[str, Any] | None) -> str:
-    if comparison is None:
-        return '<p class="muted">comparison.json: NOT_RUN.</p>'
-    items = [f"<li><strong>{_e(key)}</strong> {_e(value)}</li>"
-             for key, value in comparison.items()
-             if key in {"status", "sample_count", "compared_count", "message", "reason"}]
-    return '<ul class="evidence-list">' + "".join(items) + "</ul>" if items else '<p class="muted">Comparison file exists without summary fields.</p>'
+def _comparison_report(comparison: Mapping[str, Any] | None, study: object,
+                       dataset: Mapping[str, Any]) -> tuple[str, str]:
+    targets = {name: _target_unit(name, study, dataset) for name in _target_names(study, dataset)}
+    html_text, markdown = render_tables(comparison_tables(comparison, targets, _quantity, _fmt))
+    status = _status(_mapping(comparison).get("status"))
+    note = ("Both method totals include the shared baseline and holdout calls; do not add the totals. "
+            "Durations are recorded costs; no speedup is inferred. "
+            "backend_total includes mesh and solve; these durations must not be added together. "
+            "Recorded partial durations and means exclude missing timings. "
+            "An observed training best is not an independently verified recommendation.")
+    return (f'<p class="muted">comparison.json: {_e(status)}.</p>{html_text}<p class="muted">{note}</p>',
+            f"comparison.json: {_e(status)}\n\n{markdown}\n{note}\n")
 
 
 def _markdown(study: object, manifest: Mapping[str, Any], dataset: Mapping[str, Any],
               dataset_path: str | None, rows: list[dict[str, Any]], models: list[dict[str, Any]],
               rounds: list[dict[str, Any]], verification: Mapping[str, Any] | None,
               comparison: Mapping[str, Any] | None, mesh: Mapping[str, list[dict[str, Any]]],
-              images: list[dict[str, str]], phases: list[dict[str, Any]]) -> str:
+              images: list[dict[str, str]], phases: list[dict[str, Any]],
+              context_markdown: str, overall: str, comparison_markdown: str,
+              error_slices_markdown: str) -> str:
     name = getattr(study, "name", manifest.get("name", "Design study"))
     samples = [dict(item) for item in _list(manifest.get("samples")) if isinstance(item, Mapping)]
     targets = _target_names(study, dataset)
     by_id = {str(row.get("sample_id")): row for row in rows}
     completed = sum(_sample_status(item) == "SOLVED" for item in samples)
     accepted = sum(bool(targets) and set(targets).issubset(_accepted(by_id.get(str(item.get("sample_id")), {}))) for item in samples)
-    overall = _status(manifest.get("overall", manifest.get("engineering_validation", manifest.get("overall_status", "NOT_RUN"))))
     lines = [f"# {name} — Study report", "",
              f"- Study status: {_status(manifest.get('status'))}",
              f"- Recorded overall verification status: {overall}",
              f"- Study ID: {manifest.get('study_id', 'NOT_RUN')}",
              f"- Planned samples: {len(samples)}; real solves completed: {completed}; quality accepted (all targets): {accepted}",
              f"- Dataset: {dataset_path or 'NOT_RUN'}", "",
-             "The test split is held out from training and used only for independent evaluation.", "", "## Sample target values", ""]
+             "The test split is held out from training and used only for independent evaluation.", "",
+             "## Study conditions, design space and constraints", "", context_markdown, "",
+             "## Sample target values", ""]
     for target in targets:
         dimension, unit = _target_unit(target, study, dataset)
         lines.extend([f"### {target} ({unit or 'unit unavailable'})", "",
@@ -805,7 +820,7 @@ def _markdown(study: object, manifest: Mapping[str, Any], dataset: Mapping[str, 
             points = _evaluation_points(evaluation, target)
             lines.append(f"{target} Scatter points: {len(points)} paired truth/prediction values" if points else f"{target} Scatter points: NOT_RUN")
         lines.append("")
-    lines.extend(["## Optimization candidates", ""])
+    lines.extend([error_slices_markdown, "", "## Optimization candidates", ""])
     if not rounds:
         lines.extend(["NOT_RUN: no optimization rounds are recorded in the manifest.", ""])
     for info in rounds:
@@ -830,6 +845,7 @@ def _markdown(study: object, manifest: Mapping[str, Any], dataset: Mapping[str, 
         lines.append(f"Best sample: {verification.get('best_sample_id') or 'NOT_RUN'}")
     else:
         lines.append("NOT_RUN: verification.json was not found.")
+    lines.extend(["", "## Direct and surrogate comparison", "", comparison_markdown])
     lines.extend(["", "## Phase duration and calls", "",
                   "| Phase | Status | Duration | Calls |", "|---|---|---:|---:|"])
     for phase in phases:
@@ -850,7 +866,8 @@ def _html_report(root: Path, study: object, manifest: Mapping[str, Any],
                  rounds: list[dict[str, Any]], verification: Mapping[str, Any] | None,
                  comparison: Mapping[str, Any] | None,
                  mesh: Mapping[str, list[dict[str, Any]]], images: list[dict[str, str]],
-                 phases: list[dict[str, Any]]) -> str:
+                 phases: list[dict[str, Any]], context_html: str, overall: str,
+                 comparison_html: str, error_slices_html: str) -> str:
     name = getattr(study, "name", manifest.get("name", "Design study"))
     description = getattr(study, "description", "")
     samples = [dict(item) for item in _list(manifest.get("samples")) if isinstance(item, Mapping)]
@@ -861,7 +878,6 @@ def _html_report(root: Path, study: object, manifest: Mapping[str, Any],
     by_id = {str(row.get("sample_id")): row for row in rows}
     completed = sum(_sample_status(sample) == "SOLVED" for sample in samples)
     accepted = sum(bool(targets) and set(targets).issubset(_accepted(by_id.get(str(sample.get("sample_id")), {}))) for sample in samples)
-    overall = manifest.get("overall", manifest.get("engineering_validation", manifest.get("overall_status", "NOT_RUN")))
     test_count = sum(sample.get("split") == "test" for sample in samples)
     model_html, chart_html = _render_metrics(models, targets, study, dataset)
     sample_html = _sample_section(samples, rows, targets, features, study, dataset, dataset_path)
@@ -884,12 +900,14 @@ def _html_report(root: Path, study: object, manifest: Mapping[str, Any],
         + f'<div class="metric"><span class="metric-value">{completed}</span><span class="metric-label">Real solves completed</span></div>'
         + f'<div class="metric"><span class="metric-value">{accepted}</span><span class="metric-label">Quality accepted (all targets)</span></div>'
         + f'</div><p class="callout">Recorded overall verification status: <strong>{_e(_status(overall))}</strong>. Test split: {test_count} samples, reserved for holdout evaluation and excluded from training.</p></section>'
+        + f'<section><div class="section-head"><h2>Study conditions, design space and constraints</h2></div>{context_html}</section>'
         + f'<section>{sample_html}</section>'
-        + f'<section><div class="section-head"><h2>Model error</h2><span class="section-note">Per-target values come from evaluation.json; missing values remain NOT_RUN</span></div>{model_html}{chart_html}</section>'
+        + f'<section><div class="section-head"><h2>Model error</h2><span class="section-note">Per-target values come from evaluation.json; missing values remain NOT_RUN</span></div>{model_html}{error_slices_html}{chart_html}</section>'
         + f'<section><div class="section-head"><h2>Mesh convergence</h2><span class="section-note">Per-sample, per-target numerical evidence</span></div>{mesh_html}</section>'
         + f'<section><div class="section-head"><h2>Candidates and real verification</h2><span class="section-note">Predictions and re-solved values are shown separately</span></div>{rounds_html}{verify_html}</section>'
+        + f'<section><div class="section-head"><h2>Direct and surrogate comparison</h2><span class="section-note">Measured outcomes and recorded costs</span></div>{comparison_html}</section>'
         + f'<section><div class="section-head"><h2>Run phases</h2><span class="section-note">Unrecorded duration and call counts are shown as NOT_RUN</span></div>{phase_html}</section>'
-        + f'<section><div class="section-head"><h2>Evidence files</h2><span class="section-note">Links point only to existing files inside the study root</span></div>{_images_html(images)}{_comparison_html(comparison)}<p>Direct comparison: <span class="inline-state" data-state="{_e(_state(compare_status))}">{_e(compare_status)}</span></p></section>'
+        + f'<section><div class="section-head"><h2>Evidence files</h2><span class="section-note">Links point only to existing files inside the study root</span></div>{_images_html(images)}<p>Direct comparison: <span class="inline-state" data-state="{_e(_state(compare_status))}">{_e(compare_status)}</span></p></section>'
         + '</main><footer>Offline report · Values and states come from study evidence · Report generation does not start a solver</footer></div>'
         + f"<script>{REPORT_JS}</script></body></html>\n"
     )
@@ -898,7 +916,7 @@ def _html_report(root: Path, study: object, manifest: Mapping[str, Any],
 def generate_study_report(root: Path) -> dict[str, Any]:
     """Write offline HTML and Markdown reports from a study's recorded evidence."""
     root = Path(root).expanduser().resolve()
-    study, _base, raw_manifest = project.load_project(root)
+    study, base, raw_manifest = project.load_project(root)
     manifest = _mapping(raw_manifest)
     dataset, dataset_path = {}, None
     for reference in reversed(_list(manifest.get("datasets"))):
@@ -906,6 +924,11 @@ def generate_study_report(root: Path) -> dict[str, Any]:
         if candidate is not None:
             dataset, dataset_path = candidate, str(reference)
             break
+    context = (project.engineering_context(study, base) if base is not None
+               else _mapping(dataset.get("engineering_context")))
+    context_html, context_markdown = render_tables(engineering_tables(study, context, dataset, _quantity))
+    recorded = recorded_workflow_result(root, dict(manifest))
+    overall = _status(_mapping(recorded).get("status"))
     rows = _sample_rows(dataset)
     targets = _target_names(study, dataset)
     mesh = _mesh_records(rows, targets, study)
@@ -933,10 +956,15 @@ def generate_study_report(root: Path) -> dict[str, Any]:
     samples = [dict(item) for item in _list(manifest.get("samples")) if isinstance(item, Mapping)]
     images = _attempt_image_evidence(root, samples)
     phases = _phase_rows(manifest, samples, models, rounds)
+    comparison_html, comparison_markdown = _comparison_report(comparison, study, dataset)
+    error_slices_html, error_slices_markdown = render_tables(evaluation_tables(
+        models, {target: _target_unit(target, study, dataset) for target in targets}, _quantity, _fmt))
     html_text = _html_report(root, study, manifest, dataset, dataset_path, rows, models,
-                             rounds, verification, comparison, mesh, images, phases)
+                             rounds, verification, comparison, mesh, images, phases,
+                             context_html, overall, comparison_html, error_slices_html)
     markdown = _markdown(study, manifest, dataset, dataset_path, rows, models, rounds,
-                         verification, comparison, mesh, images, phases)
+                         verification, comparison, mesh, images, phases,
+                         context_markdown, overall, comparison_markdown, error_slices_markdown)
     html_path, markdown_path = root / "study-report.html", root / "study-report.md"
     atomic_text(html_path, html_text)
     atomic_text(markdown_path, markdown)

@@ -179,6 +179,22 @@ def test_adaptive_proposal_is_reused_before_round_limit_and_freezes_test(optimiz
     assert len(project.load_project(root)[2]["rounds"]) == 1
 
 
+def test_adaptive_proposal_and_execution_are_blocked_after_comparison_creation(optimization_case):
+    root = optimization_case["root"]
+    plan = optimization.propose_candidates(root)
+    _, _, manifest = project.load_project(root)
+    manifest["direct_comparison"] = {"status": "PLANNED"}
+    project.save_project(root, manifest)
+    sample_count = len(manifest["samples"])
+
+    with pytest.raises(SpecValidationError, match="after a direct comparison plan"):
+        optimization.propose_candidates(root)
+    with pytest.raises(SpecValidationError, match="after a direct comparison plan"):
+        optimization.execute_proposal(root, plan, execute=True)
+
+    assert len(project.load_project(root)[2]["samples"]) == sample_count
+
+
 def test_plan_hash_rejects_candidate_content_changes_before_execution(optimization_case, monkeypatch):
     plan = optimization.propose_candidates(optimization_case["root"])
     plan["candidates"][0]["mass_kg"] += 1.0

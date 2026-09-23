@@ -71,6 +71,74 @@ def test_mechanical_messages_preserve_localized_text_and_error_severity(mechanic
     }]
 
 
+@pytest.mark.parametrize(("phase", "fails"), [("mesh", False), ("mesh", True),
+                                                     ("solve", False), ("solve", True)])
+def test_mechanical_phase_timer_records_stubbed_operations_without_solver_launch(
+    mechanical_runtime, phase, fails, tmp_path
+):
+    env = mechanical_runtime({})
+    error = RuntimeError("stubbed operation failed")
+    ticks = iter((10.0, 10.25))
+    env["time"] = NS(time=lambda: next(ticks))
+    calls = []
+
+    if phase == "mesh":
+        def generate_mesh():
+            calls.append("mesh")
+            if fails:
+                raise error
+
+        env.update(
+            PLAN={
+                "mesh": {
+                    "global_element_size": "1 mm",
+                    "element_order": "program_controlled",
+                }
+            },
+            Model=NS(Mesh=NS(GenerateMesh=generate_mesh)),
+            Quantity=lambda value: value,
+        )
+        operation = env["apply_mesh"]
+    else:
+        def solve_stub(full_solve):
+            calls.append(full_solve)
+            if fails:
+                raise error
+
+        def operation():
+            env["solve_analysis"](NS(Solve=solve_stub))
+
+    if fails:
+        with pytest.raises(RuntimeError) as raised:
+            operation()
+        assert raised.value is error
+    else:
+        operation()
+
+    assert calls == (["mesh"] if phase == "mesh" else [True])
+    assert env["MECHANICAL_PHASE_TIMINGS"][phase] == {
+        "status": "RECORDED",
+        "elapsed_seconds": 0.25,
+    }
+    other = "solve" if phase == "mesh" else "mesh"
+    assert env["MECHANICAL_PHASE_TIMINGS"][other] == {
+        "status": "NOT_RUN",
+        "elapsed_seconds": None,
+    }
+    env["RUN_DIRECTORY"] = str(tmp_path)
+    env["PLAN"].setdefault(
+        "output", {"save_project": False, "export_images": False}
+    )
+    env["CREATED"]["analysis"] = NS()
+    payload = env["write_artifacts"](
+        "FAILED", {"type": "StubbedOperationError", "message": "unit test"}
+    )
+    assert payload["phase_timings"] == env["MECHANICAL_PHASE_TIMINGS"]
+    assert payload["phase_timings"][phase]["status"] == "RECORDED"
+    assert payload["phase_timings"][other]["status"] == "NOT_RUN"
+    assert payload["timing_clock"] == "time.time"
+
+
 @pytest.mark.parametrize("scope", [None, "tip"])
 def test_template_results_are_synchronized(mechanical_runtime, scope):
     class SavedResult(NS):

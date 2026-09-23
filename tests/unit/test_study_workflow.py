@@ -68,6 +68,51 @@ def test_required_comparison_cannot_be_silently_skipped(workflow_state, monkeypa
     assert result["equal_budget_comparison"]["status"] == "NOT_RUN"
 
 
+def test_failed_verification_keeps_failure_instead_of_missing_comparison(workflow_state, monkeypatch):
+    root, _, _ = workflow_state
+    monkeypatch.setattr(workflow, "verify_candidates", lambda *a, **k: {"status": "FAIL"})
+    monkeypatch.setattr(comparison, "run_comparison", lambda *a, **k: pytest.fail("Failed candidate compared"))
+    result = workflow.complete_workflow(root, execute=True)
+    assert result["status"] == "FAIL"
+    assert read_json(root / "workflow-result.json")["status"] == "FAIL"
+
+
+def test_resume_initial_stage_does_not_run_comparison_jobs(workflow_state, monkeypatch):
+    root, _, _ = workflow_state
+    seen = []
+
+    def run(*args, **kwargs):
+        seen.append(kwargs)
+        return {"status": "SOLVED"}
+
+    monkeypatch.setattr(workflow, "run_study", run)
+    workflow.complete_workflow(root, execute=True, resume=True)
+    assert seen[0]["splits"] == ("baseline", "train", "test")
+
+
+def test_search_budget_exhaustion_does_not_consume_holdout(workflow_state, monkeypatch):
+    root, _, _ = workflow_state
+    spec, _, _ = workflow.load_project(root)
+    spec.optimization.max_rounds = 1
+    monkeypatch.setattr(workflow, "propose_candidates", lambda *a: {"status": "BUDGET_EXHAUSTED"})
+    monkeypatch.setattr(workflow, "evaluate_study", lambda *a: pytest.fail("Holdout inspected after budget stop"))
+    result = workflow.complete_workflow(root, execute=True)
+    assert result["status"] == "BUDGET_EXHAUSTED"
+
+
+def test_recorded_outcome_is_invalidated_by_changed_result_evidence(workflow_state):
+    root, _, _ = workflow_state
+    workflow.complete_workflow(root, execute=True)
+    _, _, manifest = workflow.load_project(root)
+    assert workflow.recorded_workflow_result(root, manifest)["status"] == "PASS"
+    atomic_json(root / "comparison.json", {"status": "NOT_RUN"})
+    assert workflow.recorded_workflow_result(root, manifest) is None
+    workflow.complete_workflow(root, execute=True)
+    assert workflow.recorded_workflow_result(root, manifest) is not None
+    manifest["solver_calls"] = 1
+    assert workflow.recorded_workflow_result(root, manifest) is None
+
+
 @pytest.fixture
 def model_lifecycle(tmp_path, monkeypatch):
     from ansys_skill import surrogate
@@ -76,7 +121,8 @@ def model_lifecycle(tmp_path, monkeypatch):
     manifest = {"study_id": "lifecycle-fixture", "study_fingerprint": "fixture",
                 "code_fingerprint": "fixture-code", "models": [],
                 "datasets": ["datasets/fixture.json"], "frozen_test_designs": ["test-1"]}
-    data = {"dataset_id": "fixture-data", "rows": [{"design_id": "test-1", "split": "test",
+    data = {"dataset_id": "fixture-data", "engineering_context": {"fixture": True},
+            "execution_context": {"fixture": True}, "rows": [{"design_id": "test-1", "split": "test",
              "accepted_targets": ["displacement", "stress"]}]}
     state_path = tmp_path / "state.json"
     atomic_json(state_path, manifest)
@@ -88,6 +134,8 @@ def model_lifecycle(tmp_path, monkeypatch):
     def train_fixture(dataset, directory, options):
         atomic_json(directory / "model.json", {"model_id": "fixture-model",
                                                "evidence_kind": "analytic_test"})
+        atomic_json(directory / "model-card.json", {"model_id": "fixture-model",
+                                                    "evidence_kind": "analytic_test"})
         return {"model_id": "fixture-model"}
 
     monkeypatch.setattr(surrogate, "train_model", train_fixture)
@@ -117,6 +165,9 @@ def test_atomic_model_is_registered_after_manifest_publication_interruption(mode
     assert recovered["reused"] is True
     records = read_json(state_path)["models"]
     assert len(records) == 1 and records[0]["path"] == recovered["path"]
+    card = read_json(root / recovered["path"] / "model-card.json")
+    assert card["engineering_context"] == {"fixture": True}
+    assert card["dataset_id"] == "fixture-data"
     modeling.train_study(root)
     assert len(read_json(state_path)["models"]) == 1
 
@@ -136,8 +187,9 @@ def test_incomplete_holdout_does_not_publish_errors_or_freeze_training(model_lif
 def test_holdout_commit_survives_evaluation_interruption_and_rejects_model_switch(model_lifecycle, monkeypatch):
     from ansys_skill import surrogate
 
-    root, state_path, _ = model_lifecycle
+    root, state_path, data = model_lifecycle
     model = root / "models/fixture"
+    atomic_json(model / "model.json", {"model_id": "frozen-fixture"})
     monkeypatch.setattr(modeling, "latest_model", lambda *a: model)
 
     def interrupted(*args):
@@ -154,6 +206,13 @@ def test_holdout_commit_survives_evaluation_interruption_and_rejects_model_switc
     monkeypatch.setattr(surrogate, "evaluate_model", lambda *a: {"status": "PASS"})
     assert modeling.evaluate_study(root)["status"] == "PASS"
     assert read_json(model / "evaluation.json")["status"] == "PASS"
+    data["rows"][0]["targets"] = {"displacement": 1e-5}
+    with pytest.raises(SpecValidationError, match="Final test labels"):
+        modeling.evaluate_study(root)
+    data["rows"][0].pop("targets")
+    atomic_json(model / "model.json", {"model_id": "replacement-fixture"})
+    with pytest.raises(SpecValidationError, match="content changed"):
+        modeling.evaluate_study(root)
 
 
 def test_failed_analysis_time_counts_against_later_work(model_lifecycle, monkeypatch):

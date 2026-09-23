@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Bind final surrogate evaluation to frozen test designs, model content and test-source evidence;
+  add boundary/constraint-near error slices and complete constraint confusion matrices.
+- Preserve required numerical and selected-face checks, freeze the direct-comparison allowance
+  against its research ledger, and invalidate stale workflow conclusions. Distinguish observed
+  training designs from separately solver-verified recommendations in the report.
+- Record Mechanical mesh/solve and CLI backend/postprocessing/report durations, including failed
+  attempts; retain missing timings as NOT_RUN and identify overlapping parent/child costs.
 - Add the independent ansys-design-study Skill and bilingual guides for the implemented study/surrogate workflow, portable tasks, hash-bound stress review, and Windows use. Keep real Windows engineering acceptance NOT_RUN.
 - Require source distributions to include study docs, Skills, schema, example, Windows helper, and tests; require wheels to contain the complete CLI, study, and surrogate runtime. Add offline Python 3.13 Linux/Windows study CI while retaining the base CI job.
 - Document the example's shared 400-call study ceiling (120 initial planned calls), authored 0.025 mm / 10 MPa response constraints, safe JSON models, equal-budget direct-search comparison, and non-certification boundary.

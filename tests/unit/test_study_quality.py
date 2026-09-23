@@ -140,7 +140,7 @@ def _make_synthetic_run(tmp_path: Path, *, density: float = _DENSITY,
 
 def _target_check_records(study, target_name: str, *, review_status: str | None = None) -> list[dict]:
     names = ["verification_evidence", "source_configuration", "real_solve",
-             "result_file", "material_density", "geometry_provenance",
+             "result_file", "material_density", "geometry_provenance", "selected_face_geometry",
              f"target_value:{target_name}", *study.targets[target_name].required_checks]
     records = [{"name": name, "status": "PASS"} for name in dict.fromkeys(names)]
     if review_status is not None:

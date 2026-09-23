@@ -14,9 +14,9 @@ from typing import Any
 
 from ansys_skill.errors import AnsysSimError, EnvironmentUnavailableError
 
-from .metrics import regression_metrics
+from .metrics import absolute_error_metrics, regression_metrics
 
-MODEL_SCHEMA_VERSION = "1.0"
+MODEL_SCHEMA_VERSION = "1.1"
 TRAINING_ALGORITHM_VERSION = "1.0.0"
 MODEL_FILENAME = "model.json"
 MODEL_CARD_FILENAME = "model-card.json"
@@ -24,6 +24,7 @@ _SPLITS = {"train", "test", "baseline", "verification", "comparison"}
 _KERNELS = {"rbf", "matern32", "matern52"}
 _RIDGE_ALPHAS = (1e-8, 1e-5, 1e-3, 0.1, 1.0, 10.0)
 _GPR_LENGTH_SCALES = (0.25, 0.5, 1.0, 2.0)
+_BOUNDARY_REGION_FRACTION = 0.1
 _DEFAULT_OPTIONS: dict[str, object] = {
     "seed": 42,
     "cv_folds": 4,
@@ -200,6 +201,7 @@ def _validate_dataset(dataset: object) -> dict[str, object]:
         _invalid("frozen_test_designs must be a list of non-empty design IDs")
     if len(set(frozen_test_designs)) != len(frozen_test_designs):
         _invalid("frozen_test_designs must not contain duplicates")
+    frozen_test_design_set = set(frozen_test_designs)
     rows_value = root.get("rows")
     if not isinstance(rows_value, list) or not rows_value:
         _invalid("rows must be a non-empty list")
@@ -222,6 +224,10 @@ def _validate_dataset(dataset: object) -> dict[str, object]:
         prior_split = design_splits.setdefault(design_id, str(split))
         if prior_split != split:
             _invalid(f"design_id {design_id!r} occurs in multiple splits")
+        if design_id in frozen_test_design_set and split != "test":
+            _invalid(f"{label}.design_id is frozen for test but its split is {split!r}")
+        if split == "test" and design_id not in frozen_test_design_set:
+            _invalid(f"{label}.design_id is not declared in frozen_test_designs")
 
         parameters_raw = _mapping(row.get("parameters"), f"{label}.parameters")
         if set(parameters_raw) != set(feature_names):
@@ -283,7 +289,7 @@ def _validate_dataset(dataset: object) -> dict[str, object]:
         "feature_units": feature_units,
         "bounds": bounds,
         "targets": targets,
-        "frozen_test_designs": list(frozen_test_designs),
+        "frozen_test_designs": sorted(frozen_test_designs),
         "rows": rows,
     }
 
@@ -620,6 +626,7 @@ def _assemble_model_document(
         "model_id": "",
         "evidence_kind": dataset["evidence_kind"],
         "study_fingerprint": dataset["study_fingerprint"],
+        "frozen_test_designs": sorted(dataset["frozen_test_designs"]),
         "training_data_hash": training_data_hash,
         "feature_names": dataset["feature_names"],
         "feature_units": dataset["feature_units"],
@@ -787,6 +794,15 @@ def _validate_model_document(model: object) -> dict[str, object]:
     if evidence_kind not in {"solver", "analytic_test"}:
         _invalid("model evidence_kind is invalid")
     _nonempty_string(root.get("study_fingerprint"), "model study_fingerprint")
+    frozen_test_designs = root.get("frozen_test_designs")
+    if not isinstance(frozen_test_designs, list) or any(
+        not isinstance(design_id, str) or not design_id for design_id in frozen_test_designs
+    ):
+        _invalid("model frozen_test_designs must be a list of non-empty design IDs")
+    if len(set(frozen_test_designs)) != len(frozen_test_designs):
+        _invalid("model frozen_test_designs must not contain duplicates")
+    if frozen_test_designs != sorted(frozen_test_designs):
+        _invalid("model frozen_test_designs must be sorted")
     training_hash = root.get("training_data_hash")
     if not isinstance(training_hash, str) or len(training_hash) != 64:
         _invalid("model training_data_hash must be a SHA-256 digest")
@@ -889,7 +905,14 @@ def _assert_compatible(model: dict[str, object], dataset: dict[str, object]) -> 
 
 
 def _assert_context_matches(model: dict[str, object], dataset: dict[str, object]) -> None:
-    for key in ("study_fingerprint", "feature_names", "feature_units", "bounds", "targets"):
+    for key in (
+        "study_fingerprint",
+        "frozen_test_designs",
+        "feature_names",
+        "feature_units",
+        "bounds",
+        "targets",
+    ):
         if dataset[key] != model[key]:
             _invalid(f"evaluation dataset {key} does not match the trained model")
 
@@ -910,6 +933,175 @@ def _evaluate_analytic_test_model(model_dir: Path, dataset: dict) -> dict:
         _invalid("the analytic evaluation helper only accepts analytic_test artifacts")
     _assert_context_matches(model, validated)
     return _evaluate_validated_dataset(model, validated)
+
+
+def _target_error_tolerance(actual: float, metadata: Mapping[str, object]) -> float:
+    return float(metadata["absolute_tolerance"]) + float(metadata["relative_tolerance"]) * max(
+        abs(actual), float(metadata["reference_scale"])
+    )
+
+
+def _slice_result(
+    selected: list[dict[str, object]],
+    selection: dict[str, object],
+    *,
+    empty_reason: str,
+    false_safe_available: bool,
+) -> dict[str, object]:
+    result: dict[str, object] = {
+        "status": "EVALUATED" if selected else "NOT_RUN",
+        "selection": selection,
+        "sample_ids": sorted(str(sample["sample_id"]) for sample in selected),
+        "sample_count": len(selected),
+    }
+    if not selected:
+        result.update(
+            {
+                "reason": empty_reason,
+                "metrics": None,
+                "false_safe_count": None,
+            }
+        )
+        return result
+
+    result["metrics"] = absolute_error_metrics(
+        [float(sample["truth"]) for sample in selected],
+        [float(sample["prediction"]) for sample in selected],
+    )
+    result["false_safe_count"] = (
+        sum(bool(sample["false_safe"]) for sample in selected) if false_safe_available else None
+    )
+    return result
+
+
+def _evaluation_slices(
+    samples: list[dict[str, object]],
+    feature_names: list[str],
+    bounds: dict[str, list[float]],
+    metadata: Mapping[str, object],
+) -> dict[str, dict[str, object]]:
+    boundary_selection: dict[str, object] = {
+        "criterion": (
+            "Any feature's normalized distance to its nearest declared bound is <= threshold."
+        ),
+        "normalized_distance": (
+            "min((value - lower) / (upper - lower), (upper - value) / (upper - lower))"
+        ),
+        "combine_features": "any",
+        "threshold_fraction": _BOUNDARY_REGION_FRACTION,
+        "feature_names": feature_names,
+    }
+    boundary_samples = []
+    for sample in samples:
+        parameters = sample["parameters"]
+        assert isinstance(parameters, Mapping)
+        if any(
+            min(
+                (float(parameters[name]) - bounds[name][0]) / (bounds[name][1] - bounds[name][0]),
+                (bounds[name][1] - float(parameters[name])) / (bounds[name][1] - bounds[name][0]),
+            )
+            <= _BOUNDARY_REGION_FRACTION
+            for name in feature_names
+        ):
+            boundary_samples.append(sample)
+
+    limit = metadata["limit"]
+    constraint_selection: dict[str, object] = {
+        "criterion": "abs(truth - limit) <= error_tolerance",
+        "error_tolerance": (
+            "absolute_tolerance + relative_tolerance * max(abs(truth), reference_scale)"
+        ),
+        "absolute_tolerance": float(metadata["absolute_tolerance"]),
+        "relative_tolerance": float(metadata["relative_tolerance"]),
+        "reference_scale": float(metadata["reference_scale"]),
+        "limit": float(limit) if limit is not None else None,
+    }
+    constraint_samples = (
+        [
+            sample
+            for sample in samples
+            if abs(float(sample["truth"]) - float(limit))
+            <= float(sample["error_tolerance"])
+        ]
+        if limit is not None
+        else []
+    )
+    constraint_empty_reason = (
+        "target_limit_not_declared" if limit is None else "no_samples_match_selection"
+    )
+    return {
+        "design_space_boundary": _slice_result(
+            boundary_samples,
+            boundary_selection,
+            empty_reason="no_samples_match_selection",
+            false_safe_available=limit is not None,
+        ),
+        "constraint_near": _slice_result(
+            constraint_samples,
+            constraint_selection,
+            empty_reason=constraint_empty_reason,
+            false_safe_available=limit is not None,
+        ),
+    }
+
+
+def _constraint_classification(
+    samples: list[dict[str, object]], metadata: Mapping[str, object]
+) -> dict[str, object]:
+    limit = metadata["limit"]
+    if limit is None:
+        return {
+            "status": "NOT_RUN",
+            "reason": "target_limit_not_declared",
+            "limit": None,
+            "sample_count": len(samples),
+            "sample_ids": sorted(str(sample["sample_id"]) for sample in samples),
+            "confusion_matrix": None,
+            "false_safe_count": None,
+            "false_unsafe_count": None,
+        }
+    if not samples:
+        return {
+            "status": "NOT_RUN",
+            "reason": "no_eligible_test_samples",
+            "limit": float(limit),
+            "sample_count": 0,
+            "sample_ids": [],
+            "confusion_matrix": None,
+            "false_safe_count": None,
+            "false_unsafe_count": None,
+        }
+
+    counts = {
+        "true_feasible_predicted_feasible": 0,
+        "true_feasible_predicted_infeasible": 0,
+        "true_infeasible_predicted_feasible": 0,
+        "true_infeasible_predicted_infeasible": 0,
+    }
+    threshold = float(limit)
+    for sample in samples:
+        true_feasible = float(sample["truth"]) <= threshold
+        predicted_feasible = float(sample["prediction"]) <= threshold
+        if true_feasible and predicted_feasible:
+            cell = "true_feasible_predicted_feasible"
+        elif true_feasible:
+            cell = "true_feasible_predicted_infeasible"
+        elif predicted_feasible:
+            cell = "true_infeasible_predicted_feasible"
+        else:
+            cell = "true_infeasible_predicted_infeasible"
+        counts[cell] += 1
+
+    return {
+        "status": "EVALUATED",
+        "feasibility_rule": "truth <= limit; prediction <= limit",
+        "limit": threshold,
+        "sample_count": len(samples),
+        "sample_ids": sorted(str(sample["sample_id"]) for sample in samples),
+        "confusion_matrix": counts,
+        "false_safe_count": counts["true_infeasible_predicted_feasible"],
+        "false_unsafe_count": counts["true_feasible_predicted_infeasible"],
+    }
 
 
 def _evaluate_validated_dataset(model: dict[str, object], validated: dict[str, object]) -> dict:
@@ -974,6 +1166,8 @@ def _evaluate_validated_dataset(model: dict[str, object], validated: dict[str, o
                 "missing_design_ids": missing_design_ids,
                 "ineligible_designs": ineligible_designs,
                 "points": [],
+                "error_slices": _evaluation_slices([], feature_names, bounds, metadata),
+                "constraint_classification": _constraint_classification([], metadata),
             }
             continue
         training_ids = set(target_model["support_design_ids"])
@@ -986,6 +1180,7 @@ def _evaluate_validated_dataset(model: dict[str, object], validated: dict[str, o
         false_safe = 0
         tolerance_failures = 0
         points: list[dict[str, object]] = []
+        evaluation_samples: list[dict[str, object]] = []
         for row in samples:
             x = _normalize_row(np, row["parameters"], feature_names, bounds).reshape(1, -1)
             mean, std = _predict_numeric_model(np, target_model, x)
@@ -995,14 +1190,23 @@ def _evaluate_validated_dataset(model: dict[str, object], validated: dict[str, o
             truth.append(actual)
             prediction.append(estimate)
             deviations.append(standard_deviation)
-            tolerance = float(metadata["absolute_tolerance"]) + float(metadata["relative_tolerance"]) * max(
-                abs(actual), float(metadata["reference_scale"])
-            )
+            tolerance = _target_error_tolerance(actual, metadata)
             if abs(estimate - actual) > tolerance:
                 tolerance_failures += 1
             limit = metadata["limit"]
-            if limit is not None and actual > float(limit) and estimate <= float(limit):
+            is_false_safe = limit is not None and actual > float(limit) and estimate <= float(limit)
+            if is_false_safe:
                 false_safe += 1
+            evaluation_samples.append(
+                {
+                    "sample_id": row["sample_id"],
+                    "parameters": row["parameters"],
+                    "truth": actual,
+                    "prediction": estimate,
+                    "error_tolerance": tolerance,
+                    "false_safe": is_false_safe,
+                }
+            )
             points.append(
                 {
                     "sample_id": row["sample_id"],
@@ -1029,6 +1233,10 @@ def _evaluate_validated_dataset(model: dict[str, object], validated: dict[str, o
             "ineligible_designs": ineligible_designs,
             "points": points,
             "metrics": regression_metrics(truth, prediction, float(metadata["reference_scale"])),
+            "error_slices": _evaluation_slices(
+                evaluation_samples, feature_names, bounds, metadata
+            ),
+            "constraint_classification": _constraint_classification(evaluation_samples, metadata),
             "tolerance_failures": tolerance_failures,
             "false_safe_count": false_safe,
             "unit": metadata["unit"],
@@ -1083,8 +1291,6 @@ def _predict_model_document(model: dict[str, object], parameters: dict[str, floa
         missing = sorted(set(feature_names) - set(values))
         extra = sorted(set(values) - set(feature_names))
         _invalid(f"parameters must contain every model feature exactly once; missing={missing}, extra={extra}")
-    if list(values) != feature_names:
-        _invalid("parameters must follow the model feature_names order")
     parsed = {name: _finite_number(values[name], f"parameters.{name}") for name in feature_names}
     point = {name: float(parsed[name]) for name in feature_names}
     inside_bounds = all(bounds[name][0] <= point[name] <= bounds[name][1] for name in feature_names)

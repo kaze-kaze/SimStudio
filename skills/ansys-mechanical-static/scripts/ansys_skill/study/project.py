@@ -115,6 +115,24 @@ def make_jobs(study: StudySpec) -> list[dict]:
             for index, size in enumerate(study.mesh.sizes)]
 
 
+def engineering_context(study: StudySpec, base: SimulationSpec) -> dict:
+    """Describe the fixed physics and target interpretation without machine-specific input paths."""
+    from ansys_skill.study.geometry import GENERATOR_VERSION
+
+    document = base.model_dump(mode="json", exclude_none=True)
+    fields = ("units", "coordinate_systems", "bodies", "materials", "scopes", "analysis",
+              "supports", "loads", "requested_results", "validation", "assumptions")
+    return {
+        "geometry": {"generator": study.geometry, "generator_version": GENERATOR_VERSION},
+        "material_evidence": study.material.model_dump(mode="json"),
+        "simulation": {key: document[key] for key in fields},
+        "mesh_study": study.mesh.model_dump(mode="json"),
+        "target_definitions": {name: target.model_dump(mode="json")
+                               for name, target in study.targets.items()},
+        "target_statistic": "Maximum absolute requested nodal result in canonical SI units",
+    }
+
+
 def load_project(root: Path, *, check_code: bool = False) -> tuple[StudySpec, SimulationSpec, dict]:
     root = root.resolve()
     manifest = read_json(root / "study-manifest.json")
@@ -182,10 +200,13 @@ def prepare_sample(root: Path, sample: dict, study: StudySpec, base: SimulationS
             raise SpecValidationError("Geometry metadata changed; refusing to reuse sample")
     else:
         started = time.monotonic()
-        geometry = build_geometry(sample["parameters"], directory,
-                                  density_kg_m3=normalize_quantity(study.material.density, "density").magnitude)
+        try:
+            geometry = build_geometry(sample["parameters"], directory,
+                                      density_kg_m3=normalize_quantity(study.material.density, "density").magnitude)
+        finally:
+            sample["geometry_seconds"] = sample.get("geometry_seconds", 0.0) + time.monotonic() - started
+            sample["geometry_preparations"] = sample.get("geometry_preparations", 0) + 1
         sample["geometry"] = geometry
-        sample["geometry_seconds"] = time.monotonic() - started
     for job in sample["jobs"]:
         spec_path = directory / f"mesh-{job['mesh_index']}.yaml"
         document = copy.deepcopy(base.model_dump(mode="json", exclude_none=True))

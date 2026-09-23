@@ -17,7 +17,7 @@ from ansys_skill.study.project import load_project, make_jobs, save_project
 from ansys_skill.study.runner import run_study
 from ansys_skill.study.sampling import design_id, latin_points, sample_record
 from ansys_skill.study.storage import atomic_json, canonical_hash, read_json, study_lock
-from ansys_skill.study.timing import account_activity
+from ansys_skill.study.timing import account_activity, account_subactivity
 from ansys_skill.units import normalize_quantity
 
 _ACTIVE_ROUND_STATUSES = {"PROPOSED", "SCHEDULED", "PARTIAL", "BUDGET_EXHAUSTED"}
@@ -98,6 +98,10 @@ def propose_candidates(root: Path, model_path: Path | None = None, *, purpose: s
     root = root.resolve()
     with study_lock(root):
         study, _, manifest = load_project(root)
+        if purpose == "adaptive" and manifest.get("direct_comparison"):
+            raise SpecValidationError(
+                "Adaptive sampling cannot continue after a direct comparison plan has been created"
+            )
         with account_activity(root, manifest, 'optimization'):
             if purpose == "adaptive" and manifest.get("holdout_evaluated"):
                 raise SpecValidationError("Final holdout was evaluated; start a new study before adaptation")
@@ -120,6 +124,8 @@ def propose_candidates(root: Path, model_path: Path | None = None, *, purpose: s
             rejected: list[dict] = []
             visited_designs: set[str] = set()
             geometry_cache: dict[str, dict] = {}
+            prior_prediction = manifest.get("phase_timings", {}).get("prediction", {}).get("elapsed_seconds", 0.0)
+            prior_geometry = manifest.get("phase_timings", {}).get("candidate_geometry", {}).get("elapsed_seconds", 0.0)
             started = time.monotonic()
             points = latin_points(
                 study.bounds(),
@@ -137,7 +143,8 @@ def propose_candidates(root: Path, model_path: Path | None = None, *, purpose: s
                 visited_designs.add(identity)
                 try:
                     validate_parameters(parameters)
-                    prediction = predict_model(directory, parameters)
+                    with account_subactivity(manifest, "prediction"):
+                        prediction = predict_model(directory, parameters)
                     prediction_status = prediction.get("status")
                     if prediction_status not in _VALID_PREDICTION_STATUSES:
                         raise SpecValidationError("Model returned an unsupported prediction status")
@@ -146,7 +153,8 @@ def propose_candidates(root: Path, model_path: Path | None = None, *, purpose: s
                         raise SpecValidationError("Model predictions do not match the declared study targets")
                     geometry = geometry_cache.get(identity)
                     if geometry is None:
-                        geometry = geometry_summary(parameters, density)
+                        with account_subactivity(manifest, "candidate_geometry"):
+                            geometry = geometry_summary(parameters, density)
                         if not isinstance(geometry, Mapping):
                             raise SpecValidationError("CAD geometry summary must be an object")
                         geometry_cache[identity] = dict(geometry)
@@ -241,6 +249,8 @@ def propose_candidates(root: Path, model_path: Path | None = None, *, purpose: s
                 "evaluated_candidates": len(candidates),
                 "rejected": rejected,
                 "search_seconds": time.monotonic() - started,
+                "prediction_seconds": manifest.get("phase_timings", {}).get("prediction", {}).get("elapsed_seconds", 0.0) - prior_prediction,
+                "geometry_seconds": manifest.get("phase_timings", {}).get("candidate_geometry", {}).get("elapsed_seconds", 0.0) - prior_geometry,
                 "pending_same_split_calls": pending_same_split,
                 "candidate_solver_calls": candidate_solver_calls,
                 "additional_solver_calls": pending_same_split + candidate_solver_calls,
@@ -331,6 +341,10 @@ def execute_proposal(root: Path, plan: dict, *, execute: bool = False) -> dict:
         record = _validate_registered_execution(root, plan, manifest)
         purpose = plan["purpose"]
         if purpose == "adaptive":
+            if manifest.get("direct_comparison"):
+                raise SpecValidationError(
+                    "Adaptive sampling cannot continue after a direct comparison plan has been created"
+                )
             if manifest.get("holdout_evaluated"):
                 raise SpecValidationError("Final holdout was evaluated; start a new study before adaptation")
             if any(item["purpose"] == "verification" for item in manifest["rounds"]):
@@ -415,6 +429,12 @@ def verify_candidates(
             "model_id": plan.get("model_id"),
             "study_fingerprint": plan.get("study_fingerprint"),
         }
+    from ansys_skill.surrogate import load_model
+
+    _, _, current = load_project(root)
+    active_model = load_model(latest_model(root, current, model_path))
+    if plan.get("model_id") != active_model["model_id"]:
+        raise SpecValidationError("Verification plan belongs to a different model; create a new study")
     execution = execute_proposal(root, plan, execute=execute)
     if not execute or execution["status"] in {"BUDGET_EXHAUSTED", "INTERRUPTED"}:
         return execution

@@ -9,7 +9,7 @@ from pathlib import Path
 from ansys_skill.errors import SpecValidationError
 from ansys_skill.manifest import utc_now
 from ansys_skill.paths import safe_join
-from ansys_skill.study.project import load_project, save_project
+from ansys_skill.study.project import engineering_context, load_project, save_project
 from ansys_skill.study.schema import FEATURE_NAMES
 from ansys_skill.study.storage import (
     atomic_json,
@@ -27,7 +27,7 @@ def collect_dataset(root: Path, *, reviews_path: Path | None = None) -> dict:
 
     root = root.resolve()
     with study_lock(root):
-        study, _, manifest = load_project(root)
+        study, base, manifest = load_project(root)
         with account_activity(root, manifest, 'collection'):
             reviews = read_json(reviews_path) if reviews_path else {}
             rows, excluded = [], []
@@ -50,6 +50,7 @@ def collect_dataset(root: Path, *, reviews_path: Path | None = None) -> dict:
                         levels.append(level)
                         sources.append({"run_directory": attempt["path"], "hashes": attempt["hashes"],
                                         "elapsed_seconds": attempt["elapsed_seconds"],
+                                        "phase_timings": attempt.get("phase_timings", {}),
                                         "mesh_size": job["mesh_size"]})
                     except SpecValidationError as exc:
                         failures.append(str(exc))
@@ -92,6 +93,9 @@ def collect_dataset(root: Path, *, reviews_path: Path | None = None) -> dict:
             dataset = {
                 "schema_version": "1.0", "study_id": manifest["study_id"],
                 "study_fingerprint": manifest["study_fingerprint"], "evidence_kind": "solver",
+                "engineering_context": engineering_context(study, base),
+                "code_fingerprint": manifest["code_fingerprint"],
+                "execution_context": manifest["execution_context"],
                 "feature_names": list(FEATURE_NAMES), "feature_units": {n: "meter" for n in FEATURE_NAMES},
                 "bounds": study.bounds(), "targets": {name: target.canonical() for name, target in study.targets.items()},
                 "frozen_test_designs": manifest["frozen_test_designs"],

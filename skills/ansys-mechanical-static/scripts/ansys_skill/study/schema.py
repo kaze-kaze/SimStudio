@@ -14,6 +14,9 @@ from ansys_skill.schema import StrictModel
 from ansys_skill.units import normalize_quantity
 
 FEATURE_NAMES = ("plate_thickness", "hole_diameter", "fillet_radius")
+REQUIRED_NUMERICAL_CHECKS = (
+    "mechanical_messages", "requested_results", "small_deformation", "reaction_balance",
+)
 
 
 class ParameterSpec(StrictModel):
@@ -52,9 +55,7 @@ class TargetSpec(StrictModel):
     relative_tolerance: float = Field(default=0.05, gt=0, lt=1, allow_inf_nan=False)
     reference_scale: str
     mesh_relative_tolerance: float = Field(default=0.05, gt=0, lt=1, allow_inf_nan=False)
-    required_checks: list[str] = Field(default_factory=lambda: [
-        "mechanical_messages", "requested_results", "small_deformation", "reaction_balance",
-    ])
+    required_checks: list[str] = Field(default_factory=lambda: list(REQUIRED_NUMERICAL_CHECKS))
     require_stress_review: bool = False
 
     @model_validator(mode="after")
@@ -65,6 +66,9 @@ class TargetSpec(StrictModel):
                 raise ValueError("Target limits, scales and absolute tolerances must be positive")
         if not self.required_checks or len(set(self.required_checks)) != len(self.required_checks):
             raise ValueError("Required checks must be a non-empty unique list")
+        missing = set(REQUIRED_NUMERICAL_CHECKS) - set(self.required_checks)
+        if missing:
+            raise ValueError(f"Required numerical checks cannot be removed: {sorted(missing)}")
         if self.dimension == "pressure" and not self.require_stress_review:
             raise ValueError("Stress targets require a recorded singularity review")
         return self

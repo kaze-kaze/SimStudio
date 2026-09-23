@@ -241,8 +241,10 @@ nodal scopes with `model.metadata.named_selection`, and calls the displacement a
 operators with `bool_rotate_to_global=True`. It aligns fields by node ID before calculating
 `sum(r cross R)` and load superposition; `element_types.descriptor` verifies quadratic solid
 topology, with saved `ds.dat` confirming SOLID187 and actual material values. These calls were
-exercised against this fixture's real RST with DPF Server 11.0. They are test-specific checks;
-the general CLI pressure/gravity balance policy remains unchanged.
+exercised against this fixture's real RST with DPF Server 11.0. The design-study collector also uses
+these node-aligned operations in its isolated reaction/moment worker; the complete parameterized
+study still requires new Windows acceptance. The general CLI pressure/gravity balance policy
+remains unchanged.
 
 The fixture performs this independent extraction in a child Python process. A first serial study
 revealed that in-process DPF initialization polluted the parent environment with bundled Python
@@ -252,7 +254,8 @@ the supported package/version range or imply acceptance of a remote DPF server.
 
 ## Codex Skill/plugin contract
 
-The repository uses one plugin root (`.codex-plugin/plugin.json`) and one Skill source under `skills/`.
+The repository uses one plugin root (`.codex-plugin/plugin.json`) and two Skill sources under
+`skills/`: `ansys-mechanical-static` and `ansys-design-study`.
 `SKILL.md` contains discriminating frontmatter and progressive references; `agents/openai.yaml` contains
 quoted interface strings and a default prompt that names `$ansys-mechanical-static`.
 

@@ -46,6 +46,11 @@ def test_target_specific_quality_is_not_replaced_by_overall_status(collection_ro
                                         "stress": {"status": "NOT_RUN"}}})
     result = dataset.collect_dataset(collection_root)
     data = dataset.load_dataset(collection_root / result["dataset"])
+    context = data["engineering_context"]
+    assert context["geometry"] == {"generator": "gusseted_bracket", "generator_version": "1"}
+    assert context["material_evidence"]["density"] == "7850 kg/m^3"
+    assert {load["type"] for load in context["simulation"]["loads"]} == {"force", "pressure", "gravity"}
+    assert "inputs" not in context["simulation"]
     row = data["rows"][0]
     assert row["accepted_targets"] == ["displacement"]
     assert row["feasibility"] == {"displacement": "FEASIBLE", "stress": "UNKNOWN"}

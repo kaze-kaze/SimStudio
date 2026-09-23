@@ -100,6 +100,35 @@ def test_modified_result_is_not_reused(study_root, monkeypatch):
     assert len(calls) == 3
 
 
+def test_run_phase_timings_are_preserved_in_the_attempt_ledger(study_root, monkeypatch):
+    solver_protocol_stub(monkeypatch)
+    original = runner._call_single_run
+
+    def timed_fixture(specification, directory, execute, **kwargs):
+        result = original(specification, directory, execute, **kwargs)
+        manifest = read_json(directory / "run-manifest.json")
+        manifest["phase_timings"] = {
+            "backend_total": {"status": "RECORDED", "elapsed_seconds": 12.0},
+            "postprocessing": {"status": "RECORDED", "elapsed_seconds": 2.0},
+        }
+        atomic_json(directory / "run-manifest.json", manifest)
+        atomic_json(directory / "mechanical-artifacts.json", {"phase_timings": {
+            "mesh": {"status": "RECORDED", "elapsed_seconds": 3.0},
+            "solve": {"status": "RECORDED", "elapsed_seconds": 5.0},
+        }})
+        return result
+
+    monkeypatch.setattr(runner, "_call_single_run", timed_fixture)
+    runner.run_study(study_root, execute=True)
+    manifest = read_json(study_root / "study-manifest.json")
+    timings = manifest["samples"][0]["jobs"][0]["attempts"][0]["phase_timings"]
+    assert timings["mesh"]["elapsed_seconds"] == 3.0
+    assert timings["solve"]["elapsed_seconds"] == 5.0
+    assert timings["postprocessing"]["elapsed_seconds"] == 2.0
+    assert timings["backend_total"]["elapsed_seconds"] == 12.0
+    assert timings["report_generation"] == {"status": "NOT_RUN", "elapsed_seconds": None}
+
+
 def test_synthetic_response_cannot_count_as_solved(study_root, monkeypatch):
     calls = solver_protocol_stub(monkeypatch, synthetic=True)
     result = runner.run_study(study_root, execute=True)

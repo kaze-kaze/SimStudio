@@ -21,6 +21,10 @@ The reviewer supplies the engineering judgment and evidence. A missing digest re
 
 ## Claims and completion
 
+Mechanical-message, requested-result, small-deformation and reaction-balance checks are mandatory for every study target. Face-selection geometry is mandatory even with gravity-only loading. Additional checks may be required, but configuration cannot remove these minimum checks.
+
+Model schema 1.1 binds the frozen test design IDs. Incomplete test readiness does not inspect errors or commit a model. Once errors are inspected, the study commits both model path and content ID. Evaluation records boundary and constraint-near slices and both constraint misclassification directions, without manufacturing metrics for empty slices.
+
 Separate solver execution, numerical quality, design feasibility, model accuracy, and workflow completion in every report. A passing schema check, model cross-validation score, prediction, optimization proposal, or visually plausible plot is not a real candidate confirmation. Evaluate against the untouched frozen test split and inspect false-safe outcomes for every constrained target. After holdout evaluation, do not retrain or adapt that study using the same test evidence; start a fresh study for a new evaluation.
 
 Require saved real candidate RSTs and passing per-target checks for candidate verification. When comparison is configured, use the workflow's recorded equal-budget allowance and report actual calls and statuses. If any evidence is absent, retain `NOT_RUN` or `REVIEW_REQUIRED`; never claim accuracy, mass reduction, or runtime advantage from plans, synthetic fixtures, or incomplete reports. For the example, the 10 MPa stress limit is a manually authored response constraint, not a material allowable, yield value, strength approval, or certification criterion.

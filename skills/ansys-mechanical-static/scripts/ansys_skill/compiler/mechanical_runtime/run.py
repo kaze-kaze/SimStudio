@@ -13,7 +13,7 @@ try:
     apply_mesh()
     if PLAN["output"].get("save_project"):
         MechanicalCompat.save_project()
-    analysis.Solve(True)
+    solve_analysis(analysis)
     if PLAN["output"].get("save_project"):
         MechanicalCompat.save_project()
     outcome = write_artifacts("SOLVED")

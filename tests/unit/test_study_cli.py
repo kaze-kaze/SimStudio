@@ -39,3 +39,5 @@ def test_unavailable_prediction_and_unknown_validation_never_return_success(caps
     for status in ("NEEDS_SOLVE", "NOT_RUN", "REVIEW_REQUIRED"):
         assert _result({"status": status}, args) == ExitCode.VERIFICATION_FAILED
         assert json.loads(capsys.readouterr().out)["status"] == status
+    assert _result({"status": "FAILED"}, args) == ExitCode.MECHANICAL_FAILED
+    assert json.loads(capsys.readouterr().out)["status"] == "FAILED"

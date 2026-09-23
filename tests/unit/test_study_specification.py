@@ -9,7 +9,7 @@ import yaml
 from ansys_skill.errors import SpecValidationError
 from ansys_skill.schema import SimulationSpec
 from ansys_skill.study.project import load_project, validate_base
-from ansys_skill.study.schema import StudySpec
+from ansys_skill.study.schema import REQUIRED_NUMERICAL_CHECKS, StudySpec
 from ansys_skill.study.storage import (
     atomic_json,
     canonical_hash,
@@ -54,6 +54,15 @@ def test_base_mismatch_cannot_silently_change_loading_faces():
     base["scopes"][1]["axis"] = "y"
     with pytest.raises(SpecValidationError, match="front_face"):
         validate_base(study, SimulationSpec.model_validate(base))
+
+
+@pytest.mark.parametrize("check", REQUIRED_NUMERICAL_CHECKS)
+def test_study_cannot_disable_essential_numerical_evidence(check):
+    document = example_study()
+    document["targets"]["displacement"]["required_checks"] = [
+        name for name in REQUIRED_NUMERICAL_CHECKS if name != check]
+    with pytest.raises(ValidationError, match="cannot be removed"):
+        StudySpec.model_validate(document)
 
 
 def test_installed_template_initialization_needs_no_repository(tmp_path):
