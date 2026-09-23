@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ from ansys_skill.errors import (
     PathSafetyError,
     SpecValidationError,
 )
+from ansys_skill.manifest import utc_now
 from ansys_skill.paths import safe_join
 from ansys_skill.schema import SimulationSpec
 
@@ -147,7 +149,11 @@ class MechanicalBatchBackend(MechanicalBackend):
                     creationflags=subprocess.CREATE_NO_WINDOW,
                 )
                 metadata.update(owned_instance=True, process_id=process.pid)
+                owner_path = safe_join(run_dir, "owned-process.json")
+                owner = {"pid": process.pid, "host": socket.gethostname(),
+                         "started_at": utc_now(), "ended_at": None}
                 try:
+                    owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
                     metadata["process_exit_code"] = process.wait(
                         timeout=spec.execution.timeout_seconds
                     )
@@ -163,6 +169,11 @@ class MechanicalBatchBackend(MechanicalBackend):
                 except BaseException:
                     _terminate_owned_tree(process)
                     raise
+                finally:
+                    if process.poll() is not None:
+                        owner["ended_at"] = utc_now()
+                        owner["exit_code"] = process.returncode
+                        owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
         except OSError as exc:
             raise MechanicalExecutionError(
                 f"Mechanical batch process failed: {exc}", details=metadata

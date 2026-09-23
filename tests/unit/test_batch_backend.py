@@ -268,6 +268,31 @@ def test_batch_cleanup_does_not_target_an_already_exited_process(offline):
     offline.run.assert_not_called()
 
 
+def test_batch_owner_record_failure_stops_only_the_new_process(compiled_run, offline, monkeypatch):
+    process = Mock(pid=7312, returncode=None)
+    process.poll.side_effect = lambda: process.returncode
+    process.wait.return_value = 1
+    offline.Popen.side_effect = None
+    offline.Popen.return_value = process
+    original_write = Path.write_text
+
+    def disk_full(path, *args, **kwargs):
+        if path.name == "owned-process.json":
+            raise OSError("Injected full disk")
+        return original_write(path, *args, **kwargs)
+
+    def stop(command, **kwargs):
+        process.returncode = 1
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(Path, "write_text", disk_full)
+    offline.run.side_effect = stop
+    with pytest.raises(MechanicalExecutionError, match="full disk"):
+        _execute(compiled_run)
+    assert offline.run.call_args.args[0] == ["taskkill", "/PID", "7312", "/T", "/F"]
+    assert offline.run.call_count == 1
+
+
 @pytest.mark.parametrize(
     "key", ["result_files", "solve_logs", "project_file", "visual_review", "run_directory"]
 )

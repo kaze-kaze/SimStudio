@@ -27,6 +27,10 @@ Images used courtesy of ANSYS, Inc. Cover assembled from recorded results; engin
 - **Start offline.** Validate, compile, and dry-run without ANSYS or a license. Real execution requires `--execute`.
 - **Keep the evidence.** Inspect saved results through PyDPF and distinguish `PASS`, `WARN`, `FAIL`, and `NOT_RUN`.
 
+## Parameterized design studies
+
+A separate `ansys-design-study` Skill and `ansys-sim study` / `ansys-sim surrogate` commands support a bounded, auditable bracket study. Start with `python -m pip install -e ".[dev,study]"`; read the [design-study guide](docs/design-studies.md), [Windows guide](docs/windows-study.md), and [example](examples/bracket-study/README.md). The workflow is implemented and covered by offline tests, while complete real Windows/Mechanical acceptance remains `NOT_RUN`; no accuracy or mass-reduction claim is established.
+
 ## A real engineering example, with its limits
 
 A **240 × 160 × 188 mm** steel equipment bracket combines **two rounded ribs, eight mounting holes, and an eccentric bearing pad**. Its rear face is fully fixed. The front face carries **[1000, 1500, −500] N**, the pad carries **0.8 MPa** pressure over **4200 mm²**, and **12.0284 kg** of steel contributes self-weight. The input selects exact `Structural Steel` and explicit **quadratic** elements.
@@ -142,7 +146,7 @@ This runs the nominal **8 mm** case. Follow [Windows testing](docs/windows-testi
 | `ansys-sim inspect <run-directory-or-rst> --json` | Inspect saved run data or an RST file |
 | `ansys-sim report <run-directory> --json` | Regenerate reports from saved artifacts |
 
-With `--json`, stdout is machine-readable; progress goes to stderr. Exit codes: `0` success, `2` specification/engineering validation, `3` environment/license, `4` Mechanical/solve, `5` postprocessing, `6` verification.
+With `--json`, stdout is machine-readable; progress goes to stderr. Exit codes: `0` success, `2` specification/engineering validation, `3` environment/license, `4` Mechanical/solve, `5` postprocessing, `6` verification failure or an unsuccessful study result, including `NOT_RUN`.
 
 ### Use with Codex
 

@@ -14,7 +14,16 @@ from setuptools.command.egg_info import FileList
 ROOT = Path(__file__).resolve().parents[2]
 TOOL = runpy.run_path(str(ROOT / "tools/check_distribution.py"))
 CORE = {
-    "README.zh-CN.md", "docs/assets/overview.png", "docs/site/index.html",
+    "README.zh-CN.md", "docs/design-studies.md", "docs/design-studies.zh-CN.md",
+    "docs/windows-study.md", "schemas/study.schema.json", "tools/run_study_windows.ps1",
+    "skills/ansys-design-study/SKILL.md", "skills/ansys-design-study/agents/openai.yaml",
+    "skills/ansys-design-study/LICENSE",
+    *("skills/ansys-design-study/references/" + name for name in (
+        "workflow.md", "specification.md", "quality-evidence.md",
+        "portability-windows.md", "surrogates.md",
+    )),
+    *("examples/bracket-study/" + name for name in ("README.md", "study.yaml", "base-simulation.yaml")),
+    "docs/assets/overview.png", "docs/site/index.html",
     "docs/site/site.css", "docs/site/report.html", "tools/build_site.py",
     *("examples/gusseted-bracket/" + name for name in (
         "README.md", "simulation.yaml", "simulation_brief.md", "gusseted-bracket.step",
@@ -130,15 +139,22 @@ def test_archive_links_are_rejected_without_extraction(tmp_path, kind):
         TOOL["inspect"](path)
 
 
-def test_wheel_is_cli_only_and_main_preserves_json_and_exit_codes(tmp_path, monkeypatch, capsys):
-    names = ["ansys_skill/cli.py", "text_to_ansys-0.1.0.dist-info/METADATA",
+def test_wheel_requires_complete_runtime_and_main_preserves_json(tmp_path, monkeypatch, capsys):
+    names = [*TOOL["REQUIRED_WHEEL"], "text_to_ansys-0.1.0.dist-info/METADATA",
              "text_to_ansys-0.1.0.dist-info/licenses/LICENSE"]
     archive(tmp_path, names, kind="whl", prefix="")
     monkeypatch.setattr("sys.argv", ["check_distribution.py", str(tmp_path)])
     assert TOOL["main"]() == 0
     result = capsys.readouterr()
     assert not result.err
-    assert json.loads(result.out)["artifacts"][0]["scope"] == "CLI only"
+    assert json.loads(result.out)["artifacts"][0]["scope"] == "CLI, study, and surrogate runtime"
+
+    missing = "ansys_skill/study/cli.py"
+    archive(tmp_path, [name for name in names if name != missing], kind="whl", prefix="")
+    with pytest.raises(ValueError) as error:
+        TOOL["inspect"](tmp_path / "text_to_ansys-0.1.0.whl")
+    assert json.loads(str(error.value)) == {"missing": [missing], "forbidden": []}
+
     archive(tmp_path, [*names, "docs/site/index.html"], kind="whl", prefix="")
     assert TOOL["main"]() == 1
     result = capsys.readouterr()

@@ -27,6 +27,10 @@ Images used courtesy of ANSYS, Inc. 封面由已记录的真实结果排版组�
 - **从离线流程开始。** 无需 ANSYS 或许可证即可校验、编译和 dry-run；真实执行必须指定 `--execute`。
 - **保留验证证据。** 使用 PyDPF 读取保存的数值结果，区分 `PASS`、`WARN`、`FAIL` 和 `NOT_RUN`。
 
+## 参数化设计研究
+
+独立的 `ansys-design-study` Skill 与 `ansys-sim study` / `ansys-sim surrogate` 命令支持有预算、可审计的托架参数研究。从 `python -m pip install -e ".[dev,study]"` 开始，参阅[设计研究指南](docs/design-studies.zh-CN.md)、[Windows 指南](docs/windows-study.md)和[示例](examples/bracket-study/README.md)。工作流已实现并有离线测试；完整 Windows/Mechanical 真实验收仍为 `NOT_RUN`，目前没有已验证的精度或减重结论。
+
 ## 真实工程实例与验证边界
 
 一件 **240 × 160 × 188 mm** 的钢制设备托架，包含**两条圆角加强肋、8 个安装孔与偏心承载台**。背面全固定，前端面承受 **[1000, 1500, −500] N** 三向力，承载台 **4200 mm²** 面积上施加 **0.8 MPa** 压力，并计入 **12.0284 kg** 钢材的自重。输入采用精确材料名 `Structural Steel` 和显式**二次单元**。
@@ -142,7 +146,7 @@ ansys-sim report build/bracket-real-01 --json
 | `ansys-sim inspect <run-directory-or-rst> --json` | 检查已保存的运行数据或 RST 文件 |
 | `ansys-sim report <run-directory> --json` | 从保存的产物重新生成报告 |
 
-使用 `--json` 时，stdout 为机器可读输出，进度写入 stderr。退出码：`0` 成功，`2` 规格或工程校验，`3` 环境或许可证，`4` Mechanical 或求解，`5` 后处理，`6` 结果验证。
+使用 `--json` 时，stdout 为机器可读输出，进度写入 stderr。退出码：`0` 成功，`2` 规格或工程校验，`3` 环境或许可证，`4` Mechanical 或求解，`5` 后处理，`6` 结果验证失败或 study 结果未成功（包括 `NOT_RUN`）。
 
 ### 配合 Codex 使用
 

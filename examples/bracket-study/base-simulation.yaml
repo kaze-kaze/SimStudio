@@ -1,0 +1,123 @@
+schema_version: '1.0'
+project:
+  name: bracket-design-study
+  description: Authored linear-elastic design study; acceptance limits are demonstration
+    inputs.
+mode: from_geometry
+inputs:
+  geometry_file: geometry.step
+units:
+  length: mm
+  force: N
+  stress: MPa
+  mass: kg
+  time: s
+coordinate_systems:
+- name: Global Coordinate System
+  kind: global
+bodies:
+- name: GussetedBracket|Solid
+  material: steel
+materials:
+- name: steel
+  source: engineering_data
+  engineering_data_name: Structural Steel
+scopes:
+- id: mounting_face
+  kind: axis_extreme_face
+  body: GussetedBracket|Solid
+  axis: x
+  extreme: min
+  tolerance: 0.001 mm
+- id: front_face
+  kind: axis_extreme_face
+  body: GussetedBracket|Solid
+  axis: x
+  extreme: max
+  tolerance: 0.001 mm
+- id: bearing_pad
+  kind: axis_extreme_face
+  body: GussetedBracket|Solid
+  axis: z
+  extreme: max
+  tolerance: 0.001 mm
+analysis:
+  type: linear_static_structural
+  deformation: small
+mesh:
+  global_element_size: 8 mm
+  element_order: quadratic
+supports:
+- id: mounting_support
+  type: fixed_support
+  scope: mounting_face
+loads:
+- id: equipment_force
+  type: force
+  scope: front_face
+  components:
+    x: 1000 N
+    y: 1500 N
+    z: -500 N
+- id: bearing_pressure
+  type: pressure
+  scope: bearing_pad
+  magnitude: 0.8 MPa
+- id: self_weight
+  type: gravity
+  magnitude: 9.80665 m/s^2
+  direction:
+  - 0.0
+  - 0.0
+  - -1.0
+requested_results:
+- id: total_deformation
+  type: total_deformation
+- id: pad_z
+  type: directional_deformation
+  scope: bearing_pad
+  direction: z
+- id: equivalent_stress
+  type: equivalent_von_mises_stress
+- id: mounting_reaction
+  type: reaction_force
+  support: mounting_support
+- id: node_count
+  type: node_count
+- id: element_count
+  type: element_count
+- id: solver_messages
+  type: solver_messages
+validation:
+  reaction_balance_relative_tolerance: 0.005
+  small_deformation_warn_ratio: 0.01
+  small_deformation_fail_ratio: 0.05
+  characteristic_length: 240 mm
+  cantilever:
+    enabled: false
+    relative_tolerance: 0.15
+assumptions:
+- text: Authored demonstration geometry and loads; this is not a supplied production
+    design.
+  source: engineering_default
+- text: Rear face is fixed to an ideal rigid backing; bolts, welds and contact compliance
+    are not modeled.
+  source: engineering_default
+- text: One continuous isotropic solid; small-deformation linear elasticity must remain
+    valid.
+  source: engineering_default
+- text: Global equivalent stress includes fixed-edge peaks and requires a mesh-specific
+    engineering review before training.
+  source: engineering_default
+open_questions: []
+output:
+  export_images: true
+  save_project: true
+execution:
+  backend: mechanical_batch
+  host: 127.0.0.1
+  allow_remote: false
+  transport_mode: insecure
+  start_instance: auto
+  timeout_seconds: 600
+  cleanup_owned_instance: true

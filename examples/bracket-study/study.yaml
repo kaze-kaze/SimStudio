@@ -1,0 +1,86 @@
+schema_version: '1.0'
+name: bracket-lightweighting
+description: Surrogate-assisted mass reduction for an authored single-solid bracket.
+geometry: gusseted_bracket
+base_simulation: base-simulation.yaml
+parameters:
+  plate_thickness:
+    lower: 14 mm
+    upper: 24 mm
+    baseline: 20 mm
+  hole_diameter:
+    lower: 10 mm
+    upper: 18 mm
+    baseline: 14 mm
+  fillet_radius:
+    lower: 6 mm
+    upper: 14 mm
+    baseline: 10 mm
+material:
+  engineering_data_name: Structural Steel
+  density: 7850 kg/m^3
+  property_source: Demonstration density; require agreement with each saved Mechanical
+    solver input.
+targets:
+  displacement:
+    result_id: total_deformation
+    dimension: length
+    unit: mm
+    limit: 0.025 mm
+    acceptance_source: Authored serviceability exercise informed by the recorded baseline;
+      not a production requirement.
+    absolute_tolerance: 0.0002 mm
+    relative_tolerance: 0.05
+    reference_scale: 0.02 mm
+    mesh_relative_tolerance: 0.05
+    required_checks:
+    - mechanical_messages
+    - requested_results
+    - small_deformation
+    - reaction_balance
+    require_stress_review: false
+  stress:
+    result_id: equivalent_stress
+    dimension: pressure
+    unit: MPa
+    limit: 10 MPa
+    acceptance_source: Authored 10 MPa response constraint, not a material allowable
+      or strength approval; singularity review is mandatory.
+    absolute_tolerance: 0.1 MPa
+    relative_tolerance: 0.05
+    reference_scale: 9 MPa
+    mesh_relative_tolerance: 0.1
+    required_checks:
+    - mechanical_messages
+    - requested_results
+    - small_deformation
+    - reaction_balance
+    require_stress_review: true
+sampling:
+  method: latin_hypercube
+  seed: 42
+  train_samples: 24
+  test_samples: 8
+  include_corners: true
+mesh:
+  sizes:
+  - 12 mm
+  - 8 mm
+  - 5 mm
+  element_order: quadratic
+budget:
+  max_solver_calls: 400
+  max_wall_seconds: 86400
+  retries_per_job: 1
+model:
+  seed: 42
+  cv_folds: 4
+  max_normalized_distance: 0.4
+  max_relative_std: 0.15
+optimization:
+  candidate_pool: 256
+  batch_size: 3
+  max_rounds: 3
+  verification_candidates: 3
+  improvement_tolerance: 0.005
+  compare_direct_search: true

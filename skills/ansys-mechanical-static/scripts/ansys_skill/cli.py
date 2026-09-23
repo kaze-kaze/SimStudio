@@ -767,6 +767,9 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("run_directory")
     report.add_argument("--json", action="store_true")
     report.set_defaults(handler=command_report)
+    from ansys_skill.study.cli import register_commands
+
+    register_commands(subparsers)
     return parser
 
 

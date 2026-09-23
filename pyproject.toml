@@ -45,6 +45,12 @@ dev = [
 cad-fixture = [
   "build123d>=0.9,<1",
 ]
+study = [
+  "build123d>=0.9,<1",
+  "numpy>=2.0,<3",
+  "scipy>=1.15,<2",
+  "scikit-learn>=1.6,<2",
+]
 
 [project.scripts]
 ansys-sim = "ansys_skill.cli:main"
