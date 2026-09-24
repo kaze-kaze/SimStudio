@@ -13,6 +13,7 @@ API through a saved script. Neither label implies remote gRPC acceptance.
 | `ansys-mechanical-core` | `>=0.13.2,<0.14` | 0.13.2 installed on CPython 3.13.2; signatures inspected; local gRPC failed as recorded below | https://mechanical.docs.pyansys.com/version/stable/ and https://pypi.org/project/ansys-mechanical-core/ |
 | `ansys-dpf-core` | `>=0.16.1,<0.17` | 0.16.1 read real v261 RST data through DPF Server 11.0 | https://dpf.docs.pyansys.com/version/stable/ and https://pypi.org/project/ansys-dpf-core/ |
 | `ansys-mechanical-stubs` | transitive | 0.1.13, including v242/v251/v252/v261 stubs, inspected | https://scripting.mechanical.docs.pyansys.com/version/stable/ |
+| `build123d` | `>=0.13,<0.14` for the CAD extras | 0.13.0 passed local study geometry tests; target Windows 0.11.1 failed during font import on September 23, 2026; corrected Windows acceptance pending | https://pypi.org/project/build123d/0.13.0/ and https://github.com/gumyr/build123d/blob/v0.13.0/src/build123d/text.py |
 
 The base CLI supports Python 3.11–3.13 independently of the optional clients. Installed
 PyMechanical 0.13.2 metadata declares `Requires-Python: >=3.12,<4.0`; installing the `ansys` extra
@@ -25,6 +26,51 @@ Sources:
 - https://dpf.docs.pyansys.com/version/stable/getting_started/index.html
 
 ## Local batch API and acceptance
+
+### Planar face measurement
+
+The controlled study records the original `IGeoFace.Area` and `Centroid` values for selection
+and diagnostics, and separately captures `SurfaceType`, `Loops`, each loop's `Edges`, and
+`IGeoEdge.CurveType`, `Extents`, and `PointAtParam`. Nine parameter samples per edge identify
+the controlled rectangle and complete circular holes. The study uses analytic area moments
+from those curves and compares every outer vertex and hole against CAD metadata.
+The original area, centroid, and normal tolerances remain unchanged. Missing or unsupported
+boundary evidence cannot fall back to the tessellated measurements for a new study.
+
+A read-only inspection of two saved Mechanical 2026 R1 projects confirmed these boundary APIs
+on September 23, 2026. It started one Mechanical inspection process and performed no solve.
+The geometry-only regression extract is in `tests/fixtures/planar-faces/`; those offline tests
+are not a fresh solver acceptance.
+
+Official interface references:
+
+- https://storage.ansys.com/corp/ACT_Reference_Guide_doc_v180/Mechanical/Reference.type.Ansys.ACT.Interfaces.Geometry.IGeoFace.html
+- https://storage.ansys.com/corp/ACT_Reference_Guide_doc_v180/Mechanical/Reference.type.Ansys.ACT.Interfaces.Geometry.IGeoEdge.html
+
+### Batch invocation
+
+The runtime records Workbench volume-mesh quality metrics, their native limits, and
+failed-element counts after explicitly calling `ComputeMeshQualityMetrics`. The quality adapter uses `GetVolumeMeshMetrics`,
+`GetVolumeMeshQualityWorstMetricValue`, `GetVolumeMeshQualityAverageMetricValue`,
+`GetVolumeMeshQualityCountFailed`, `GetVolumeMeshQualityWarningCountFailed`, and the
+corresponding limit methods. `GetActiveVolumeMeshQuality` is retained as worksheet metadata;
+an unchecked error-control box does not make a measured metric irrelevant. An unavailable or empty measurement remains `NOT_RUN`; the study
+does not infer mesh quality from a positive node count or the solver deck's mesher-check comment.
+Read-only inspections of two saved Mechanical 2026 R1 meshes exercised these APIs on September 23,
+2026. Both reported shape warnings. `MaxEdgeLength` returned an all-element failure count despite
+a worst value below its error limit and a green worksheet indicator. That unresolved size-diagnostic
+inconsistency is preserved; it is not evidence that every element failed a shape check.
+The controlled tetrahedral study assesses seven applicable shape metrics, verifies their count/limit
+consistency, and requires a result-bound review for warnings. Warping angle applies to quad faces,
+not tetrahedra; edge lengths remain size diagnostics. No native threshold is changed by the adapter.
+The updated runtime still requires new-solve acceptance.
+
+Official Mesh API reference:
+https://scripting.mechanical.docs.pyansys.com/version/stable/api/ansys/mechanical/stubs/v261/Ansys/ACT/Automation/Mechanical/MeshControls/Mesh.html
+
+- https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/wb_msh/msh_check_mesh_quality.html
+- https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/wb_msh/msh_jacobian_ratio.html
+- https://ansyshelp.ansys.com/public/Views/Secured/corp/v261/en/wb_msh/msh_warping_angle.html
 
 The explicit `mechanical_batch` backend uses the official Windows command-line script entry point:
 
@@ -214,6 +260,9 @@ Documented runtime path:
 - result field `data`, `unit`, `location`, and `scoping.ids`
 - stored result providers including `displacement`, `stress`, and `reaction_force`
 - `dpf.operators.result.stress_eqv_as_mechanical(...)` for derived equivalent stress
+- `dpf.operators.result.stress_von_mises(..., requested_location="ElementalNodal")`
+  for global unaveraged stress diagnostics, plus `field.get_entity_data_by_id`,
+  `mesh.elements.element_by_id`, `element.node_ids`, and `mesh.nodes.coordinates_field`
 
 Sources:
 
@@ -226,6 +275,11 @@ RST exposes the stored `stress` tensor, not a `model.results.stress_eqv_von_mise
 compiler's postprocessor now calls `stress_eqv_as_mechanical` with the last result-set ID, explicit
 `Nodal` output, and an optional resolved named-selection scoping. Its 38.0902173163 MPa beam maximum
 agrees with Mechanical's exported equivalent-stress plot. Field rows and node IDs are one-to-one.
+Global diagnostic extraction was also exercised against three new real bracket RSTs on
+September 23, 2026. Its averaged extrema match the recorded summaries; its unaveraged
+elemental-nodal extrema and element node coordinates are retained separately. A Tet10 field
+may contain four stress values while its topology contains ten nodes. The diagnostic preserves
+local order without asserting an unverified value-to-node mapping.
 
 Displacement, directional displacement, equivalent stress, and reaction extraction are live tested.
 Reaction extraction requires `reaction_force`; `nodal_force` is never substituted. Named selections

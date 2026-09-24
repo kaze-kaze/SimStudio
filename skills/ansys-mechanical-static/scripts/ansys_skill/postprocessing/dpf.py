@@ -7,6 +7,7 @@ from typing import Any
 
 from ansys_skill.errors import PostprocessingError
 from ansys_skill.postprocessing.fields import field_summary as _field_summary
+from ansys_skill.postprocessing.stress_diagnostics import collect_global_stress_diagnostics
 from ansys_skill.schema import ResultType, ScopeKind, SimulationSpec
 
 
@@ -95,9 +96,7 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
                         "equivalent_stress": "pressure",
                         "reaction_force": "force",
                     }[result_id]
-                    results[result_id] = _field_summary(
-                        fields, dimension=dimension
-                    )
+                    results[result_id] = _field_summary(fields, dimension=dimension)
                 except Exception as exc:
                     unavailable_results[result_id] = str(exc)
             return {
@@ -156,7 +155,14 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
                     dimension="force",
                     report_unit=spec.units.force,
                 )
-        return {
+        if any(
+            request.type is ResultType.EQUIVALENT_VON_MISES_STRESS
+            for request in spec.requested_results
+        ):
+            summary_diagnostics = collect_global_stress_diagnostics(rst_path, dpf, model)
+        else:
+            summary_diagnostics = None
+        summary = {
             "status": "POSTPROCESSED",
             "synthetic": False,
             "result_file": str(rst_path.resolve()),
@@ -164,6 +170,9 @@ def inspect_result_file(rst_path: Path, spec: SimulationSpec | None = None) -> d
             "element_count": element_count,
             "results": results,
         }
+        if summary_diagnostics is not None:
+            summary["global_stress_diagnostics"] = summary_diagnostics
+        return summary
     except PostprocessingError:
         raise
     except Exception as exc:

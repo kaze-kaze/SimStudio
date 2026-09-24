@@ -17,6 +17,13 @@ from ansys_skill.errors import PathSafetyError
 from ansys_skill.manifest import sha256_file
 from ansys_skill.paths import safe_join
 from ansys_skill.schema import ResultType, SimulationSpec, load_spec
+from ansys_skill.study.mesh_quality import (
+    assess_mesh_quality,
+    mesh_quality_review_check,
+    mesh_review_matches_target,
+    mesh_target_gate,
+)
+from ansys_skill.study.planar_faces import boundaries_match, measure_planar_face
 from ansys_skill.study.schema import StudySpec
 from ansys_skill.units import normalize_direction, normalize_quantity
 from ansys_skill.validation.statuses import Check, CheckStatus, aggregate_checks
@@ -276,6 +283,19 @@ def _geometry_check(
                 raise ValueError(f"geometry and normalized scope {name!r} do not match")
             scopes[name] = {"area_m2": area, "centroid_m": centroid,
                             "normal": list(normal), "axis": axis, "extreme": extreme}
+            if "boundary_summary" in item:
+                boundary = item["boundary_summary"]
+                if (not isinstance(boundary, dict) or len(boundary.get("corners_m", [])) != 4
+                        or not isinstance(boundary.get("holes"), list)
+                        or len(boundary["holes"]) > 4):
+                    raise ValueError("Controlled boundary summary is malformed")
+                scopes[name]["boundary_summary"] = {
+                    "corners_m": [_vector(point) for point in boundary["corners_m"]],
+                    "holes": [{"center_m": _vector(hole["center_m"]),
+                               "radius_m": _number(hole["radius_m"])} for hole in boundary["holes"]],
+                }
+                if any(hole["radius_m"] <= 0 for hole in scopes[name]["boundary_summary"]["holes"]):
+                    raise ValueError("Circular hole radius must be positive")
         if density_kg_m3 is not None:
             derived_mass = volume * density_kg_m3
             evidence.update(density_kg_m3=density_kg_m3, derived_mass_kg=derived_mass)
@@ -406,6 +426,25 @@ def _selected_faces_check(
             centroid = [normalize_quantity(f"{_number(value)} {face.get('centroid_unit')}", "length").magnitude
                         for value in _vector(face.get("centroid"))]
             normal = list(normalize_direction(_vector(face.get("normal"))))
+            reported_area, reported_centroid = area, centroid
+            boundary_evidence = {}
+            if "boundary_summary" in expected:
+                boundary = face.get("boundary")
+                if not isinstance(boundary, dict) or boundary.get("status") != "CAPTURED":
+                    details.append({"scope_id": name, "status": "NOT_RUN",
+                                    "reason": "Missing captured Mechanical curve-boundary evidence"})
+                    continue
+                measured = measure_planar_face(boundary, axis=expected["axis"],
+                                               unit=face.get("centroid_unit"),
+                                               tolerance_m=_FACE_POSITION_TOLERANCE_M)
+                if not boundaries_match(measured["boundary_summary"], expected["boundary_summary"],
+                                        _FACE_POSITION_TOLERANCE_M):
+                    raise ValueError("Mechanical outer vertices or circular holes differ from CAD")
+                area, centroid = measured["area_m2"], measured["centroid_m"]
+                boundary_evidence = {"measurement": "analytic_rectangle_minus_circles",
+                                     "boundary_summary": measured["boundary_summary"],
+                                     "reported_tessellation_area_m2": reported_area,
+                                     "reported_tessellation_centroid_m": reported_centroid}
             area_ok = math.isclose(area, expected["area_m2"],
                                    rel_tol=_FACE_AREA_REL_TOLERANCE, abs_tol=1e-12)
             centroid_error = math.dist(centroid, expected["centroid_m"])
@@ -419,7 +458,8 @@ def _selected_faces_check(
                             "actual_centroid_m": centroid, "expected_centroid_m": expected["centroid_m"],
                             "centroid_error_m": centroid_error, "actual_normal": normal,
                             "expected_normal": expected["normal"], "normal_error": normal_error,
-                            "axis": record.get("axis"), "extreme": record.get("extreme")})
+                            "axis": record.get("axis"), "extreme": record.get("extreme"),
+                            **boundary_evidence})
             selected[name] = {"area_m2": area, "centroid_m": centroid, "normal": normal}
         except (TypeError, ValueError) as exc:
             details.append({"scope_id": name, "status": "FAIL", "reason": str(exc)})
@@ -869,6 +909,28 @@ def _review_check(target_name: str, result_hash: str | None, reviews: dict | Non
                    "reviewer": reviewer, "rationale": rationale, "evidence": citations})
 
 
+def _mesh_shape_check(artifacts: dict | None) -> dict:
+    analysis = artifacts.get("analysis") if isinstance(artifacts, dict) else None
+    quality = analysis.get("mesh_quality") if isinstance(analysis, dict) else None
+    result = assess_mesh_quality(quality)
+    evidence = dict(result["evidence"])
+    if result["quality_sha256"] is not None:
+        evidence["quality_sha256"] = result["quality_sha256"]
+    return _check("mesh_shape_quality", CheckStatus(result["status"]),
+                  result["message"], evidence)
+
+
+def _mesh_warning_review_check(
+    target_name: str, result_hash: str | None, mesh_check: dict, reviews: dict | None,
+) -> dict:
+    result = mesh_quality_review_check(
+        target_name, result_hash, mesh_check["evidence"].get("quality_sha256"), reviews,
+        mesh_check["status"],
+    )
+    return _check(f"mesh_quality_review:{target_name}", CheckStatus(result["status"]),
+                  result["message"], result["evidence"])
+
+
 def evaluate_run(
     run_dir: Path, study: StudySpec, geometry: dict, reviews: dict | None = None,
 ) -> dict:
@@ -893,7 +955,8 @@ def evaluate_run(
     density_check, density = _material_density_check(run_dir, study, simulation)
     geometry_check, geometry_scopes = _geometry_check(run_dir, geometry, manifest, simulation, density)
     face_check, selected = _selected_faces_check(run_dir, geometry_scopes, simulation)
-    checks.extend((source_check, real_check, result_check, density_check, geometry_check, face_check))
+    mesh_shape_check = _mesh_shape_check(artifacts)
+    checks.extend((source_check, real_check, result_check, density_check, geometry_check, face_check, mesh_shape_check))
 
     need_moment = any("moment_balance" in item.required_checks for item in study.targets.values())
     reaction_check, moment_check = _reaction_checks(
@@ -912,6 +975,12 @@ def evaluate_run(
     review_statuses: dict[str, dict[str, str | None]] = {}
     for target_name, target in study.targets.items():
         item_checks = [dict(item) for item in common_gates]
+        item_checks.append(dict(mesh_shape_check))
+        mesh_review = None
+        if mesh_shape_check["status"] in {CheckStatus.WARN.value, CheckStatus.FAIL.value}:
+            mesh_review = _mesh_warning_review_check(target_name, result_hash, mesh_shape_check, reviews)
+            checks.append(mesh_review)
+            item_checks.append(mesh_review)
         value_check, value = _target_value_check(study, target_name, summary, simulation)
         checks.append(value_check)
         item_checks.append(value_check)
@@ -946,8 +1015,10 @@ def evaluate_run(
             }
             required_ok = required_ok and review["status"] == CheckStatus.PASS.value
         target_checks[target_name] = item_checks
+        mesh_gate_status = mesh_target_gate(mesh_shape_check["status"],
+                                            mesh_review["status"] if mesh_review else None)
         if (value is not None and all(item["status"] == CheckStatus.PASS.value for item in common_gates)
-                and required_ok):
+                and mesh_gate_status is CheckStatus.PASS and required_ok):
             accepted_targets.append(target_name)
 
     source_hashes = manifest.get("hashes", {}) if isinstance(manifest, dict) else {}
@@ -1017,6 +1088,25 @@ def _mesh_target_valid(level: dict, target_name: str, target: Any) -> tuple[Chec
         if item is None or item["status"] != CheckStatus.PASS.value:
             status = CheckStatus.FAIL if item and item["status"] == CheckStatus.FAIL.value else CheckStatus.NOT_RUN
             return status, f"target common check {name!r} did not pass"
+    mesh_check = by_name.get("mesh_shape_quality")
+    if mesh_check is None:
+        return CheckStatus.NOT_RUN, "target mesh shape check is missing"
+    if mesh_check["status"] == CheckStatus.WARN.value:
+        review = by_name.get(f"mesh_quality_review:{target_name}")
+        if review is None or review["status"] == CheckStatus.NOT_RUN.value:
+            return CheckStatus.NOT_RUN, "raw mesh warning has no target-bound review"
+        evidence = level.get("evidence")
+        provenance = evidence.get("provenance") if isinstance(evidence, dict) else None
+        result_hash = provenance.get("result_file_sha256") if isinstance(provenance, dict) else None
+        quality_hash = mesh_check.get("evidence", {}).get("quality_sha256")
+        if not mesh_review_matches_target(review, target_name, result_hash, quality_hash):
+            return CheckStatus.FAIL, "mesh warning review is not bound to this target and evidence"
+    elif mesh_check["status"] == CheckStatus.FAIL.value:
+        return CheckStatus.FAIL, "mesh shape quality failed"
+    elif mesh_check["status"] == CheckStatus.NOT_RUN.value:
+        return CheckStatus.NOT_RUN, "mesh shape quality did not run"
+    elif mesh_check["status"] != CheckStatus.PASS.value:
+        return CheckStatus.FAIL, "mesh shape quality status is malformed"
     value_check = by_name.get(f"target_value:{target_name}")
     if value_check is None or value_check["status"] != CheckStatus.PASS.value:
         status = (CheckStatus.FAIL if value_check

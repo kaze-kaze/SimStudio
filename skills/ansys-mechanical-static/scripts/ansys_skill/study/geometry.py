@@ -178,6 +178,32 @@ def _build_bracket(parameters: dict[str, float]) -> Any:
         ) from exc
 
 
+def _planar_boundary_summary(face: Any) -> dict[str, Any]:
+    from build123d import GeomType
+
+    outer = face.outer_wire()
+    if (face.geom_type != GeomType.PLANE or len(outer.edges()) != 4
+            or any(edge.geom_type != GeomType.LINE for edge in outer.edges())):
+        raise SpecValidationError("Controlled scope must have a planar rectangular outer boundary")
+    corners = sorted([component * 1e-3 for component in _vector_components(vertex)]
+                     for vertex in outer.vertices())
+    if len(corners) != 4:
+        raise SpecValidationError("Controlled scope must have four distinct outer vertices")
+    holes = []
+    for wire in face.inner_wires():
+        edges = list(wire.edges())
+        if not edges or any(edge.geom_type != GeomType.CIRCLE for edge in edges):
+            raise SpecValidationError("Controlled scope inner boundaries must be circular")
+        center = _vector_components(edges[0].arc_center)
+        radius = float(edges[0].radius)
+        if any(math.dist(center, _vector_components(edge.arc_center)) > 1e-6
+               or abs(float(edge.radius) - radius) > 1e-6 for edge in edges):
+            raise SpecValidationError("A controlled scope hole must lie on one circle")
+        holes.append({"center_m": [component * 1e-3 for component in center],
+                      "radius_m": radius * 1e-3})
+    return {"corners_m": corners, "holes": sorted(holes, key=lambda hole: hole["center_m"])}
+
+
 def _geometry_summary(
     bracket: Any,
     parameters: dict[str, float],
@@ -228,6 +254,7 @@ def _geometry_summary(
             "extreme": extreme,
             "tolerance_m": _SCOPE_TOLERANCE_MM * 1e-3,
             "unique_face_count": 1,
+            "boundary_summary": _planar_boundary_summary(face),
         }
 
     volume_m3 = float(solid.volume) * 1e-9

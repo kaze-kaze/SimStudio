@@ -1,0 +1,1147 @@
+{
+  "projects": [
+    {
+      "mesh_quality": {
+        "metrics": [
+          {
+            "average": {
+              "unit": "",
+              "value": 2.1832751380860635
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 1000.0
+            },
+            "metric": "AspectRatio",
+            "warning_count": 95,
+            "warning_limit": {
+              "unit": "",
+              "value": 5.0
+            },
+            "worst": {
+              "unit": "",
+              "value": 11.43
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.74060521118486
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.0005
+            },
+            "metric": "ElementQuality",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.17585087454109918
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.984120856775851
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioCornerNodes",
+            "warning_count": 1,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.04918
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9922632402055234
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioGaussPoints",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.485
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.012240299419724432
+            },
+            "error_count": 15570,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.3432262484954348
+            },
+            "metric": "MaxEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.1716131242477174
+            },
+            "worst": {
+              "unit": "m",
+              "value": 0.02272821304658301
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 101.88969499036608
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 170.0
+            },
+            "metric": "MaximumCornerAngle",
+            "warning_count": 18,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 150.0
+            },
+            "worst": {
+              "unit": "deg",
+              "value": 159.42000000000002
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.007354018348492087
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.0001716131242477174
+            },
+            "metric": "MinEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.0017161312424771743
+            },
+            "worst": {
+              "unit": "m",
+              "value": 0.0021282618410435566
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.36536441099904177
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.999
+            },
+            "metric": "Skewness",
+            "warning_count": 13,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.9
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.9584119928924046
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.6465848560169556
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.001
+            },
+            "metric": "TetCollapse",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.1
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.17330952399032576
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 0.0
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 30.0
+            },
+            "metric": "WarpingAngle",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 20.0
+            },
+            "worst": {
+              "unit": "deg",
+              "value": 0.0
+            }
+          }
+        ],
+        "solid_state": "1",
+        "status": "RECORDED"
+      },
+      "sample_id": "baseline-745f20e3fbfb55402bb7",
+      "source_evidence": "r3 Windows detail inspection; original unmodified metric record.",
+      "source_project_sha256": "2f3df20220c8a8cb7db5c183de9ead7951f81276c36fad65cb1ac8ac867c770d"
+    },
+    {
+      "mesh_quality": {
+        "metrics": [
+          {
+            "average": {
+              "unit": "",
+              "value": 2.1852436476856907
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 1000.0
+            },
+            "metric": "AspectRatio",
+            "warning_count": 98,
+            "warning_limit": {
+              "unit": "",
+              "value": 5.0
+            },
+            "worst": {
+              "unit": "",
+              "value": 11.267
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.7408258149407394
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.0005
+            },
+            "metric": "ElementQuality",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.10749555550111355
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9829783616871028
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioCornerNodes",
+            "warning_count": 5,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.027221
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9915702150606663
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioGaussPoints",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.42479
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.012243053300886545
+            },
+            "error_count": 15577,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.3432262484954348
+            },
+            "metric": "MaxEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.1716131242477174
+            },
+            "worst": {
+              "unit": "m",
+              "value": 0.02115278183023746
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 102.11233697117544
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 170.0
+            },
+            "metric": "MaximumCornerAngle",
+            "warning_count": 20,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 150.0
+            },
+            "worst": {
+              "unit": "deg",
+              "value": 160.9
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.007377395072936963
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.0001716131242477174
+            },
+            "metric": "MinEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.0017161312424771743
+            },
+            "worst": {
+              "unit": "m",
+              "value": 0.0028478742485211627
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.3661943481424834
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.999
+            },
+            "metric": "Skewness",
+            "warning_count": 13,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.9
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.9902632762719178
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.6462125572797638
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.001
+            },
+            "metric": "TetCollapse",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.1
+            },
+            "worst": {
+              "unit": "",
+              "value": 0.16043052106069994
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 0.0
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 30.0
+            },
+            "metric": "WarpingAngle",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 20.0
+            },
+            "worst": {
+              "unit": "deg",
+              "value": 0.0
+            }
+          }
+        ],
+        "solid_state": "1",
+        "status": "RECORDED"
+      },
+      "sample_id": "train-f675deaaed9455af470d",
+      "source_evidence": "r3 Windows detail inspection; original unmodified metric record.",
+      "source_project_sha256": "ba18dc250db57b9cec8d713e20159bd96f93d26b3c9b1b71703888c99ce6f273"
+    },
+    {
+      "mesh_quality": {
+        "metrics": [
+          {
+            "average": {
+              "unit": "",
+              "value": 2.9028666808995167
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 1000.0
+            },
+            "metric": "AspectRatio",
+            "warning_count": 665,
+            "warning_limit": {
+              "unit": "",
+              "value": 5.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 31.638
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.6485326053355512
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.0005
+            },
+            "metric": "ElementQuality",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.07511949188494345
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9388233963848562
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioCornerNodes",
+            "warning_count": 18,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.026334
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9693115157984629
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioGaussPoints",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.39804
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.014740899459160985
+            },
+            "error_count": 7026,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.3432262484954348
+            },
+            "metric": "MaxEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.1716131242477174
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.03401410504166922
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 107.6783462852263
+            },
+            "error_count": 4,
+            "error_limit": {
+              "unit": "deg",
+              "value": 170.0
+            },
+            "metric": "MaximumCornerAngle",
+            "warning_count": 192,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 150.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 172.86
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.008145319892667504
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.0001716131242477174
+            },
+            "metric": "MinEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.0017161312424771743
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.00038576806747648586
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.4814675730080106
+            },
+            "error_count": 12,
+            "error_limit": {
+              "unit": "",
+              "value": 0.999
+            },
+            "metric": "Skewness",
+            "warning_count": 344,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.9
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.9996933088284965
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.5643264858166195
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.001
+            },
+            "metric": "TetCollapse",
+            "warning_count": 8,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.1
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.08672764365246251
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 0.0
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 30.0
+            },
+            "metric": "WarpingAngle",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 20.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 0.0
+            }
+          }
+        ],
+        "solid_state": "1",
+        "source": "Workbench volume-mesh quality worksheet",
+        "status": "RECORDED"
+      },
+      "sample_id": "12 mm",
+      "source_evidence": "r2 Windows pilot result inspection; original unmodified metric record.",
+      "source_project_sha256": "c58635969538ce09b7da541dd2f26ccd04412b870082d5b895a1e2f5872ac4e4"
+    },
+    {
+      "mesh_quality": {
+        "metrics": [
+          {
+            "average": {
+              "unit": "",
+              "value": 2.6729653824986244
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 1000.0
+            },
+            "metric": "AspectRatio",
+            "warning_count": 607,
+            "warning_limit": {
+              "unit": "",
+              "value": 5.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 23.479
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.674698931918878
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.0005
+            },
+            "metric": "ElementQuality",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.10441357360353483
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9485391375894331
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioCornerNodes",
+            "warning_count": 11,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.025282
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9742043907539899
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioGaussPoints",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.34577
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.013900779519168384
+            },
+            "error_count": 9085,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.3432262484954348
+            },
+            "metric": "MaxEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.1716131242477174
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.02643648039125479
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 106.91022762795815
+            },
+            "error_count": 2,
+            "error_limit": {
+              "unit": "deg",
+              "value": 170.0
+            },
+            "metric": "MaximumCornerAngle",
+            "warning_count": 172,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 150.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 171.02
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.00800542172842049
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.0001716131242477174
+            },
+            "metric": "MinEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.0017161312424771743
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.00038576806747648586
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.449812487815043
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.999
+            },
+            "metric": "Skewness",
+            "warning_count": 466,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.9
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.9981398674928353
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.5895687916082883
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.001
+            },
+            "metric": "TetCollapse",
+            "warning_count": 4,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.1
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.08521462920585508
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 0.0
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 30.0
+            },
+            "metric": "WarpingAngle",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 20.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 0.0
+            }
+          }
+        ],
+        "solid_state": "1",
+        "source": "Workbench volume-mesh quality worksheet",
+        "status": "RECORDED"
+      },
+      "sample_id": "8 mm",
+      "source_evidence": "r2 Windows pilot result inspection; original unmodified metric record.",
+      "source_project_sha256": "4f5b943fb2ed73dd8b591df46302a37b5801b277b00fe77d2d80d009d0eff16d"
+    },
+    {
+      "mesh_quality": {
+        "metrics": [
+          {
+            "average": {
+              "unit": "",
+              "value": 2.3760123746532966
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 1000.0
+            },
+            "metric": "AspectRatio",
+            "warning_count": 451,
+            "warning_limit": {
+              "unit": "",
+              "value": 5.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 32.102000000000004
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.7111789860607626
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.0005
+            },
+            "metric": "ElementQuality",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.10724583921200544
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.9686347381587369
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioCornerNodes",
+            "warning_count": 3,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.030648
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.984536953275016
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.025
+            },
+            "metric": "JacobianRatioGaussPoints",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.05
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.42826
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.011260028205401411
+            },
+            "error_count": 18748,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.3432262484954348
+            },
+            "metric": "MaxEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.1716131242477174
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.020584742213326016
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 104.08028275016001
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 170.0
+            },
+            "metric": "MaximumCornerAngle",
+            "warning_count": 73,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 150.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 169.66
+            }
+          },
+          {
+            "average": {
+              "unit": "m",
+              "value": 0.006621800974633388
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "m",
+              "value": 0.0001716131242477174
+            },
+            "metric": "MinEdgeLength",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "m",
+              "value": 0.0017161312424771743
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "m",
+              "value": 0.00038576806747648586
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.40639269445885096
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.999
+            },
+            "metric": "Skewness",
+            "warning_count": 224,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.9
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.9895618141791078
+            }
+          },
+          {
+            "average": {
+              "unit": "",
+              "value": 0.6183266828729764
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "",
+              "value": 0.001
+            },
+            "metric": "TetCollapse",
+            "warning_count": 7,
+            "warning_limit": {
+              "unit": "",
+              "value": 0.1
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "",
+              "value": 0.07851083887155652
+            }
+          },
+          {
+            "average": {
+              "unit": "deg",
+              "value": 0.0
+            },
+            "error_count": 0,
+            "error_limit": {
+              "unit": "deg",
+              "value": 30.0
+            },
+            "metric": "WarpingAngle",
+            "warning_count": 0,
+            "warning_limit": {
+              "unit": "deg",
+              "value": 20.0
+            },
+            "worksheet_active": false,
+            "worst": {
+              "unit": "deg",
+              "value": 0.0
+            }
+          }
+        ],
+        "solid_state": "1",
+        "source": "Workbench volume-mesh quality worksheet",
+        "status": "RECORDED"
+      },
+      "sample_id": "5 mm",
+      "source_evidence": "r2 Windows pilot result inspection; original unmodified metric record.",
+      "source_project_sha256": "88390e4cbf36b63cf6c26691823d605024a500e05b1b96e3da295128161fda13"
+    }
+  ],
+  "source": {
+    "evidence_kind": "Windows Mechanical quality worksheet export",
+    "r2": "Windows pilot result inspection; original ten reported metrics retained as captured.",
+    "r3": "Real Mechanical volume-mesh quality records captured in the r3 detail inspection. Host names and local paths are omitted."
+  }
+}

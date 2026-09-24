@@ -11,6 +11,7 @@ from ansys_skill.schema import load_spec
 from ansys_skill.study.quality import (
     _applied_loads,
     _material_density_check,
+    _mesh_shape_check,
     _mesh_target_valid,
     _review_check,
     _selected_faces_check,
@@ -141,6 +142,7 @@ def _make_synthetic_run(tmp_path: Path, *, density: float = _DENSITY,
 def _target_check_records(study, target_name: str, *, review_status: str | None = None) -> list[dict]:
     names = ["verification_evidence", "source_configuration", "real_solve",
              "result_file", "material_density", "geometry_provenance", "selected_face_geometry",
+             "mesh_shape_quality",
              f"target_value:{target_name}", *study.targets[target_name].required_checks]
     records = [{"name": name, "status": "PASS"} for name in dict.fromkeys(names)]
     if review_status is not None:
@@ -154,6 +156,23 @@ def test_evaluate_run_with_missing_artifacts_does_not_accept_targets(tmp_path: P
     assert result["accepted_targets"] == []
     assert result["synthetic"] is True
     assert any(item["status"] == "NOT_RUN" for item in result["checks"])
+
+
+def test_mesh_shape_gate_uses_complete_real_quality_fixture():
+    fixture = json.loads((ROOT / "tests/fixtures/mesh-quality/mechanical-2026-r1.json")
+                         .read_text(encoding="utf-8"))
+    quality = next(project["mesh_quality"] for project in fixture["projects"]
+                   if project["sample_id"] == "baseline-745f20e3fbfb55402bb7")
+
+    result = _mesh_shape_check({"analysis": {"mesh_quality": quality}})
+
+    assert result["status"] == "WARN"
+    assert len(result["evidence"]["record"]["metrics"]) == 10
+    assert result["evidence"]["warning_metrics"]
+
+
+def test_missing_mesh_statistics_do_not_become_a_pass():
+    assert _mesh_shape_check({})["status"] == "NOT_RUN"
 
 
 def test_complete_synthetic_fixture_is_parsed_but_rejected(tmp_path: Path) -> None:

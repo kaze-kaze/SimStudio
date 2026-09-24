@@ -19,6 +19,46 @@ When a target requires stress review, `study collect`, `study verify`, `study wo
 
 The reviewer supplies the engineering judgment and evidence. A missing digest returns `REVIEW_REQUIRED`; malformed or non-passing records fail the review gate. Reviews do not transfer to a changed RST, and they are not a substitute for numerical checks, mesh convergence, material evidence, or the user's acceptance criteria. Review the study's result set within the authorized batch without requesting approval again for each sample.
 
+New equivalent-stress runs also save `global_stress_diagnostics` in `results-summary.json`.
+It contains the global top 20 Mechanical-averaged nodes and unaveraged elemental-nodal
+elements, their coordinates, units, result set, and exact RST hash. Element-local values are
+not assigned to topology nodes when their counts differ. The diagnostic remains global
+even for a scoped requested result. `COMPLETED` means extraction completed, not that a
+stress singularity review passed; a failed extraction remains `NOT_RUN` with its reason.
+
+## Mesh shape warnings
+
+The controlled tetrahedral study requires measured aspect ratio, element quality, corner-node
+and Gauss-point Jacobian ratios, maximum corner angle, skewness, and tetrahedral collapse.
+Limits and counts retain Mechanical's recorded values. Missing metrics and contradictory
+statistics cannot pass; shape error-limit failures cannot be waived. Edge lengths remain
+size diagnostics, and quad-face warping is not a tetrahedral shape metric. The full raw
+record is preserved, including diagnostic inconsistencies.
+
+A shape warning remains `WARN` and is excluded until a review addresses its significance
+for each named target. An optional `mesh_quality_review` inside the same RST record must
+bind both the RST key and the canonical hash of the complete raw `mesh_quality` object:
+
+```json
+{
+  "<rst-sha256>": {
+    "mesh_quality_review": {
+      "status": "PASS",
+      "quality_sha256": "<canonical-mesh-quality-sha256>",
+      "targets": ["displacement"],
+      "reviewer": "Attributable reviewer identity",
+      "rationale": "Assessment of the actual warned metrics and affected response",
+      "evidence": ["Saved mesh statistics, response refinement, and local field evidence"]
+    }
+  }
+}
+```
+
+The dataset's `mesh_shape_quality.evidence.quality_sha256` supplies the required hash.
+The original warning and separate target-specific review both remain in the dataset.
+This record does not approve stress unless that target is named and its separate stress
+review also passes. Review cannot turn missing evidence or a shape error into a pass.
+
 ## Claims and completion
 
 Mechanical-message, requested-result, small-deformation and reaction-balance checks are mandatory for every study target. Face-selection geometry is mandatory even with gravity-only loading. Additional checks may be required, but configuration cannot remove these minimum checks.

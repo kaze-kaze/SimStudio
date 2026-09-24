@@ -132,7 +132,7 @@ def register_commands(subparsers) -> None:
         if name == "run":
             parser.add_argument("--limit", type=int, help="Limit the number of additional design points")
         if name in {"collect", "verify", "workflow", "compare"}:
-            parser.add_argument("--reviews", help="Recorded stress reviews bound to individual RST hashes")
+            parser.add_argument("--reviews", help="Recorded stress and mesh-warning reviews bound to individual RST hashes")
         if name in {"optimize", "verify"}:
             parser.add_argument("--model")
         if name == "export":

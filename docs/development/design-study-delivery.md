@@ -19,8 +19,8 @@ The source design is the September 23, 2026 implementation proposal approved in 
 | Budgeted optimization, active samples and candidate confirmation | Proposal identity, retry allowance, frozen partitions and verification tests | Offline verified; real candidates NOT_RUN |
 | Independent accuracy and equal-budget comparison | Frozen model/test evidence, boundary/constraint error slices, confusion matrices and frozen comparison-ledger tests | Offline verified; real accuracy/cost comparison NOT_RUN |
 | HTML / Markdown report with filters and evidence links | Report contract tests and interactive browser review | Offline verified |
-| CLI, Skill, docs, example and distributions | Both Skill validators, sdist/wheel inventory, isolated installed CLI and PowerShell protocol tests | Offline verified; target-machine installation NOT_RUN |
-| Cross-platform CI and single-run compatibility | Ruff, 524 passed / 19 skipped locally; all six Linux/Windows CI jobs passed | Hosted offline verification passed; licensed integrations NOT_RUN |
+| CLI, Skill, docs, example and distributions | Both Skill validators, sdist/wheel inventory, isolated installed CLI and PowerShell protocol tests | Offline verified; target-machine offline acceptance failed as recorded below |
+| Cross-platform CI and single-run compatibility | Ruff, 593 passed / 19 skipped locally; previous six Linux/Windows CI jobs passed | Hosted offline verification passed; licensed integrations NOT_RUN |
 | Complete real engineering study | Real dataset, model, holdout, candidate RSTs and direct-search control | NOT_RUN |
 
 ## Working baseline
@@ -44,7 +44,7 @@ The source design is the September 23, 2026 implementation proposal approved in 
 
 ## Current verification record — September 23, 2026
 
-- Current source suite: 524 passed, 19 skipped in 9.94 seconds. The skips are 15 real ANSYS
+- Current source suite: 593 passed, 19 skipped in 17.74 seconds. The skips are 15 real ANSYS
   integration tests and four PowerShell tests unavailable on this macOS host, not passes.
   All four PowerShell protocol tests subsequently passed on hosted Windows CI.
   The previous implementation commit `7bd2a45` recorded
@@ -102,6 +102,58 @@ The changes remain in [draft PR #3](https://github.com/kaze-kaze/SimStudio/pull/
 merging or publishing a new release. Hosted runners have no licensed Mechanical acceptance.
 
 ## Remaining acceptance
+
+### Target Windows preparation — September 23, 2026
+
+The r3 package checksum and source commit passed, the isolated environment was installed, and
+doctor and Ruff passed. The actual offline suite recorded 513 passed, one failed, eight errors
+and six explicit symbolic-link privilege skips (528 collected; ANSYS integrations excluded).
+The eight errors came from build123d 0.11.1 importing an unsupported system font; the former
+dependency range allowed that version despite the development host using 0.13.0. The CAD extras
+now require 0.13.x, whose font loader handles `TTLibError`. The one test failure directly created
+a symbolic link without the existing Windows privilege-aware fixture; it now uses that fixture
+and retains its real symlink and failed-attempt assertions. The corrected checkout needs a new
+target-machine offline run before real acceptance. No Mechanical solver call occurred.
+
+### Outstanding evidence
+
+The corrected Windows environment subsequently recorded 521 passed and seven explicit
+symbolic-link privilege skips (528 cases, no failures/errors); the focused check recorded
+31 passed and one skip. The original two-design/three-mesh integration test then passed in
+233.41 seconds with six successful solver calls and no retries. Its 130.73 MiB results bundle
+was transferred and imported with matching study identity, code fingerprint, and payload hashes.
+
+This is execution/portability acceptance, not complete engineering acceptance: collection
+rejected both designs because the original face gate compared tessellation-based Mechanical
+area/centroid values against exact CAD measurements. An independent read-only inspection of
+copies of both saved projects confirmed that analytic curve boundaries match the CAD under
+the original strict tolerances. The compiler and quality gate now preserve and measure those
+boundaries; the integration test also requires face geometry and material density to pass.
+Corrected-runtime solver acceptance is still pending. All later work shares the original
+400-call authorization; a new code fingerprint must not reset that allowance. No stress review
+or surrogate accuracy claim is established yet.
+
+Four read-only Mechanical starts have now inspected saved project copies without regenerating
+meshes or solving. Mesh APIs returned complete native statistics; the original fine meshes
+have shape warnings, while maximum-edge-length failure counts conflict with both recorded
+limits and worksheet color. Applicable shape checks now validate metric completeness and
+consistency. Warnings require an explicit target review bound to the exact RST and raw quality
+hash; failures and missing evidence remain blocking. Size-diagnostic inconsistencies are
+retained. The original area/centroid tolerances remain unchanged.
+
+A separate three-solve baseline diagnostic tested 2 mm rib-end edge blends under the original
+loads, material and 12/8/5 mm meshes. All three solves completed, but the geometry change was
+rejected: nodal peak stress rose to 18.40/20.15/19.73 MPa; unaveraged elemental-nodal peaks were
+56.80/49.73/61.84 MPa, and the coarse/intermediate meshes reported shape errors. This pilot is
+not a training dataset. Its checksummed result archive and all 118 payload hashes were verified
+after transfer. New DPF stress diagnostics were exercised against its three real RST files,
+including global hotspot coordinates, the exact RST hash and preserved element-local values.
+
+The cumulative authorization ledger is **9 solver attempts + 4 read-only Mechanical starts =
+13/400**, leaving at most 387 further starts for all later studies and diagnostics. No retry
+occurred in these nine solves. The complete real training, holdout, optimization and comparison
+workflow remains unaccepted. The failed geometry pilot is retained as evidence, not promoted
+into the controlled generator.
 
 1. Run the offline suite and PowerShell entry point on the actual Windows installation.
 2. Complete the opt-in two-design / three-mesh solver acceptance, inspect material and faces,

@@ -52,8 +52,17 @@ def test_real_parameterized_study_resume_and_evidence_bundle(tmp_path: Path, req
             quality = evaluate_run(directory, spec, sample["geometry"])
             checks = {item["name"]: item["status"] for item in quality["checks"]}
             for name in ("real_solve", "source_configuration", "geometry_provenance",
+                         "selected_face_geometry", "material_density",
                          "derived_reaction_balance"):
                 assert checks[name] == "PASS", quality
+            # This test accepts measured warnings only as quarantined execution evidence.
+            # Engineering data still require an explicit RST/mesh-bound review.
+            assert checks["mesh_shape_quality"] in {"PASS", "WARN"}, quality
+            if checks["mesh_shape_quality"] == "WARN":
+                assert not quality["accepted_targets"], quality
+            diagnostics = summary["global_stress_diagnostics"]
+            assert diagnostics["status"] == "COMPLETED", diagnostics
+            assert diagnostics["result_file_sha256"] == quality["evidence"]["result_file_sha256"]
             assert "stress" not in quality["accepted_targets"], "Stress needs an explicit review"
     archive = tmp_path / "results.zip"
     export_bundle(study_root, archive, kind="results")

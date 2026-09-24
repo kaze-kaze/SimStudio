@@ -34,6 +34,7 @@ from ansys_skill.paths import (
     safe_join,
 )
 from ansys_skill.postprocessing import inspect_result_file
+from ansys_skill.postprocessing.solver_logs import merge_solver_messages
 from ansys_skill.reporting import generate_inspection_reports, generate_reports
 from ansys_skill.schema import (
     SimulationSpec,
@@ -537,8 +538,12 @@ def _real_postprocess(
     rst_path = _find_result_file(run_dir)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    messages = mechanical.get("solver_messages")
+    messages, log_availability = merge_solver_messages(
+        run_dir, mechanical.get("solver_messages"), mechanical.get("solve_logs")
+    )
     summary["solver_messages"] = messages
+    if log_availability:
+        summary["solver_log_availability"] = log_availability
     summary["visual_review"] = mechanical.get("visual_review", [])
     messages_path = run_dir / "solver-messages.json"
     messages_path.write_text(
@@ -796,7 +801,11 @@ def command_inspect(args: argparse.Namespace) -> int:
     checks = preflight_checks(spec, normalized_path, inspect_only=True)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    summary["solver_messages"] = mechanical.get("solver_messages")
+    summary["solver_messages"], log_availability = merge_solver_messages(
+        run_dir, mechanical.get("solver_messages"), mechanical.get("solve_logs")
+    )
+    if log_availability:
+        summary["solver_log_availability"] = log_availability
     verification = checks_payload(checks + post_solve_checks(spec, summary))
     paths = generate_reports(run_dir, spec, summary, verification)
     _record_manifest_activity(

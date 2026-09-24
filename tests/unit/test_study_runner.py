@@ -299,12 +299,12 @@ def test_real_python_child_timeout_stops_owned_process(tmp_path):
     assert time.monotonic() - started < 5
 
 
-def test_finalization_failure_cannot_leave_a_solved_attempt(study_root, monkeypatch):
+def test_finalization_failure_cannot_leave_a_solved_attempt(study_root, monkeypatch, create_symlink):
     def call(_specification, directory, _execute, **_kwargs):
         directory.mkdir()
         atomic_json(directory / "run-manifest.json", {"mechanical_product_version": "fixture-only"})
         (directory / "fixture.txt").write_text("Protocol fixture only; no Mechanical execution occurred")
-        (directory / "outside-link").symlink_to(Path(__file__))
+        create_symlink(directory / "outside-link", Path(__file__))
         return 0, {"status": "SOLVED", "synthetic": False}
 
     monkeypatch.setattr(runner, "_call_single_run", call)

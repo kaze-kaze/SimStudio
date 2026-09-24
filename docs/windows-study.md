@@ -1,6 +1,6 @@
 # Running a design study on Windows
 
-This guide covers offline preparation on a development host and explicit Mechanical execution on Windows. The study workflow is implemented, but a complete real Windows study has not yet been accepted. A previously reported build123d 0.11.1 font failure and a recorded 0.9.1 path are investigation history, not evidence that either version now works for this study. Check the actual environment and record a new acceptance before making compatibility or performance claims.
+This guide covers offline preparation on a development host and explicit Mechanical execution on Windows. The study workflow is implemented, but a complete real Windows study has not yet been accepted. The CAD extras require build123d 0.13.x. During the September 23, 2026 target-machine preparation, the former broad dependency range resolved to 0.11.1, whose font scan failed with `TTLibError: Not a TrueType or OpenType font (bad sfntVersion)`. Version 0.13.0 handles that font parsing failure without aborting CAD import. The corrected target-machine installation and real study still require fresh acceptance; the historical 0.9.1 single-bracket run is not study evidence.
 
 ## Prepare and package on a development host
 
@@ -9,6 +9,7 @@ Install with Python 3.13 from the repository checkout:
 ```powershell
 py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev,study]"
+.\.venv\Scripts\python.exe -c "import importlib.metadata as m; print(m.version('build123d'))"
 .\.venv\Scripts\ansys-sim.exe study plan examples/bracket-study/study.yaml --out build\bracket-study --json
 .\.venv\Scripts\ansys-sim.exe study run build\bracket-study --limit 1 --json
 .\.venv\Scripts\ansys-sim.exe study report build\bracket-study --json
@@ -50,3 +51,5 @@ After real solves, collect each RST with `study collect`. Stress-target rows rem
 After the training dataset is adequate, train the model and finish adaptive optimization plus every refit before final holdout evaluation. Run `surrogate evaluate` once against the frozen test split; it commits the first evaluated model and prevents further model retraining/adaptation within the study. If frozen test data are incomplete, readiness returns NOT_RUN without inspecting prediction errors or committing the model. A NOT_RUN evaluation returns CLI exit code 6 and is not success. Then verify candidates with real Mechanical evidence and complete any configured direct-search comparison within the same solver-call allowance. Export results only when needed; treat the archive as engineering data.
 
 The installation CI and offline test suite exercise command wiring and deterministic contracts on Linux and Windows. They do not exercise a licensed solver, prove the installed CAD/font stack can generate every sample, or validate the model against real held-out engineering results. Record those checks separately and retain `NOT_RUN` where no evidence exists.
+
+On Windows without permission to create symbolic links, the real symlink-specific tests report `NOT_RUN` with `WinError 1314`. Keep those skips explicit; do not enable administrator or developer-mode privileges just to turn them into passes. Hosted CI and platforms with that capability continue to exercise the real symlink assertions.

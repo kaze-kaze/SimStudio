@@ -68,6 +68,9 @@ jobs:
           python -m pytest -q tests/unit/test_study_bundles.py tests/unit/test_study_cli.py
           tests/unit/test_study_comparison.py tests/unit/test_study_dataset.py
           tests/unit/test_study_geometry.py tests/unit/test_study_optimization.py
+          tests/unit/test_planar_faces.py tests/unit/test_planar_face_evidence.py
+          tests/unit/test_mesh_quality.py tests/unit/test_solver_logs.py
+          tests/unit/test_stress_diagnostics.py
           tests/unit/test_study_quality.py tests/unit/test_study_recovery.py
           tests/unit/test_study_report.py tests/unit/test_study_runner.py
           tests/unit/test_study_sampling.py tests/unit/test_study_specification.py

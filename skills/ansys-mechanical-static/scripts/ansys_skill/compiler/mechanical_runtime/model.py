@@ -49,6 +49,7 @@ def apply_mesh():
             except Exception as exc:
                 raise UnsupportedMechanicalApi("Mesh element-order API is unavailable: {}".format(exc))
         Model.Mesh.GenerateMesh()
+        ANALYSIS_INFO["mesh_quality"] = MechanicalCompat.mesh_quality()
 
 
 def solve_analysis(analysis):
