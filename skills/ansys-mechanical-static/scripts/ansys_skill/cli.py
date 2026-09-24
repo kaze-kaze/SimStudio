@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import math
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -14,6 +16,7 @@ from ansys_skill.backends import (
     PyMechanicalRemoteBackend,
 )
 from ansys_skill.backends.environment import doctor_report
+from ansys_skill.backends.phase_timing import CLOCK_SOURCE, phase_record, start_timer
 from ansys_skill.compiler import compile_simulation
 from ansys_skill.errors import (
     AnsysSimError,
@@ -31,6 +34,7 @@ from ansys_skill.paths import (
     safe_join,
 )
 from ansys_skill.postprocessing import inspect_result_file
+from ansys_skill.postprocessing.solver_logs import merge_solver_messages
 from ansys_skill.reporting import generate_inspection_reports, generate_reports
 from ansys_skill.schema import (
     SimulationSpec,
@@ -172,6 +176,80 @@ Record each assumption and whether it came from the user, template, program, or 
 
 List only questions that block a safe, unique execution. A non-empty list blocks `--execute`.
 """
+
+_CLI_PHASES = ("backend_total", "postprocessing", "report_generation")
+_MECHANICAL_PHASES = ("mesh", "solve")
+
+
+def _not_run_phase_timings(names: tuple[str, ...]) -> dict[str, dict[str, object]]:
+    return {name: {"status": "NOT_RUN", "elapsed_seconds": None} for name in names}
+
+
+def _initialize_phase_timings(run_dir: Path) -> None:
+    manifest_path, manifest = _manifest(run_dir)
+    phases = _not_run_phase_timings((*_MECHANICAL_PHASES, *_CLI_PHASES))
+    manifest["phase_timings"] = phases
+    manifest["timing_clocks"] = {"cli": CLOCK_SOURCE, "mechanical": "time.time"}
+    write_manifest(manifest_path, manifest)
+
+
+def _record_phase_timing(run_dir: Path, phase: str, record: dict[str, object]) -> None:
+    manifest_path, manifest = _manifest(run_dir)
+    phases = manifest.setdefault(
+        "phase_timings", _not_run_phase_timings((*_MECHANICAL_PHASES, *_CLI_PHASES))
+    )
+    phases[phase] = record
+    manifest.setdefault("timing_clocks", {})["cli"] = CLOCK_SOURCE
+    manifest.setdefault("timing_clocks", {})["mechanical"] = "time.time"
+    write_manifest(manifest_path, manifest)
+
+
+def _run_timed_phase(run_dir: Path, phase: str, operation: Any) -> Any:
+    started = start_timer()
+    operation_failed = False
+    try:
+        return operation()
+    except BaseException:
+        operation_failed = True
+        raise
+    finally:
+        record = phase_record(started)
+        if record is not None:
+            try:
+                _record_phase_timing(run_dir, phase, record)
+            except Exception:
+                if not operation_failed:
+                    raise
+
+
+def _merge_mechanical_phase_timings(run_dir: Path, *, synthetic: bool = False) -> None:
+    if synthetic:
+        return
+    mechanical = _read_mechanical_metadata(run_dir)
+    source = mechanical.get("phase_timings")
+    if not isinstance(source, dict):
+        return
+    manifest_path, manifest = _manifest(run_dir)
+    phases = manifest.setdefault(
+        "phase_timings", _not_run_phase_timings((*_MECHANICAL_PHASES, *_CLI_PHASES))
+    )
+    for phase in _MECHANICAL_PHASES:
+        record = source.get(phase)
+        if isinstance(record, dict) and record.get("status") in {"RECORDED", "NOT_RUN"}:
+            if record.get("status") == "NOT_RUN":
+                phases[phase] = {"status": "NOT_RUN", "elapsed_seconds": None}
+            elif (
+                isinstance(record.get("elapsed_seconds"), (int, float))
+                and not isinstance(record.get("elapsed_seconds"), bool)
+                and math.isfinite(record["elapsed_seconds"])
+                and record["elapsed_seconds"] >= 0
+            ):
+                phases[phase] = {
+                    "status": "RECORDED",
+                    "elapsed_seconds": record["elapsed_seconds"],
+                }
+    manifest.setdefault("timing_clocks", {})["mechanical"] = mechanical.get("timing_clock", "time.time")
+    write_manifest(manifest_path, manifest)
 
 
 def _emit(payload: dict[str, object], json_mode: bool) -> None:
@@ -394,7 +472,11 @@ def _dry_run(spec: SimulationSpec, run_dir: Path, checks: list[Check], json_mode
         Check("visual_review", CheckStatus.NOT_RUN, "Visual exports require a real solve"),
     ]
     verification = checks_payload(dry_checks)
-    report_paths = generate_reports(run_dir, spec, summary, verification)
+    report_paths = _run_timed_phase(
+        run_dir,
+        "report_generation",
+        lambda: generate_reports(run_dir, spec, summary, verification),
+    )
     report_paths.update({"execution_plan": str(plan_path), "solver_messages": str(messages_path)})
     _record_outputs(
         run_dir,
@@ -456,8 +538,12 @@ def _real_postprocess(
     rst_path = _find_result_file(run_dir)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    messages = mechanical.get("solver_messages")
+    messages, log_availability = merge_solver_messages(
+        run_dir, mechanical.get("solver_messages"), mechanical.get("solve_logs")
+    )
     summary["solver_messages"] = messages
+    if log_availability:
+        summary["solver_log_availability"] = log_availability
     summary["visual_review"] = mechanical.get("visual_review", [])
     messages_path = run_dir / "solver-messages.json"
     messages_path.write_text(
@@ -505,6 +591,7 @@ def command_run(args: argparse.Namespace) -> int:
     require_fresh_run_dir(out)
     artifacts = compile_simulation(spec, spec_path, out)
     run_dir = Path(artifacts["run_directory"])
+    _initialize_phase_timings(run_dir)
     environment = _write_doctor_environment(run_dir, spec, probe_port=args.execute)
     if not args.execute:
         return _dry_run(spec, run_dir, checks, args.json)
@@ -527,13 +614,35 @@ def command_run(args: argparse.Namespace) -> int:
     }[spec.execution.backend]()
     progress(f"Executing backend {spec.execution.backend}")
     try:
-        outcome = backend.execute(spec, spec_path, run_dir, Path(artifacts["generated_script"]))
+        outcome = _run_timed_phase(
+            run_dir,
+            "backend_total",
+            lambda: backend.execute(
+                spec, spec_path, run_dir, Path(artifacts["generated_script"])
+            ),
+        )
     except EnvironmentUnavailableError as exc:
+        with contextlib.suppress(Exception):
+            _merge_mechanical_phase_timings(
+                run_dir, synthetic=spec.execution.backend == "fake"
+            )
         _mark_failure(run_dir, "ENVIRONMENT_UNAVAILABLE", "environment", exc)
         raise
     except AnsysSimError as exc:
+        with contextlib.suppress(Exception):
+            _merge_mechanical_phase_timings(
+                run_dir, synthetic=spec.execution.backend == "fake"
+            )
         _mark_failure(run_dir, "MECHANICAL_FAILED", "mechanical_execution", exc)
         raise
+    except Exception as exc:
+        with contextlib.suppress(Exception):
+            _merge_mechanical_phase_timings(
+                run_dir, synthetic=spec.execution.backend == "fake"
+            )
+        _mark_failure(run_dir, "MECHANICAL_FAILED", "mechanical_execution", exc)
+        raise
+    _merge_mechanical_phase_timings(run_dir, synthetic=outcome.synthetic)
     manifest_path, manifest = _manifest(run_dir)
     for path in outcome.artifacts:
         if path.exists():
@@ -551,31 +660,42 @@ def command_run(args: argparse.Namespace) -> int:
     write_manifest(manifest_path, manifest)
 
     if outcome.synthetic:
-        summary = json.loads((run_dir / "results-summary.json").read_text(encoding="utf-8"))
-        synthetic_checks = [
-            *checks,
-            Check(
-                "mechanical_solve",
-                CheckStatus.NOT_RUN,
-                "Fake backend used; no ANSYS solve occurred",
-            ),
-            Check(
-                "dpf_postprocessing", CheckStatus.NOT_RUN, "Synthetic values are not a DPF result"
-            ),
-            Check(
-                "visual_review",
-                CheckStatus.NOT_RUN,
-                "Synthetic backend does not export solver plots",
-            ),
-        ]
-        verification = checks_payload(synthetic_checks)
+        def synthetic_postprocess() -> tuple[dict[str, Any], dict[str, Any]]:
+            summary = json.loads((run_dir / "results-summary.json").read_text(encoding="utf-8"))
+            synthetic_checks = [
+                *checks,
+                Check(
+                    "mechanical_solve",
+                    CheckStatus.NOT_RUN,
+                    "Fake backend used; no ANSYS solve occurred",
+                ),
+                Check(
+                    "dpf_postprocessing", CheckStatus.NOT_RUN, "Synthetic values are not a DPF result"
+                ),
+                Check(
+                    "visual_review",
+                    CheckStatus.NOT_RUN,
+                    "Synthetic backend does not export solver plots",
+                ),
+            ]
+            return summary, checks_payload(synthetic_checks)
+
+        summary, verification = _run_timed_phase(
+            run_dir, "postprocessing", synthetic_postprocess
+        )
     else:
         try:
-            summary, verification = _real_postprocess(run_dir, spec, checks)
+            summary, verification = _run_timed_phase(
+                run_dir, "postprocessing", lambda: _real_postprocess(run_dir, spec, checks)
+            )
         except PostprocessingError as exc:
             _mark_failure(run_dir, "POSTPROCESSING_FAILED", "postprocessing", exc)
             raise
-    report_paths = generate_reports(run_dir, spec, summary, verification)
+    report_paths = _run_timed_phase(
+        run_dir,
+        "report_generation",
+        lambda: generate_reports(run_dir, spec, summary, verification),
+    )
     verification_failed = verification["status"] == CheckStatus.FAIL.value
     final_status = "VERIFICATION_FAILED" if verification_failed else outcome.status
     _record_outputs(
@@ -681,7 +801,11 @@ def command_inspect(args: argparse.Namespace) -> int:
     checks = preflight_checks(spec, normalized_path, inspect_only=True)
     summary = inspect_result_file(rst_path, spec)
     mechanical = _read_mechanical_metadata(run_dir)
-    summary["solver_messages"] = mechanical.get("solver_messages")
+    summary["solver_messages"], log_availability = merge_solver_messages(
+        run_dir, mechanical.get("solver_messages"), mechanical.get("solve_logs")
+    )
+    if log_availability:
+        summary["solver_log_availability"] = log_availability
     verification = checks_payload(checks + post_solve_checks(spec, summary))
     paths = generate_reports(run_dir, spec, summary, verification)
     _record_manifest_activity(
@@ -767,6 +891,9 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("run_directory")
     report.add_argument("--json", action="store_true")
     report.set_defaults(handler=command_report)
+    from ansys_skill.study.cli import register_commands
+
+    register_commands(subparsers)
     return parser
 
 

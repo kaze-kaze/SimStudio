@@ -1,0 +1,11 @@
+# Surrogate models and candidate search
+
+`surrogate train DIR` trains per-target models from accepted training rows and writes a validated JSON `model.json`, model card, and provenance. The loader verifies model structure and identity. The artifact format does not use pickle or execute code. Keep the model associated with its study fingerprint, dataset ID, feature names/units/bounds, and training code identity.
+
+Finish training-set optimization, adaptive sampling, model selection, and every refit before running `surrogate evaluate DIR [--model PATH]` once against the frozen test designs. Evaluation reports target metrics and false-safe feasibility outcomes; missing eligible holdout evidence remains `NOT_RUN` and returns CLI exit code 6. Evaluation records that the holdout was inspected and prevents later adaptation within that study. Treat this evaluation set as used after the command, even if the metrics are disappointing.
+
+`surrogate predict MODEL_DIR --parameters JSON` accepts one JSON object of unit-qualified feature names represented by canonical SI numeric values, as the parser help specifies. Validate parameter interactions and inspect `status`, domain distance, and uncertainty. `NEEDS_SOLVE` means obtain new Mechanical evidence; a prediction never launches a solver or certifies feasibility.
+
+`study optimize DIR [--model PATH]` proposes constrained candidates; `--execute` allows adaptive solves. Complete optimization and refit work before consuming the holdout with final evaluation. `study verify` separately proposes/checks final candidates and requires actual confirmation evidence for engineering claims. `study workflow --execute` coordinates sampling, collection, model training, optimization, final holdout evaluation, verification, and optional comparison under the declared budgets and review gates.
+
+When `compare_direct_search` is enabled, `study compare` uses a separately sampled design set without model inference and bounds it by the completed surrogate search's solver-call allowance within the same `max_solver_calls` cap. Compare recorded calls, eligible outcomes, and quality checks. A missing direct-search result is `NOT_RUN`/`REVIEW_REQUIRED`, not evidence that the surrogate is faster or better.

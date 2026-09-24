@@ -273,6 +273,69 @@ class MechanicalCompat(object):
             )
 
     @staticmethod
+    def face_boundary(face):
+        # Area/Centroid are tessellation-derived in Mechanical. Preserve curve samples
+        # separately so a controlled planar study can measure its analytic boundary.
+        try:
+            surface_type = TEXT_TYPE(face.SurfaceType)
+            if surface_type != "GeoSurfacePlane":
+                return {"status": "UNSUPPORTED", "surface_type": surface_type}
+            face_loops = list(face.Loops)
+            if len(face_loops) > 64:
+                raise ValueError("Too many loops for the bounded boundary evidence export")
+            loops = []
+            for loop in face_loops:
+                loop_edges = list(loop.Edges)
+                if len(loop_edges) > 128:
+                    raise ValueError("Too many edges for the bounded boundary evidence export")
+                edges = []
+                for edge in loop_edges:
+                    extents = [float(value) for value in edge.Extents]
+                    if len(extents) != 2:
+                        raise ValueError("Expected two edge parameter extents")
+                    points = [[float(value) for value in edge.PointAtParam(
+                        extents[0] + (extents[1] - extents[0]) * index / 8.0)]
+                              for index in range(9)]
+                    edges.append({"curve_type": TEXT_TYPE(edge.CurveType),
+                                  "extents": extents, "points": points})
+                loops.append({"edges": edges})
+            return {"status": "CAPTURED", "surface_type": surface_type, "loops": loops}
+        except Exception as exc:
+            return {"status": "UNAVAILABLE", "error": TEXT_TYPE(exc)}
+
+    @staticmethod
+    def mesh_quality():
+        import math
+
+        def quantity_record(value):
+            number = float(value.Value)
+            if math.isnan(number) or math.isinf(number):
+                raise ValueError("Mesh quality statistic is non-finite")
+            return {"value": number, "unit": TEXT_TYPE(value.Unit)}
+
+        try:
+            mesh = Model.Mesh
+            mesh.ComputeMeshQualityMetrics()
+            metrics = list(mesh.GetVolumeMeshMetrics())
+            records = []
+            for metric in metrics:
+                records.append({
+                    "metric": TEXT_TYPE(metric),
+                    "worksheet_active": bool(mesh.GetActiveVolumeMeshQuality(metric)),
+                    "worst": quantity_record(mesh.GetVolumeMeshQualityWorstMetricValue(metric)),
+                    "average": quantity_record(mesh.GetVolumeMeshQualityAverageMetricValue(metric)),
+                    "error_limit": quantity_record(mesh.GetVolumeMeshQualityErrorLimit(metric)),
+                    "warning_limit": quantity_record(mesh.GetVolumeMeshQualityWarningLimit(metric)),
+                    "error_count": int(mesh.GetVolumeMeshQualityCountFailed(metric)),
+                    "warning_count": int(mesh.GetVolumeMeshQualityWarningCountFailed(metric)),
+                })
+            return {"status": "RECORDED" if records else "NOT_RUN",
+                    "source": "Workbench volume-mesh quality worksheet",
+                    "solid_state": TEXT_TYPE(mesh.GetSolidMeshQualityState()), "metrics": records}
+        except Exception as exc:
+            return {"status": "NOT_RUN", "error": TEXT_TYPE(exc), "metrics": []}
+
+    @staticmethod
     def selection_from_entities(entities):
         try:
             selection = ExtAPI.SelectionManager.CreateSelectionInfo(

@@ -41,3 +41,50 @@ jobs:
         run: python -m build --no-isolation
       - name: Check public package contents
         run: python tools/check_distribution.py dist
+
+  design-study:
+    runs-on: ${{ matrix.os }}
+    env:
+      ANSYS_AVAILABLE: "0"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install study runtime and test tools
+        run: python -m pip install -e ".[dev,study]"
+      - name: Installed CLI smoke test
+        run: ansys-sim --help
+      - name: Ruff
+        run: ruff check .
+      - name: Study and surrogate offline tests
+        run: >-
+          python -m pytest -q tests/unit/test_study_bundles.py tests/unit/test_study_cli.py
+          tests/unit/test_study_comparison.py tests/unit/test_study_dataset.py
+          tests/unit/test_study_geometry.py tests/unit/test_study_optimization.py
+          tests/unit/test_planar_faces.py tests/unit/test_planar_face_evidence.py
+          tests/unit/test_mesh_quality.py tests/unit/test_solver_logs.py
+          tests/unit/test_stress_diagnostics.py
+          tests/unit/test_study_quality.py tests/unit/test_study_recovery.py
+          tests/unit/test_study_report.py tests/unit/test_study_runner.py
+          tests/unit/test_study_sampling.py tests/unit/test_study_specification.py
+          tests/unit/test_study_workflow.py tests/unit/test_surrogate.py
+          tests/unit/test_surrogate_reference.py tests/unit/test_structure.py
+          tests/unit/test_windows_study_helper.py
+          tests/unit/test_distribution.py
+      - name: Study init smoke test
+        run: ansys-sim study init build/ci-study-inputs --json
+      - name: Study validation smoke test
+        run: ansys-sim study validate build/ci-study-inputs/study.yaml --json
+      - name: Study plan smoke test
+        run: ansys-sim study plan build/ci-study-inputs/study.yaml --out build/ci-study --json
+      - name: Study dry-run smoke test
+        run: ansys-sim study run build/ci-study --limit 1 --json
+      - name: Study report smoke test
+        run: ansys-sim study report build/ci-study --json

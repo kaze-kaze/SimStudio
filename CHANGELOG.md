@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Record and verify nested Mechanical process trees before accepting a batch result, recovering
+  an interrupted run, or starting another attempt. Preserve unresolved child-process evidence.
+- Test the Windows PowerShell entry point with an isolated protocol stub, covering explicit
+  execution, paths containing spaces, fingerprint rejection and child exit-code propagation.
+- Exercise platform-specific process ownership in recovery tests and install study dependencies
+  in release checks so optional CAD/numerical tests are included before packaging.
+- Bind final surrogate evaluation to frozen test designs, model content and test-source evidence;
+  add boundary/constraint-near error slices and complete constraint confusion matrices.
+- Preserve required numerical and selected-face checks, freeze the direct-comparison allowance
+  against its research ledger, and invalidate stale workflow conclusions. Distinguish observed
+  training designs from separately solver-verified recommendations in the report.
+- Record Mechanical mesh/solve and CLI backend/postprocessing/report durations, including failed
+  attempts; retain missing timings as NOT_RUN and identify overlapping parent/child costs.
+- Add the independent ansys-design-study Skill and bilingual guides for the implemented study/surrogate workflow, portable tasks, hash-bound stress review, and Windows use. Keep real Windows engineering acceptance NOT_RUN.
+- Require source distributions to include study docs, Skills, schema, example, Windows helper, and tests; require wheels to contain the complete CLI, study, and surrogate runtime. Add offline Python 3.13 Linux/Windows study CI while retaining the base CI job.
+- Document the example's shared 400-call study ceiling (120 initial planned calls), authored 0.025 mm / 10 MPa response constraints, safe JSON models, equal-budget direct-search comparison, and non-certification boundary.
+
 - Replace the primary cantilever example, README/site presentation, cover, public evidence, and
   CI dry-run input with the gusseted equipment bracket. Keep the beam as an internal analytical
   and compatibility regression fixture under `tests/fixtures/cantilever/`.

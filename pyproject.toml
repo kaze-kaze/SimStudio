@@ -43,7 +43,13 @@ dev = [
   "ruff>=0.12,<1",
 ]
 cad-fixture = [
-  "build123d>=0.9,<1",
+  "build123d>=0.13,<0.14",
+]
+study = [
+  "build123d>=0.13,<0.14",
+  "numpy>=2.0,<3",
+  "scipy>=1.15,<2",
+  "scikit-learn>=1.6,<2",
 ]
 
 [project.scripts]

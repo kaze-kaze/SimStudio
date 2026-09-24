@@ -3,18 +3,21 @@
 from __future__ import annotations
 
 import json
+import socket
 import subprocess
 from pathlib import Path
 from typing import Any
 
 from ansys_skill.backends.base import BackendOutcome, MechanicalBackend
 from ansys_skill.backends.environment import doctor_report
+from ansys_skill.backends.windows_processes import windows_process_tree_alive
 from ansys_skill.errors import (
     EnvironmentUnavailableError,
     MechanicalExecutionError,
     PathSafetyError,
     SpecValidationError,
 )
+from ansys_skill.manifest import utc_now
 from ansys_skill.paths import safe_join
 from ansys_skill.schema import SimulationSpec
 
@@ -147,7 +150,12 @@ class MechanicalBatchBackend(MechanicalBackend):
                     creationflags=subprocess.CREATE_NO_WINDOW,
                 )
                 metadata.update(owned_instance=True, process_id=process.pid)
+                owner_path = safe_join(run_dir, "owned-process.json")
+                owner = {"pid": process.pid, "host": socket.gethostname(),
+                         "started_at": utc_now(), "ended_at": None,
+                         "process_tree": "windows-parent-tree", "tree_verified": False}
                 try:
+                    owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
                     metadata["process_exit_code"] = process.wait(
                         timeout=spec.execution.timeout_seconds
                     )
@@ -163,10 +171,25 @@ class MechanicalBatchBackend(MechanicalBackend):
                 except BaseException:
                     _terminate_owned_tree(process)
                     raise
+                finally:
+                    if process.poll() is not None:
+                        owner["ended_at"] = utc_now()
+                        owner["exit_code"] = process.returncode
+                        try:
+                            owner["tree_verified"] = not windows_process_tree_alive(process.pid)
+                            if not owner["tree_verified"]:
+                                metadata["cleanup_error"] = "An owned Mechanical child process is still running"
+                        except (OSError, SpecValidationError) as exc:
+                            metadata["cleanup_error"] = str(exc)
+                        owner_path.write_text(json.dumps(owner) + "\n", encoding="utf-8")
         except OSError as exc:
             raise MechanicalExecutionError(
                 f"Mechanical batch process failed: {exc}", details=metadata
             ) from exc
+        if not owner["tree_verified"]:
+            raise MechanicalExecutionError(
+                "Cannot prove that the owned Mechanical process tree stopped", details=metadata
+            )
         try:
             payload = _read_artifacts(run_dir)
         except MechanicalExecutionError as exc:

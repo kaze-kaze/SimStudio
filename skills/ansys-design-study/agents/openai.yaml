@@ -1,0 +1,6 @@
+interface:
+  display_name: "ANSYS Design Study"
+  short_description: "Plan and audit bounded Mechanical design studies."
+  default_prompt: "Use $ansys-design-study to plan and audit this bounded ANSYS Mechanical design study."
+policy:
+  allow_implicit_invocation: true

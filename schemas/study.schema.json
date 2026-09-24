@@ -1,0 +1,375 @@
+{
+  "$defs": {
+    "BudgetSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "max_solver_calls": {
+          "default": 400,
+          "maximum": 100000,
+          "minimum": 1,
+          "title": "Max Solver Calls",
+          "type": "integer"
+        },
+        "max_wall_seconds": {
+          "default": 86400,
+          "maximum": 2592000,
+          "minimum": 60,
+          "title": "Max Wall Seconds",
+          "type": "integer"
+        },
+        "retries_per_job": {
+          "default": 1,
+          "maximum": 5,
+          "minimum": 0,
+          "title": "Retries Per Job",
+          "type": "integer"
+        }
+      },
+      "title": "BudgetSpec",
+      "type": "object"
+    },
+    "MaterialEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "engineering_data_name": {
+          "minLength": 1,
+          "title": "Engineering Data Name",
+          "type": "string"
+        },
+        "density": {
+          "title": "Density",
+          "type": "string"
+        },
+        "property_source": {
+          "minLength": 10,
+          "title": "Property Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "engineering_data_name",
+        "density",
+        "property_source"
+      ],
+      "title": "MaterialEvidence",
+      "type": "object"
+    },
+    "MeshStudySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "sizes": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 3,
+          "title": "Sizes",
+          "type": "array"
+        },
+        "element_order": {
+          "default": "quadratic",
+          "enum": [
+            "linear",
+            "quadratic"
+          ],
+          "title": "Element Order",
+          "type": "string"
+        }
+      },
+      "title": "MeshStudySpec",
+      "type": "object"
+    },
+    "ModelOptions": {
+      "additionalProperties": false,
+      "properties": {
+        "seed": {
+          "default": 42,
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "cv_folds": {
+          "default": 4,
+          "maximum": 10,
+          "minimum": 3,
+          "title": "Cv Folds",
+          "type": "integer"
+        },
+        "max_normalized_distance": {
+          "default": 0.4,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Max Normalized Distance",
+          "type": "number"
+        },
+        "max_relative_std": {
+          "default": 0.15,
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Max Relative Std",
+          "type": "number"
+        }
+      },
+      "title": "ModelOptions",
+      "type": "object"
+    },
+    "OptimizationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_pool": {
+          "default": 256,
+          "maximum": 100000,
+          "minimum": 16,
+          "title": "Candidate Pool",
+          "type": "integer"
+        },
+        "batch_size": {
+          "default": 3,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Batch Size",
+          "type": "integer"
+        },
+        "max_rounds": {
+          "default": 3,
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Max Rounds",
+          "type": "integer"
+        },
+        "verification_candidates": {
+          "default": 3,
+          "maximum": 100,
+          "minimum": 1,
+          "title": "Verification Candidates",
+          "type": "integer"
+        },
+        "improvement_tolerance": {
+          "default": 0.005,
+          "exclusiveMaximum": 1,
+          "minimum": 0,
+          "title": "Improvement Tolerance",
+          "type": "number"
+        },
+        "compare_direct_search": {
+          "default": true,
+          "title": "Compare Direct Search",
+          "type": "boolean"
+        }
+      },
+      "title": "OptimizationSpec",
+      "type": "object"
+    },
+    "ParameterSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "title": "Lower",
+          "type": "string"
+        },
+        "upper": {
+          "title": "Upper",
+          "type": "string"
+        },
+        "baseline": {
+          "title": "Baseline",
+          "type": "string"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "baseline"
+      ],
+      "title": "ParameterSpec",
+      "type": "object"
+    },
+    "SamplingSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "const": "latin_hypercube",
+          "default": "latin_hypercube",
+          "title": "Method",
+          "type": "string"
+        },
+        "seed": {
+          "default": 42,
+          "maximum": 4294967295,
+          "minimum": 0,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "train_samples": {
+          "default": 24,
+          "maximum": 10000,
+          "minimum": 6,
+          "title": "Train Samples",
+          "type": "integer"
+        },
+        "test_samples": {
+          "default": 8,
+          "maximum": 10000,
+          "minimum": 3,
+          "title": "Test Samples",
+          "type": "integer"
+        },
+        "include_corners": {
+          "default": true,
+          "title": "Include Corners",
+          "type": "boolean"
+        }
+      },
+      "title": "SamplingSpec",
+      "type": "object"
+    },
+    "TargetSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "result_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+          "title": "Result Id",
+          "type": "string"
+        },
+        "dimension": {
+          "enum": [
+            "length",
+            "pressure"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "string"
+        },
+        "acceptance_source": {
+          "minLength": 10,
+          "title": "Acceptance Source",
+          "type": "string"
+        },
+        "absolute_tolerance": {
+          "title": "Absolute Tolerance",
+          "type": "string"
+        },
+        "relative_tolerance": {
+          "default": 0.05,
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Relative Tolerance",
+          "type": "number"
+        },
+        "reference_scale": {
+          "title": "Reference Scale",
+          "type": "string"
+        },
+        "mesh_relative_tolerance": {
+          "default": 0.05,
+          "exclusiveMaximum": 1,
+          "exclusiveMinimum": 0,
+          "title": "Mesh Relative Tolerance",
+          "type": "number"
+        },
+        "required_checks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required Checks",
+          "type": "array"
+        },
+        "require_stress_review": {
+          "default": false,
+          "title": "Require Stress Review",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "result_id",
+        "dimension",
+        "unit",
+        "limit",
+        "acceptance_source",
+        "absolute_tolerance",
+        "reference_scale"
+      ],
+      "title": "TargetSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "name": {
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,79}$",
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "geometry": {
+      "const": "gusseted_bracket",
+      "default": "gusseted_bracket",
+      "title": "Geometry",
+      "type": "string"
+    },
+    "base_simulation": {
+      "title": "Base Simulation",
+      "type": "string"
+    },
+    "parameters": {
+      "additionalProperties": {
+        "$ref": "#/$defs/ParameterSpec"
+      },
+      "title": "Parameters",
+      "type": "object"
+    },
+    "material": {
+      "$ref": "#/$defs/MaterialEvidence"
+    },
+    "targets": {
+      "additionalProperties": {
+        "$ref": "#/$defs/TargetSpec"
+      },
+      "minProperties": 1,
+      "title": "Targets",
+      "type": "object"
+    },
+    "sampling": {
+      "$ref": "#/$defs/SamplingSpec"
+    },
+    "mesh": {
+      "$ref": "#/$defs/MeshStudySpec"
+    },
+    "budget": {
+      "$ref": "#/$defs/BudgetSpec"
+    },
+    "model": {
+      "$ref": "#/$defs/ModelOptions"
+    },
+    "optimization": {
+      "$ref": "#/$defs/OptimizationSpec"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "base_simulation",
+    "parameters",
+    "material",
+    "targets"
+  ],
+  "title": "StudySpec",
+  "type": "object"
+}

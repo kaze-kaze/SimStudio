@@ -58,6 +58,7 @@ def scope_location(scope_id):
         raise TextToAnsysError(
             "axis_extreme_face {!r} expected one face; found {}".format(scope_id, len(candidates))
         )
+    candidates[0][1]["boundary"] = MechanicalCompat.face_boundary(candidates[0][0])
     selection = MechanicalCompat.selection_from_entities([candidates[0][0]])
     named_selection = Model.AddNamedSelection()
     named_selection.Name = scope["dpf_named_selection"]

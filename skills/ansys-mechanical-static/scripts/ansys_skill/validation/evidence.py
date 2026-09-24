@@ -16,17 +16,24 @@ def message_check(summary: dict[str, object]) -> Check:
         return Check(
             "mechanical_messages", CheckStatus.NOT_RUN, "Mechanical message evidence is unavailable"
         )
+    def severity(item: object) -> str:
+        if not isinstance(item, dict):
+            return "UNKNOWN"
+        value = str(item.get("severity", "")).strip().upper()
+        # Mechanical may stringify its enum as "MessageSeverity.Error".
+        return value.rsplit(".", 1)[-1]
+
     errors = [
-        item
-        for item in messages
-        if isinstance(item, dict) and "ERROR" in str(item.get("severity", "")).upper()
+        item for item in messages
+        if isinstance(item, dict)
+        and severity(item) in {"ERROR", "FATAL"}
     ]
     unknown = [
         item
         for item in messages
-        if not isinstance(item, dict)
-        or str(item.get("severity", "")).upper() in {"", "UNKNOWN"}
-        or "message api unavailable" in str(item.get("text", "")).lower()
+        if severity(item) not in {"INFO", "WARNING", "ERROR", "FATAL"}
+        or (isinstance(item, dict)
+            and "message api unavailable" in str(item.get("text", "")).lower())
     ]
     status = CheckStatus.FAIL if errors else CheckStatus.WARN if unknown else CheckStatus.PASS
     return Check(
@@ -37,7 +44,15 @@ def message_check(summary: dict[str, object]) -> Check:
         else "Mechanical message severity could not be fully verified"
         if unknown
         else "No error-level message was reported",
-        {"error_count": len(errors), "unknown_count": len(unknown)},
+        {
+            "error_count": len(errors),
+            "unknown_count": len(unknown),
+            "warning_count": sum(
+                isinstance(item, dict) and "WARNING" in severity(item)
+                for item in messages
+            ),
+            **({"log_availability": summary["solver_log_availability"]} if isinstance(summary.get("solver_log_availability"), list) else {}),
+        },
     )
 
 

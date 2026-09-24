@@ -59,6 +59,8 @@ def write_artifacts(status, error=None):
     payload = {
         "status": status,
         "error": error,
+        "phase_timings": MECHANICAL_PHASE_TIMINGS,
+        "timing_clock": PHASE_TIMING_CLOCK,
         "face_selections": FACE_SELECTIONS,
         "analysis": ANALYSIS_INFO,
         "mechanical_product_version": ANALYSIS_INFO.get("mechanical_product_version"),

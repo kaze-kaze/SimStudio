@@ -1,4 +1,7 @@
 # Mechanical-injected globals; compatible with IronPython 2.7.
+MECHANICAL_PHASE_TIMINGS = empty_phase_timings(("mesh", "solve"))
+
+
 def prepare_model():
     input_path = MechanicalCompat.input_path()
     MechanicalCompat.open_project(input_path)
@@ -34,17 +37,24 @@ def apply_materials():
 
 
 def apply_mesh():
-    Model.Mesh.ElementSize = Quantity(PLAN["mesh"]["global_element_size"])
-    order = PLAN["mesh"]["element_order"]
-    if order != "program_controlled":
-        try:
-            Model.Mesh.ElementOrder = getattr(
-                Ansys.Mechanical.DataModel.Enums.ElementOrder,
-                "Linear" if order == "linear" else "Quadratic",
-            )
-        except Exception as exc:
-            raise UnsupportedMechanicalApi("Mesh element-order API is unavailable: {}".format(exc))
-    Model.Mesh.GenerateMesh()
+    with timed_phase(MECHANICAL_PHASE_TIMINGS, "mesh"):
+        Model.Mesh.ElementSize = Quantity(PLAN["mesh"]["global_element_size"])
+        order = PLAN["mesh"]["element_order"]
+        if order != "program_controlled":
+            try:
+                Model.Mesh.ElementOrder = getattr(
+                    Ansys.Mechanical.DataModel.Enums.ElementOrder,
+                    "Linear" if order == "linear" else "Quadratic",
+                )
+            except Exception as exc:
+                raise UnsupportedMechanicalApi("Mesh element-order API is unavailable: {}".format(exc))
+        Model.Mesh.GenerateMesh()
+        ANALYSIS_INFO["mesh_quality"] = MechanicalCompat.mesh_quality()
+
+
+def solve_analysis(analysis):
+    with timed_phase(MECHANICAL_PHASE_TIMINGS, "solve"):
+        analysis.Solve(True)
 
 
 def apply_supports(analysis):

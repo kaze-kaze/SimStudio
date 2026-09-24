@@ -1,4 +1,4 @@
-"""Check public source-package contents and reject private solver artifacts."""
+"""Check public source-package contents and complete installed runtime artifacts."""
 from __future__ import annotations
 
 import argparse
@@ -9,15 +9,28 @@ import tarfile
 import zipfile
 from pathlib import Path, PurePosixPath
 
+ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_SOURCE = ROOT / "skills/ansys-mechanical-static/scripts/ansys_skill"
 PUBLIC_ROOT = "docs/reports/evidence/2026-09-06/"
 EXAMPLE = "examples/gusseted-bracket/"
 DEMO = EXAMPLE + "demo/"
+STUDY_EXAMPLE = "examples/bracket-study/"
+STUDY_SKILL = "skills/ansys-design-study/"
 REQUIRED = {
-    "LICENSE", "NOTICE", "README.md", "README.zh-CN.md", "CHANGELOG.md",
+    "LICENSE", "NOTICE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "ROADMAP.md",
+    ".github/workflows/ci.yml", "docs/design-studies.md", "docs/design-studies.zh-CN.md",
+    "docs/windows-study.md", "schemas/study.schema.json", "tools/run_study_windows.ps1",
+    "skills/ansys-design-study/SKILL.md", "skills/ansys-design-study/agents/openai.yaml",
+    "skills/ansys-design-study/LICENSE", "skills/ansys-mechanical-static/SKILL.md",
+    "tests/unit/test_structure.py", "tests/unit/test_distribution.py", "tools/check_distribution.py",
+    *(STUDY_SKILL + "references/" + name for name in (
+        "workflow.md", "specification.md", "quality-evidence.md",
+        "portability-windows.md", "surrogates.md",
+    )),
+    *(STUDY_EXAMPLE + name for name in ("README.md", "study.yaml", "base-simulation.yaml")),
     "docs/site/index.html", "docs/site/site.css", "docs/site/report.html",
-    "docs/assets/overview.png", "tools/build_site.py",
-    "tools/export_benchmark_evidence.py",
-    "tools/check_distribution.py", "docs/reports/mechanical-test-2026-09-06.md",
+    "docs/assets/overview.png", "tools/build_site.py", "tools/export_benchmark_evidence.py",
+    "docs/reports/mechanical-test-2026-09-06.md",
     "docs/reports/mechanical-test-2026-09-06.zh-CN.md",
     *(EXAMPLE + name for name in (
         "README.md", "simulation.yaml", "simulation_brief.md", "gusseted-bracket.step",
@@ -32,6 +45,10 @@ REQUIRED = {
     *(DEMO + "assets/" + name for name in (
         "geometry.png", "underside.png", "mesh.png", "total-deformation.png", "equivalent-stress.png",
     )),
+}
+REQUIRED_WHEEL = {
+    "ansys_skill/" + path.relative_to(PACKAGE_SOURCE).as_posix()
+    for path in PACKAGE_SOURCE.rglob("*.py")
 }
 PRIVATE_DIRECTORIES = {
     "test-records", "build", "solver", ".venv", "__pycache__", ".git",
@@ -106,11 +123,15 @@ def inspect(path: Path) -> dict:
             or parts[0].endswith(".dist-info")
         ):
             forbidden.append(raw_name)
-    missing = sorted(({"ansys_skill/cli.py"} if kind == "wheel" else REQUIRED) - set(names))
+    required = REQUIRED_WHEEL if kind == "wheel" else REQUIRED
+    missing = sorted(required - set(names))
     if missing or forbidden:
         raise ValueError(json.dumps({"missing": missing, "forbidden": forbidden}))
-    return {"file": path.name, "kind": kind, "files": len(names), "status": "PASS",
-            "scope": "CLI only" if kind == "wheel" else "source, reports, public evidence, static demo, site sources"}
+    return {
+        "file": path.name, "kind": kind, "files": len(names), "status": "PASS",
+        "scope": "CLI, study, and surrogate runtime" if kind == "wheel"
+        else "source, docs, Skills, examples, evidence, site sources",
+    }
 
 
 def main() -> int:
